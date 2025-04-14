@@ -1,20 +1,24 @@
 ﻿#include <pch.h>
-#include <GLFW/glfw3.h>
+#include "Utils/Input.h"
+#include "GLFWWindow/GLFWWindow.h"
 
 int main()
 {
 	int succ = glfwInit();
-	GLFWwindow* pWindow = glfwCreateWindow(600, 400, "Hello", nullptr, nullptr);
+	GLFWWindow::Init();
+	GLFWwindow* pWindow = GLFWWindow::GetWindowPointer();
 
 	while (!glfwWindowShouldClose(pWindow))
 	{
 		glfwSwapBuffers(pWindow);
 		glfwPollEvents();
 
-		if (glfwGetKey(pWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+		if (Input::IsKeyTriggered(GLFW_KEY_ESCAPE))
 			glfwSetWindowShouldClose(pWindow, true);
+
+		Input::SwapKeys();
 	}
 
-	glfwTerminate();
+	GLFWWindow::Terminate();
 	return 0;
 }
