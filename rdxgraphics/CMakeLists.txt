@@ -3,7 +3,9 @@
 #
 
 # Add source to this project's executable.
-add_executable (rdxgraphics "rdxgraphics.cpp" "rdxgraphics.h")
+file(GLOB_RECURSE PCH_REQ_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+add_executable (rdxgraphics "${PCH_REQ_SOURCES}")
+
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET rdxgraphics PROPERTY CXX_STANDARD 20)
@@ -13,10 +15,11 @@ target_compile_definitions("${PROJECT_NAME}"
 	PUBLIC GLFW_INCLUDE_NONE=1
 ) 
 target_include_directories("${PROJECT_NAME}" 
-	PUBLIC Vendor/glfw/include
+	PUBLIC "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}"
+	PUBLIC "Vendor/glfw/include"
 )
 target_link_directories("${PROJECT_NAME}" 
-	PRIVATE Vendor/glfw/build/src
+	PRIVATE "Vendor/glfw/build/src"
 )
 target_link_libraries("${PROJECT_NAME}" 
 	PRIVATE glfw
