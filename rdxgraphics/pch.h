@@ -55,3 +55,5 @@
 // Local
 #include "RXGlobals.h"
 #include "Utils/BaseSingleton.h"
+
+#include "Utils/EventDispatcher/EventDispatcher.h"

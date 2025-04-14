@@ -8,15 +8,15 @@ int main()
 	GLFWWindow::Init();
 	GLFWwindow* pWindow = GLFWWindow::GetWindowPointer();
 
-	while (!glfwWindowShouldClose(pWindow))
+	while (!GLFWWindow::IsWindowShouldClose())
 	{
-		glfwSwapBuffers(pWindow);
-		glfwPollEvents();
+		GLFWWindow::StartFrame();
 
 		if (Input::IsKeyTriggered(GLFW_KEY_ESCAPE))
-			glfwSetWindowShouldClose(pWindow, true);
+			GLFWWindow::SetWindowShouldClose();
 
-		Input::SwapKeys();
+		if (Input::IsKeyTriggered(GLFW_KEY_F11))
+			GLFWWindow::ToggleMinMaxWindow();
 	}
 
 	GLFWWindow::Terminate();
