@@ -14,15 +14,19 @@ if (POLICY CMP0141)
   set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
 endif()
 
+set(BUILD_SHARED_LIBS   OFF CACHE BOOL "" FORCE)
+
 # GLFW config to disable extras
 set(GLFW_BUILD_DOCS     OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS    OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(GLFW_INSTALL        OFF CACHE BOOL "" FORCE)
-set(BUILD_SHARED_LIBS   OFF CACHE BOOL "" FORCE)
+
+set(GLM_BUILD_TESTS     OFF CACHE BOOL "" FORCE)
 
 # Add glfw submodule
 add_subdirectory(Vendor/glfw)
+add_subdirectory(Vendor/glm)
 
 # Add your actual project
 add_subdirectory(rdxgraphics)

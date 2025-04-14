@@ -17,10 +17,12 @@ target_compile_definitions("${PROJECT_NAME}"
 target_include_directories("${PROJECT_NAME}" 
 	PUBLIC "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}"
 	PUBLIC "Vendor/glfw/include"
+	PUBLIC "Vendor/glm"
 )
 target_link_directories("${PROJECT_NAME}" 
 	PRIVATE "Vendor/glfw/build/src"
 )
 target_link_libraries("${PROJECT_NAME}" 
 	PRIVATE glfw
+	PRIVATE glm::glm-header-only
 )
