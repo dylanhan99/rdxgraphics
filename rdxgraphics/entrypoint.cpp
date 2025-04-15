@@ -4,15 +4,15 @@
 
 int main()
 {
-	//BS::synced_stream sync_out;
-	//BS::thread_pool tp{};
-	//
-	//tp.submit_task(
-	//	[&sync_out]
-	//	{
-	//		sync_out.println("Thread pool library successfully imported using C++20 modules!");
-	//	})
-	//	.wait();
+	BS::synced_stream sync_out;
+	BS::thread_pool tp{};
+	
+	tp.submit_task(
+		[&sync_out]
+		{
+			sync_out.println("Thread pool library!");
+		})
+		.wait();
 
 	int succ = glfwInit();
 	GLFWWindow::Init();

@@ -40,6 +40,24 @@ FetchContent_Declare(glm
     GIT_TAG        1.0.1
 )
 
+FetchContent_Declare(BS_thread_pool
+    GIT_REPOSITORY https://github.com/bshoshany/thread-pool.git
+    GIT_TAG        v5.0.0
+)
+
+#
+FetchContent_GetProperties(BS_thread_pool)
+if(NOT bs_thread_pool_POPULATED)
+    FetchContent_Populate(BS_thread_pool)
+
+    # Create a header-only interface target manually
+    add_library(BS_thread_pool INTERFACE)
+    target_include_directories(BS_thread_pool INTERFACE
+        "${bs_thread_pool_SOURCE_DIR}/include"
+    )
+endif()
+
+# Only MakeAvailable projects who have cmakelists file
 FetchContent_MakeAvailable(glfw glm)
 
 # Add your actual project

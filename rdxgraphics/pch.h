@@ -49,8 +49,11 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 
-//GLM
+// GLM
 #include <glm/glm.hpp>
+
+// BS_thread_pool
+#include <BS_thread_pool.hpp>
 
 // Local
 #include "RXGlobals.h"
