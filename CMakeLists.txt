@@ -1,4 +1,6 @@
 ﻿cmake_minimum_required(VERSION 3.8)
+find_package(Python3 REQUIRED)
+
 project(rdxgraphics)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -45,7 +47,17 @@ FetchContent_Declare(BS_thread_pool
     GIT_TAG        v5.0.0
 )
 
-#
+# change to glad.h instead of gl.h
+# i think no need --generator anymore
+# gl:core= in the project CMakeLists
+FetchContent_Declare(glad
+    GIT_REPOSITORY https://github.com/Dav1dde/glad.git
+    GIT_TAG        v2.0.8
+    SOURCE_SUBDIR  "cmake"
+)
+
+#########################################################
+# Additional setup for BS_thread_pool. Header-only, no cmakelists
 FetchContent_GetProperties(BS_thread_pool)
 if(NOT bs_thread_pool_POPULATED)
     FetchContent_Populate(BS_thread_pool)
@@ -56,9 +68,13 @@ if(NOT bs_thread_pool_POPULATED)
         "${bs_thread_pool_SOURCE_DIR}/include"
     )
 endif()
+#########################################################
 
+
+#########################################################
+#########################################################
 # Only MakeAvailable projects who have cmakelists file
-FetchContent_MakeAvailable(glfw glm)
+FetchContent_MakeAvailable(glfw glm glad)
 
 # Add your actual project
 add_subdirectory(rdxgraphics)

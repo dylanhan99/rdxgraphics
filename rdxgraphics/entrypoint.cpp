@@ -18,6 +18,13 @@ int main()
 	GLFWWindow::Init();
 	GLFWwindow* pWindow = GLFWWindow::GetWindowPointer();
 
+	if (!gladLoadGL()) {
+		std::cerr << "Failed to initialize GLAD" << std::endl;
+		return -1;
+	}
+
+	std::cout << "GL Version: " << glGetString(GL_VERSION) << std::endl;
+
 	while (!GLFWWindow::IsWindowShouldClose())
 	{
 		GLFWWindow::StartFrame();

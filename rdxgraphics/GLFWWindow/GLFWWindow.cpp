@@ -37,6 +37,8 @@ bool GLFWWindow::Init()
 	g.m_pWindowHandle = glfwGetWin32Window(g.m_pWindow);
 	glfwSetInputMode(g.m_pWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
+	glfwMakeContextCurrent(g.m_pWindow);
+
 	Input::Init();
 	RegisterCallbacks();
 
