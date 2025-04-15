@@ -1,9 +1,0 @@
-[submodule "Vendor/glfw"]
-	path = Vendor/glfw
-	url = https://github.com/glfw/glfw.git
-[submodule "Vendor/glm"]
-	path = Vendor/glm
-	url = https://github.com/g-truc/glm.git
-[submodule "Vendor/bsthreadpool"]
-	path = Vendor/bsthreadpool
-	url = https://github.com/bshoshany/thread-pool.git
