@@ -45,7 +45,7 @@
 #include <string_view>
 
 // GLAD
-#include <glad/glad.h>
+#include <glad/gl.h>
 
 // GLFW
 #include <GLFW/glfw3.h>

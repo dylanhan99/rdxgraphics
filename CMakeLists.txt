@@ -52,7 +52,10 @@ FetchContent_Declare(BS_thread_pool
 # gl:core= in the project CMakeLists
 FetchContent_Declare(glad
     GIT_REPOSITORY https://github.com/Dav1dde/glad.git
-    GIT_TAG        v2.0.8
+    GIT_TAG        f49229523c58ad7698e941f7c51454e77dd9d6a8
+    #GIT_TAG        v2.0.8
+    #GIT_REPOSITORY https://github.com/dylanhan99/glad.git
+    #GIT_TAG        cffab93affe2ed0958cd050d5a10c0d2334190dd
     SOURCE_SUBDIR  "cmake"
 )
 

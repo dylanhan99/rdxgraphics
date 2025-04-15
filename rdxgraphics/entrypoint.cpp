@@ -18,7 +18,7 @@ int main()
 	GLFWWindow::Init();
 	GLFWwindow* pWindow = GLFWWindow::GetWindowPointer();
 
-	if (!gladLoadGL()) {
+	if (!gladLoadGL(glfwGetProcAddress)) {
 		std::cerr << "Failed to initialize GLAD" << std::endl;
 		return -1;
 	}
