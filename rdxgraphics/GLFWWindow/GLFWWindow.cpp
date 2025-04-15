@@ -32,7 +32,22 @@ bool GLFWWindow::Init()
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 	glfwWindowHint(GLFW_AUTO_ICONIFY, GLFW_FALSE);
 
-	g.m_pWindow = glfwCreateWindow(600, 400, "Hello", nullptr, nullptr);
+	{ // Default size setting 
+		float two_thirds = 2.f / 3.f;
+		int width  = videoMode->width  * two_thirds;
+		int height = videoMode->height * two_thirds;
+
+		glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+		g.m_pWindow = glfwCreateWindow(width, height, "Hello", nullptr, nullptr);
+
+		int x{}, y{};
+		glfwGetMonitorPos(monitor, &x, &y);
+		x += static_cast<int>(static_cast<float>(videoMode->width  - width)  * 0.5f);
+		y += static_cast<int>(static_cast<float>(videoMode->height - height) * 0.5f);
+
+		glfwSetWindowPos(g.m_pWindow, x, y);
+		glfwShowWindow(g.m_pWindow);
+	}
 	// assert pwindow
 	g.m_pWindowHandle = glfwGetWin32Window(g.m_pWindow);
 	glfwSetInputMode(g.m_pWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
@@ -56,7 +71,6 @@ void GLFWWindow::StartFrame()
 	Input::SwapKeys();
 	glfwSwapBuffers(g.m_pWindow);
 	glfwPollEvents();
-
 }
 
 void GLFWWindow::ToggleMinMaxWindow()
@@ -66,7 +80,6 @@ void GLFWWindow::ToggleMinMaxWindow()
 		glfwRestoreWindow(g.m_pWindow);
 	else
 		glfwMaximizeWindow(g.m_pWindow);
-
 }
 
 void GLFWWindow::RegisterCallbacks()
@@ -92,9 +105,8 @@ void GLFWWindow::RegisterCallbacks()
 	glfwSetKeyCallback(g.m_pWindow,
 		[](GLFWwindow*, int key, int scancode, int action, int)
 		{
-			//GLFWWindow& window = GLFWWindow::GetInstance();
-			//if (!window.IsFocused())
-			//	return;
+			if (!GLFWWindow::IsFocused())
+				return;
 
 			Input::KeyCallback(key, scancode, action);
 		});
@@ -102,9 +114,8 @@ void GLFWWindow::RegisterCallbacks()
 	glfwSetMouseButtonCallback(g.m_pWindow,
 		[](GLFWwindow*, int button, int action, int)
 		{
-			GLFWWindow& window = GLFWWindow::GetInstance();
-			//if (!window.IsFocused())
-			//	return;
+			if (!GLFWWindow::IsFocused())
+				return;
 
 			Input::ButtonCallback(button, action);
 		});
@@ -112,9 +123,8 @@ void GLFWWindow::RegisterCallbacks()
 	glfwSetCursorPosCallback(g.m_pWindow,
 		[](GLFWwindow*, double xpos, double ypos)
 		{
-			//GLFWWindow& window = GLFWWindow::GetInstance();
-			//if (!window.IsFocused())
-			//	return;
+			if (!GLFWWindow::IsFocused())
+				return;
 
 			EventDispatcher<double, double>::FireEvent(
 				RX_EVENT_CURSOR_POS_CALLBACK,
@@ -124,9 +134,8 @@ void GLFWWindow::RegisterCallbacks()
 	glfwSetScrollCallback(g.m_pWindow,
 		[](GLFWwindow*, double xoffset, double yoffset)
 		{
-			//GLFWWindow& window = GLFWWindow::GetInstance();
-			//if (!window.IsFocused())
-			//	return;
+			if (!GLFWWindow::IsFocused())
+				return;
 
 			EventDispatcher<double, double>::FireEvent(
 				RX_EVENT_SCROLL_CALLBACK,

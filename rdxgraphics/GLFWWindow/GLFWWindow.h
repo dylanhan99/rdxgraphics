@@ -12,6 +12,7 @@ public:
 
 	inline static bool IsWindowShouldClose() { return glfwWindowShouldClose(g.m_pWindow); }
 	inline static void SetWindowShouldClose() { glfwSetWindowShouldClose(g.m_pWindow, true); }
+	inline static bool IsFocused() { return glfwGetWindowAttrib(g.m_pWindow, GLFW_FOCUSED); }
 
 	inline static GLFWwindow* GetWindowPointer() { return g.m_pWindow; }
 
@@ -21,6 +22,4 @@ private:
 private:
 	GLFWwindow* m_pWindow{ nullptr };
 	HWND m_pWindowHandle{};
-	
-	//bool m_IsFocused{ true };
 };
