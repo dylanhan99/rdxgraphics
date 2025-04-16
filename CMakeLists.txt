@@ -47,15 +47,17 @@ FetchContent_Declare(BS_thread_pool
     GIT_TAG        v5.0.0
 )
 
-# change to glad.h instead of gl.h
-# i think no need --generator anymore
-# gl:core= in the project CMakeLists
 FetchContent_Declare(glad
     GIT_REPOSITORY https://github.com/Dav1dde/glad.git
     GIT_TAG        f49229523c58ad7698e941f7c51454e77dd9d6a8
-    #GIT_TAG        v2.0.8
-    #GIT_REPOSITORY https://github.com/dylanhan99/glad.git
-    #GIT_TAG        cffab93affe2ed0958cd050d5a10c0d2334190dd
+    SOURCE_SUBDIR  "cmake"
+)
+
+FetchContent_Declare(imgui
+    #GIT_REPOSITORY https://github.com/ocornut/imgui.git
+    #GIT_TAG        v1.91.9b-docking
+    GIT_REPOSITORY https://github.com/dylanhan99/imgui.git
+    GIT_TAG        docking
     SOURCE_SUBDIR  "cmake"
 )
 
@@ -77,7 +79,7 @@ endif()
 #########################################################
 #########################################################
 # Only MakeAvailable projects who have cmakelists file
-FetchContent_MakeAvailable(glfw glm glad)
+FetchContent_MakeAvailable(glfw glm glad imgui)
 
 # Add your actual project
 add_subdirectory(rdxgraphics)

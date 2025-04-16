@@ -58,6 +58,12 @@
 // BS_thread_pool
 #include <BS_thread_pool.hpp>
 
+// imgui
+#include <imgui.h>
+#include <imgui_internal.h>
+#include <imgui_impl_opengl3.h>
+#include <imgui_impl_glfw.h>
+
 // Local
 #include "RXGlobals.h"
 #include "Utils/BaseSingleton.h"
