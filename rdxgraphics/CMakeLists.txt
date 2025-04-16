@@ -29,4 +29,5 @@ target_link_libraries("${PROJECT_NAME}"
 	PRIVATE BS_thread_pool
 	PRIVATE glad_gl_core_33
 	PRIVATE imgui
+	PRIVATE spdlog::spdlog
 )

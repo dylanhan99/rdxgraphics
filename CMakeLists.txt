@@ -32,6 +32,8 @@ set(GLFW_INSTALL        OFF CACHE BOOL "" FORCE)
 
 set(GLM_BUILD_TESTS     OFF CACHE BOOL "" FORCE)
 
+set(SPDLOG_ENABLE_PCH   ON CACHE BOOL "" FORCE)
+
 FetchContent_Declare(glfw
     GIT_REPOSITORY https://github.com/glfw/glfw.git
     GIT_TAG        3.4
@@ -61,6 +63,11 @@ FetchContent_Declare(imgui
     SOURCE_SUBDIR  "cmake"
 )
 
+FetchContent_Declare(spdlog
+    GIT_REPOSITORY https://github.com/gabime/spdlog.git
+    GIT_TAG        v1.15.2
+)
+
 #########################################################
 # Additional setup for BS_thread_pool. Header-only, no cmakelists
 FetchContent_GetProperties(BS_thread_pool)
@@ -79,7 +86,7 @@ endif()
 #########################################################
 #########################################################
 # Only MakeAvailable projects who have cmakelists file
-FetchContent_MakeAvailable(glfw glm glad imgui)
+FetchContent_MakeAvailable(glfw glm glad imgui spdlog)
 
 # Add your actual project
 add_subdirectory(rdxgraphics)
