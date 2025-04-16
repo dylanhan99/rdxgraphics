@@ -6,7 +6,7 @@
 file(GLOB_RECURSE PCH_REQ_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 add_executable (rdxgraphics "${PCH_REQ_SOURCES}")
 glad_add_library(glad_gl_core_33 STATIC API "gl:core=4.5" LANGUAGE c)
-#imgui_add_library()
+imgui_add_library(imgui)
 
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)

@@ -54,6 +54,7 @@
 
 // GLM
 #include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 // BS_thread_pool
 #include <BS_thread_pool.hpp>

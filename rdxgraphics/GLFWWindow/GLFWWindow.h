@@ -7,6 +7,7 @@ public:
 	static bool Init();
 	static void Terminate();
 	static void StartFrame();
+	static void EndFrame();
 
 	static void ToggleMinMaxWindow();
 

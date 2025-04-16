@@ -53,6 +53,7 @@ bool GLFWWindow::Init()
 	glfwSetInputMode(g.m_pWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
 	glfwMakeContextCurrent(g.m_pWindow);
+	glfwSwapInterval(1); // Enable vsync
 
 	Input::Init();
 	RegisterCallbacks();
@@ -69,8 +70,12 @@ void GLFWWindow::Terminate()
 void GLFWWindow::StartFrame()
 {
 	Input::SwapKeys();
-	glfwSwapBuffers(g.m_pWindow);
 	glfwPollEvents();
+}
+
+void GLFWWindow::EndFrame()
+{
+	glfwSwapBuffers(g.m_pWindow);
 }
 
 void GLFWWindow::ToggleMinMaxWindow()

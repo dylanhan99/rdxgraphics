@@ -1,0 +1,16 @@
+
+class RenderSystem : public BaseSingleton<RenderSystem>
+{
+	RX_SINGLETON_DECLARATION(RenderSystem);
+public:
+	static bool Init();
+	static void Terminate();
+
+	static void Update(double dt);
+
+	inline static glm::vec3& GetBackBufferColor() { return g.m_BackColor; }
+
+private:
+	glm::vec3 m_BackColor{ 0.2f, 0.3f, 0.3f };
+
+};
