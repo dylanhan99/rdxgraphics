@@ -31,10 +31,7 @@ void RDX::Run()
 	}
 
 	if (!initOK)
-		throw std::exception{ "System initialization failed" };
-
-	RX_ASSERT(true);
-	RX_ASSERT(false, "test {}", 5);
+		throw RX_EXCEPTION("System initialization failed");
 
 	while (!GLFWWindow::IsWindowShouldClose())
 	{

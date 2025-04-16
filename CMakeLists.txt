@@ -18,7 +18,7 @@ if (POLICY CMP0141)
 endif()
 
 if(MSVC)
-    add_compile_options(/permissive- /Zc:__cplusplus)
+    add_compile_options(/permissive- /Zc:__cplusplus /Zc:preprocessor)
 endif()
 
 include(FetchContent)

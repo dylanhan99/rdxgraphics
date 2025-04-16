@@ -11,12 +11,9 @@
 #define RX_ERROR(fmt, ...)	  _RX_LOG_WRAP(error,	 "{} - " fmt, __func__, ##__VA_ARGS__)
 #define RX_CRITICAL(fmt, ...) _RX_LOG_WRAP(critical, "{} - " fmt, __func__, ##__VA_ARGS__)
 
-#define RX_EXCEPTION(msg) throw std::exception{msg}
+#define RX_EXCEPTION(msg) std::exception{msg}
 #ifdef _DEBUG
-#define _RX_ASSERT_1(x) if(!(x)){assert(false);}
-#define _RX_ASSERT_2(x, ...) if(!(x)){__VA_OPT__(RX_CRITICAL(__VA_ARGS__);) assert(false);}
-#define _RX_ASSERT_CHOOSER(_1, _2, NAME, ...) NAME
-#define RX_ASSERT(...) _RX_ASSERT_CHOOSER(__VA_ARGS__, _RX_ASSERT_2, _RX_ASSERT_1)(__VA_ARGS__)
+#define RX_ASSERT(x, ...) if(!(x)){__VA_OPT__(RX_CRITICAL(__VA_ARGS__);) assert((#x , false));}
 #else
 #define RX_ASSERT(x, ...)
 #endif
