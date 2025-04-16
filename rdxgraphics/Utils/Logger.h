@@ -1,0 +1,56 @@
+#pragma once
+#include "spdlog/spdlog.h"
+#include "spdlog/async.h"
+#include "spdlog/sinks/stdout_color_sinks.h"
+
+#define _RX_LOG_WRAP(level, fmt, ...) {std::lock_guard<std::mutex> lg{Logger::GetMutex()}; Logger::GetLogger().level(fmt, ##__VA_ARGS__);}
+#define RX_TRACE(fmt, ...)	  _RX_LOG_WRAP(trace,	 "{} - " fmt, __func__, ##__VA_ARGS__)
+#define RX_DEBUG(fmt, ...)	  _RX_LOG_WRAP(debug,	 "{} - " fmt, __func__, ##__VA_ARGS__)
+#define RX_INFO(fmt, ...)	  _RX_LOG_WRAP(info,	 "{} - " fmt, __func__, ##__VA_ARGS__)
+#define RX_WARN(fmt, ...)	  _RX_LOG_WRAP(warn,	 "{} - " fmt, __func__, ##__VA_ARGS__)
+#define RX_ERROR(fmt, ...)	  _RX_LOG_WRAP(error,	 "{} - " fmt, __func__, ##__VA_ARGS__)
+#define RX_CRITICAL(fmt, ...) _RX_LOG_WRAP(critical, "{} - " fmt, __func__, ##__VA_ARGS__)
+
+#define RX_EXCEPTION(msg) throw std::exception{msg}
+#ifdef _DEBUG
+#define _RX_ASSERT_1(x) if(!(x)){assert(false);}
+#define _RX_ASSERT_2(x, ...) if(!(x)){__VA_OPT__(RX_CRITICAL(__VA_ARGS__);) assert(false);}
+#define _RX_ASSERT_CHOOSER(_1, _2, NAME, ...) NAME
+#define RX_ASSERT(...) _RX_ASSERT_CHOOSER(__VA_ARGS__, _RX_ASSERT_2, _RX_ASSERT_1)(__VA_ARGS__)
+#else
+#define RX_ASSERT(x, ...)
+#endif
+
+class Logger : public BaseSingleton<Logger>
+{
+	RX_SINGLETON_DECLARATION(Logger);
+public:
+	inline static void Init()
+	{
+		spdlog::init_thread_pool(2048, 2);
+		std::vector<spdlog::sink_ptr> sinks{
+			std::make_shared<spdlog::sinks::stdout_color_sink_mt>()
+		};
+
+		g.m_Logger.reset(
+			new spdlog::async_logger(
+				"FF_AsyncLogger",
+				sinks.begin(), sinks.end(), spdlog::thread_pool()
+			));
+
+		g.m_Logger->set_level(spdlog::level::trace);
+		spdlog::register_logger(g.m_Logger);
+	}
+
+	inline static void Terminate()
+	{
+		spdlog::shutdown();
+	}
+
+	inline static spdlog::logger& GetLogger() { return *g.m_Logger; }
+	inline static std::mutex& GetMutex() { return g.m_Mutex; }
+
+private:
+	std::shared_ptr<spdlog::logger> m_Logger{};
+	std::mutex m_Mutex{};
+};

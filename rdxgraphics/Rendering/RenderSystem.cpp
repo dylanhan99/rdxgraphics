@@ -7,11 +7,13 @@ RX_SINGLETON_EXPLICIT(RenderSystem);
 
 bool RenderSystem::Init()
 {
-	if (!gladLoadGL(glfwGetProcAddress)) {
-		std::cerr << "Failed to initialize GLAD" << std::endl;
+	if (!gladLoadGL(glfwGetProcAddress)) 
+	{
+		RX_ERROR("Failed to initialize GLAD");
 		return false;
 	}
-	std::cout << "GL Version: " << glGetString(GL_VERSION) << std::endl;
+
+	RX_INFO("GL Version: {}", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);

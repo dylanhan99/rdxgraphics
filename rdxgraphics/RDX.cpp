@@ -7,6 +7,8 @@
 
 void RDX::Run()
 {
+	Logger::Init();
+
 	bool initOK = true;
 	initOK &= GLFWWindow::Init();
 	initOK &= RenderSystem::Init();
@@ -25,11 +27,14 @@ void RDX::Run()
 
 		// Setup Platform/Renderer bindings
 		ImGui_ImplGlfw_InitForOpenGL(pWindow, true);
-		ImGui_ImplOpenGL3_Init("#version 330");  // Your GLSL version
+		ImGui_ImplOpenGL3_Init("#version 450");  // Your GLSL version
 	}
 
 	if (!initOK)
 		throw std::exception{ "System initialization failed" };
+
+	RX_ASSERT(true);
+	RX_ASSERT(false, "test {}", 5);
 
 	while (!GLFWWindow::IsWindowShouldClose())
 	{
@@ -71,4 +76,6 @@ void RDX::Run()
 
 	RenderSystem::Terminate();
 	GLFWWindow::Terminate();
+
+	Logger::Terminate();
 }

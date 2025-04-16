@@ -10,8 +10,7 @@ bool GLFWWindow::Init()
 	glfwSetErrorCallback(
 		[](int errCode, const char* desc)
 		{
-			//FF_ERROR(R"(GLFW Error: {}, "{}")", errCode, desc);
-			fprintf(stderr, "GLFW Error: %d, %s", errCode, desc);
+			RX_ERROR(R"(GLFW Error: {}, "{}")", errCode, desc);
 		}
 	);
 
@@ -34,8 +33,8 @@ bool GLFWWindow::Init()
 
 	{ // Default size setting 
 		float two_thirds = 2.f / 3.f;
-		int width  = videoMode->width  * two_thirds;
-		int height = videoMode->height * two_thirds;
+		int width  = static_cast<int>(static_cast<float>(videoMode->width)  * two_thirds);
+		int height = static_cast<int>(static_cast<float>(videoMode->height) * two_thirds);
 
 		glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 		g.m_pWindow = glfwCreateWindow(width, height, "Hello", nullptr, nullptr);

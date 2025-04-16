@@ -65,8 +65,9 @@
 #include <imgui_impl_opengl3.h>
 #include <imgui_impl_glfw.h>
 
+
 // Local
 #include "RXGlobals.h"
 #include "Utils/BaseSingleton.h"
-
+#include "Utils/Logger.h"
 #include "Utils/EventDispatcher/EventDispatcher.h"
