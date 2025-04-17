@@ -10,7 +10,12 @@ public:
 
 	inline static glm::vec3& GetBackBufferColor() { return g.m_BackColor; }
 
+	static bool ReloadShaders();
+
+private:
+	static void CreateShapes();
+
 private:
 	glm::vec3 m_BackColor{ 0.2f, 0.3f, 0.3f };
-
+	GLuint m_ShaderProgramID{};
 };
