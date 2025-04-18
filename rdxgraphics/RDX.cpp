@@ -47,6 +47,9 @@ void RDX::Run()
 		if (Input::IsKeyTriggered(GLFW_KEY_F11))
 			GLFWWindow::ToggleMinMaxWindow();
 
+		if (Input::IsKeyTriggered(GLFW_KEY_F5))
+			RenderSystem::ReloadShaders();
+
 		{ // ImGui update
 			ImGui::Begin("Hi", nullptr, 0);
 			{

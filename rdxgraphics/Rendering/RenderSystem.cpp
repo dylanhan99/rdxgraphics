@@ -13,6 +13,8 @@ unsigned int qVAO;
 unsigned int qVBO;
 unsigned int qEBO;
 
+namespace fs = std::filesystem;
+
 bool RenderSystem::Init()
 {
 	if (!gladLoadGL(glfwGetProcAddress)) 
@@ -58,7 +60,6 @@ void RenderSystem::Update(double dt)
 
 	glClearColor(g.m_BackColor.x, g.m_BackColor.y, g.m_BackColor.z, 1.f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 	
 
 	glUseProgram(g.m_ShaderProgramID);
@@ -73,49 +74,75 @@ void RenderSystem::Update(double dt)
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	}
 
-
 	glBindVertexArray(0);
 }
 
 bool RenderSystem::ReloadShaders()
 {
-	const char* vertexShaderSource = 
-		"#version 450 core\n"
-		"layout (location = 0) in vec3 aPos;\n"
-		"void main()\n"
-		"{\n"
-		"   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-		"}\0";
-	const char* fragmentShaderSource = 
-		"#version 450 core\n"
-		"out vec4 FragColor;\n"
-		"void main()\n"
-		"{\n"
-		"   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-		"}\n\0";
+	if (g.m_ShaderProgramID)
+	{
+		glDeleteProgram(g.m_ShaderProgramID);
+		g.m_ShaderProgramID = 0;
+	}
 
-	unsigned int vertexShader;
-	vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-	glCompileShader(vertexShader);
+	char infoLog[512]{};
+	auto readAndCompile = 
+		[&infoLog](GLint shaderType, fs::path const& shaderPath)
+		{
+			GLuint shaderID{ 0 };
 
-	unsigned int fragmentShader;
-	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-	glCompileShader(fragmentShader);
+			std::ifstream ifs{ shaderPath };
+			if (!ifs)
+			{
+				RX_ERROR("Failed to read shader asset path: {}", shaderPath);
+				return 0u;
+			}
 
-	g.m_ShaderProgramID = glCreateProgram();
+			std::string shaderBuffer{ std::istreambuf_iterator<char>{ifs}, {} };
+			RX_DEBUG("{}\n{}", shaderPath, shaderBuffer);
+			const char* shaderBufferCstr = shaderBuffer.c_str();
 
-	glAttachShader(g.m_ShaderProgramID, vertexShader);
-	glAttachShader(g.m_ShaderProgramID, fragmentShader);
-	glLinkProgram(g.m_ShaderProgramID);
+			shaderID = glCreateShader(shaderType);
+			glShaderSource(shaderID, 1, &shaderBufferCstr, nullptr);
+			glCompileShader(shaderID);
 
-	// Validate program health
+			int success{};
+			glGetShaderiv(shaderID, GL_COMPILE_STATUS, &success);
+			if (!success)
+			{
+				glGetShaderInfoLog(shaderID, 512, nullptr, infoLog);
+				RX_ERROR(R"(Failed to compile shader "{}" - {})", shaderPath, infoLog);
+				return 0u;
+			}
 
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
+			return shaderID;
+		};
 
-	return true;
+	fs::path fpVert = g_WorkingDir; fpVert.append("Assets/default.vert");
+	fs::path fpFrag = g_WorkingDir; fpFrag.append("Assets/default.frag");
+
+	GLuint vertShader = readAndCompile(GL_VERTEX_SHADER, fpVert);
+	GLuint fragShader = readAndCompile(GL_FRAGMENT_SHADER, fpFrag);
+
+	int success = vertShader && fragShader;
+	if (success)
+	{
+		g.m_ShaderProgramID = glCreateProgram();
+		glAttachShader(g.m_ShaderProgramID, vertShader);
+		glAttachShader(g.m_ShaderProgramID, fragShader);
+		glLinkProgram(g.m_ShaderProgramID);
+
+		glGetProgramiv(g.m_ShaderProgramID, GL_LINK_STATUS, &success);
+		if (!success)
+		{
+			glGetProgramInfoLog(g.m_ShaderProgramID, 512, nullptr, infoLog);
+			RX_ERROR("Failed to link shader program - {}", infoLog);
+		}
+	}
+
+	glDeleteShader(vertShader);
+	glDeleteShader(fragShader);
+	return success;
 }
 
 void RenderSystem::CreateShapes()
