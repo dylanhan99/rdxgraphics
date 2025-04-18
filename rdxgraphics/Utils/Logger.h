@@ -51,3 +51,15 @@ private:
 	std::shared_ptr<spdlog::logger> m_Logger{};
 	std::mutex m_Mutex{};
 };
+
+//
+
+template <>
+struct fmt::formatter<std::filesystem::path> : fmt::formatter<std::string>
+{
+	template <typename FormatContext>
+	auto format(std::filesystem::path const& p, FormatContext& ctx) const
+	{
+		return fmt::formatter<std::string> ::format(p.generic_string(), ctx);
+	}
+};
