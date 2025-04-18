@@ -6,9 +6,9 @@
 Camera::Camera(
 	glm::vec3 const& position, 
 	glm::vec3 const& orientation, 
-	glm::vec2 aspect, float fov)
+	glm::vec2 aspect, float fov, Mode camMode)
 	: m_Position(position), m_Orientation(orientation), 
-	m_AspectRatio(aspect.s / aspect.t), m_FOV(fov)
+	m_AspectRatio(aspect.s / aspect.t), m_FOV(fov), m_CameraMode(camMode)
 {
 	UpdateCameraVectors();
 }
@@ -32,12 +32,32 @@ void Camera::UpdateCameraVectors()
 	m_ViewMatrix =
 		glm::lookAt(m_Position, m_Position + m_Front, m_Up);
 
-	m_ProjectionMatrix =
-		glm::perspective(glm::radians(m_FOV), m_AspectRatio, m_Clip.s, m_Clip.t);
+	if (m_CameraMode == Mode::Perspective)
+	{
+		m_ProjectionMatrix =
+			glm::perspective(glm::radians(m_FOV), m_AspectRatio, m_Clip.s, m_Clip.t);
+	}
+	else
+	{
+		// This represents "zoom". But since this is a 3d camera, we can use Z axis instead.
+		//float m_OrthoSize = 1.f; 
+		float m_OrthoSize = m_Position.z;
+		float halfWidth = m_OrthoSize * m_AspectRatio * 0.5f;
+		float halfHeight = m_OrthoSize * 0.5f;
+
+		m_ProjectionMatrix = glm::ortho(
+			-halfWidth, halfWidth,		// left, right
+			-halfHeight, halfHeight,	// bottom, top
+			m_Clip.s, m_Clip.t			// near, far
+		);
+	}
 }
 
 void Camera::Inputs()
 {
+	if (Input::IsKeyTriggered(GLFW_KEY_TAB))
+		m_CameraMode = m_CameraMode == Mode::Perspective ? Mode::Orthorgonal : Mode::Perspective;
+
 	// Speed modifiers
 	if (Input::IsKeyDown(GLFW_KEY_LEFT_CONTROL))
 		m_MovementSpeed = 0.4f;

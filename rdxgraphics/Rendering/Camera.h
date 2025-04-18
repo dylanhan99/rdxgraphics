@@ -3,11 +3,18 @@
 class Camera
 {
 public:
+	enum class Mode {
+		Perspective,
+		Orthorgonal
+	};
+
+public:
 	Camera(
 		glm::vec3 const& position = { 0.f, 0.f, 0.f },
 		glm::vec3 const& orientation = { 0.f,0.f,-1.f },
 		glm::vec2 aspect = { 4.f, 3.f },
-		float fov = 90
+		float fov = 90,
+		Mode camMode = Mode::Perspective
 	);
 
 	void UpdateCameraVectors();
@@ -29,4 +36,6 @@ private:
 
 	glm::vec2 m_Clip{ 0.f, 100.f };
 	float m_MovementSpeed{ 1.f };
+
+	Mode m_CameraMode{};
 };
