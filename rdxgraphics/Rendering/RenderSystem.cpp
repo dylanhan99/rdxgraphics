@@ -2,9 +2,9 @@
 #include "RenderSystem.h"
 
 #include "GLFWWindow/GLFWWindow.h"
+#include "Camera.h"
 
 RX_SINGLETON_EXPLICIT(RenderSystem);
-
 
 unsigned int tVAO;
 unsigned int tVBO;
@@ -14,6 +14,8 @@ unsigned int qVBO;
 unsigned int qEBO;
 
 namespace fs = std::filesystem;
+
+Camera mainCamera{ {0.f,0.f,0.f}, {0.f,0.f,-1.f}, {16.f, 9.f}, 90.f };
 
 bool RenderSystem::Init()
 {
@@ -58,11 +60,23 @@ void RenderSystem::Update(double dt)
 {
 	RX_UNREF_PARAM(dt);
 
+	mainCamera.Inputs();
+
 	glClearColor(g.m_BackColor.x, g.m_BackColor.y, g.m_BackColor.z, 1.f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
 
+	auto GetUniformLocation = [sid = g.m_ShaderProgramID](std::string const& name)->GLint
+		{
+			GLint loc = glGetUniformLocation(sid, name.c_str());
+			if (loc == -1)
+				RX_WARN("Failed to locate '%s' in shader.", name);
+			return loc;
+		};
+	
 	glUseProgram(g.m_ShaderProgramID);
+	glUniformMatrix4fv(GetUniformLocation("uViewMatrix"), 1, GL_FALSE, &glm::value_ptr(mainCamera.GetViewMatrix())[0]);
+	glUniformMatrix4fv(GetUniformLocation("uProjMatrix"), 1, GL_FALSE, &glm::value_ptr(mainCamera.GetProjMatrix())[0]);
+
 	if (false)
 	{
 		glBindVertexArray(tVAO);

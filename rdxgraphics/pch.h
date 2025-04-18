@@ -53,8 +53,14 @@
 #include <GLFW/glfw3native.h>
 
 // GLM
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
+#include <glm/trigonometric.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/euler_angles.hpp>
+#include <glm/gtx/transform.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 // BS_thread_pool
 #include <BS_thread_pool.hpp>
