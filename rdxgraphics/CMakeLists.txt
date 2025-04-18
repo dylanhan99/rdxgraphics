@@ -16,6 +16,16 @@ endif()
 target_compile_definitions("${PROJECT_NAME}" 
 	PUBLIC GLFW_INCLUDE_NONE=1
 ) 
+if (RX_IS_IDE_BUILD)
+	target_compile_definitions("${PROJECT_NAME}" 
+		PRIVATE RX_IS_IDE
+		PRIVATE RX_WORKING_DIR="${CMAKE_SOURCE_DIR}"
+	)
+else()
+	#target_compile_definitions("${PROJECT_NAME}" 
+	#)
+endif()
+
 target_include_directories("${PROJECT_NAME}" 
 	PUBLIC "${PROJECT_SOURCE_DIR}/${PROJECT_NAME}"
 	#INTERFACE "${BS_thread_pool_SOURCE_DIR}/include"

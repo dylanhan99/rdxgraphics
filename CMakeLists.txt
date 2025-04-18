@@ -1,6 +1,8 @@
 ﻿cmake_minimum_required(VERSION 3.8)
 find_package(Python3 REQUIRED)
 
+option(RX_IS_IDE_BUILD "Enable IDE debugger-specific settings" ON)
+
 project(rdxgraphics)
 
 set(CMAKE_CXX_STANDARD 20)
