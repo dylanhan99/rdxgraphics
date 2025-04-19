@@ -86,12 +86,18 @@ void GLFWWindow::ToggleMinMaxWindow()
 		glfwMaximizeWindow(g.m_pWindow);
 }
 
+void GLFWWindow::CenterCursor()
+{
+	glm::vec2 winDims = (glm::vec2)GetWindowDims();
+	glfwSetCursorPos(g.m_pWindow, (int)(winDims.x * 0.5f), (int)(winDims.y * 0.5f));
+}
+
 void GLFWWindow::RegisterCallbacks()
 {
 	glfwSetWindowPosCallback(g.m_pWindow,
 		[](GLFWwindow*, int xpos, int ypos)
 		{
-			Input::WindowPosCallback(xpos, ypos);
+			//Input::WindowPosCallback(xpos, ypos);
 		});
 
 	glfwSetWindowSizeCallback(g.m_pWindow,

@@ -5,8 +5,6 @@ RX_SINGLETON_EXPLICIT(Input)
 
 void Input::Init()
 {
-	EventDispatcher<int, int>::RegisterEvent(RX_EVENT_WINDOW_RESIZE, Input::WindowSizeCallback);
-	EventDispatcher<int, int>::RegisterEvent(RX_EVENT_CURSOR_POS_CALLBACK, Input::CursorPosCallback);
 }
 
 void Input::SwapKeys()
@@ -33,25 +31,6 @@ void Input::ButtonCallback(int btn, int action)
 
 	g.m_ButtonsPrev[btn] = g.m_Buttons[btn];
 	g.m_Buttons[btn] = action;
-}
-
-void Input::CursorPosCallback(int xpos, int ypos)
-{
-	g.m_CursorPos.x = xpos;
-	g.m_CursorPos.y = ypos;
-
-}
-
-void Input::WindowPosCallback(int xpos, int ypos)
-{
-	g.m_WindowPos.x = xpos;
-	g.m_WindowPos.y = ypos;
-}
-
-void Input::WindowSizeCallback(int width, int height)
-{
-	g.m_WindowDims.x = width;
-	g.m_WindowDims.y = height;
 }
 
 bool Input::IsKeyTriggered(unsigned int key)

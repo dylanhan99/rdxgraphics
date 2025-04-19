@@ -5,6 +5,10 @@
 #include "GLFWWindow/GLFWWindow.h"
 #include "Rendering/RenderSystem.h"
 
+#include "Rendering/Camera.h"
+
+Camera mainCamera{ { 0.f,0.f,0.f }, { 0.f,glm::pi<float>(),0.f }, { 16.f, 9.f }, 90.f };
+
 void RDX::Run()
 {
 	Logger::Init();
@@ -50,9 +54,31 @@ void RDX::Run()
 		if (Input::IsKeyTriggered(GLFW_KEY_F5))
 			RenderSystem::ReloadShaders();
 
+		if (Input::IsKeyTriggered(GLFW_KEY_TAB))
+		{
+			bool& b = mainCamera.IsCameraInUserControl();
+			b = !b;
+
+			EventDispatcher<Camera&>::FireEvent(RX_EVENT_CAMERA_USER_TOGGLED, mainCamera);
+		}
+
+		if (mainCamera.IsCameraInUserControl())
+			mainCamera.Inputs();
+
 		{ // ImGui update
 			ImGui::Begin("Hi", nullptr, 0);
 			{
+				glm::vec3 camPos{}, camFace{};
+				camPos = mainCamera.GetPosition();
+				camFace = mainCamera.GetEulerOrientation();
+
+				ImGui::Text("Cam [Pos]|X:% -4.1f |Y:% -4.1f |Z:% -4.1f", camPos.x, camPos.y, camPos.z);
+				ImGui::Text("    [Dir]|X:% -4.1f |Y:% -4.1f |Z:% -4.1f", camFace.x, camFace.y, camFace.z);
+
+				if (ImGui::Checkbox("CameraToggled", &mainCamera.IsCameraInUserControl()))
+				{
+					EventDispatcher<Camera&>::FireEvent(RX_EVENT_CAMERA_USER_TOGGLED, mainCamera);
+				}
 				ImGui::ColorEdit3("Back Buffer Color", glm::value_ptr(RenderSystem::GetBackBufferColor()));
 			}
 			ImGui::End();

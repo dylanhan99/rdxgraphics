@@ -15,7 +15,7 @@ unsigned int qEBO;
 
 namespace fs = std::filesystem;
 
-Camera mainCamera{ {0.f,0.f,0.f}, {0.f,0.f,-1.f}, {16.f, 9.f}, 90.f };
+extern Camera mainCamera;
 
 bool RenderSystem::Init()
 {
@@ -40,6 +40,14 @@ bool RenderSystem::Init()
 
 	CreateShapes();
 
+	//
+	EventDispatcher<Camera&>::RegisterEvent(RX_EVENT_CAMERA_USER_TOGGLED,
+		[](Camera& camera)
+		{
+			GLFWWindow::SetInvisibleCursor(camera.IsCameraInUserControl());
+		});
+	//
+
 	return true;
 }
 
@@ -59,8 +67,6 @@ void RenderSystem::Terminate()
 void RenderSystem::Update(double dt)
 {
 	RX_UNREF_PARAM(dt);
-
-	mainCamera.Inputs();
 
 	glClearColor(g.m_BackColor.x, g.m_BackColor.y, g.m_BackColor.z, 1.f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
