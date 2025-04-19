@@ -68,22 +68,39 @@ void RDX::Run()
 		{ // ImGui update
 			ImGui::Begin("Hi", nullptr, 0);
 			{
-				glm::vec3 camPos{}, camFace{};
-				camPos = mainCamera.GetPosition();
-				camFace = mainCamera.GetEulerOrientation();
-
-				ImGui::Text("Cam [Pos]|X:% -4.1f |Y:% -4.1f |Z:% -4.1f", camPos.x, camPos.y, camPos.z);
-				ImGui::Text("    [Dir]|X:% -4.1f |Y:% -4.1f |Z:% -4.1f", camFace.x, camFace.y, camFace.z);
-
-				if (ImGui::Checkbox("CameraToggled", &mainCamera.IsCameraInUserControl()))
-				{
-					EventDispatcher<Camera&>::FireEvent(RX_EVENT_CAMERA_USER_TOGGLED, mainCamera);
-				}
 				ImGui::ColorEdit3("Back Buffer Color", glm::value_ptr(RenderSystem::GetBackBufferColor()));
+
+				if (ImGui::TreeNode("Camera Settings"))
+				{
+					Camera& cam = mainCamera;
+					glm::vec3 camPos{}, camFace{};
+					camPos = cam.GetPosition();
+					camFace = cam.GetEulerOrientation();
+
+					ImGui::Text("Cam [Pos]|X:% -4.1f |Y:% -4.1f |Z:% -4.1f", camPos.x, camPos.y, camPos.z);
+					ImGui::Text("    [Dir]|X:% -4.1f |Y:% -4.1f |Z:% -4.1f", camFace.x, camFace.y, camFace.z);
+					if (ImGui::Checkbox("CameraToggled", &cam.IsCameraInUserControl()))
+						EventDispatcher<Camera&>::FireEvent(RX_EVENT_CAMERA_USER_TOGGLED, cam);
+
+					if (ImGui::TreeNode("Advanced"))
+					{
+						ImGui::DragFloat("FOV", &cam.GetFOV(), 1.f, 0.f, 105.f, "%.0f");
+						ImGui::DragFloat2("Near/Far", glm::value_ptr(cam.GetClipPlanes()), 1.f, 0.f, std::numeric_limits<float>::max(), "%.0f");
+						ImGui::DragFloat("Camera Speed", &cam.GetMovementSpeed(), 0.1f, 0.f, std::numeric_limits<float>::max(), "%.1f");
+						ImGui::DragFloat("Pitch Speed", &cam.GetPitchSpeed(), 0.1f, 0.f, std::numeric_limits<float>::max(), "%.1f");
+						ImGui::DragFloat("Yaw Speed", &cam.GetYawSpeed(), 0.1f, 0.f, std::numeric_limits<float>::max(), "%.1f");
+
+						ImGui::TreePop();
+					}
+
+					ImGui::TreePop();
+				}
 			}
 			ImGui::End();
 			ImGui::Render();
 		}
+
+		mainCamera.UpdateCameraVectors();
 
 		// Render
 		{

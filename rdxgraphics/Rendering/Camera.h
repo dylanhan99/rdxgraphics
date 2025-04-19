@@ -18,7 +18,7 @@ public:
 	);
 
 	void UpdateCameraVectors();
-	void Inputs();
+	void Inputs(float dt = 1.f);
 
 	inline glm::mat4 const& GetViewMatrix() const { return m_ViewMatrix; }
 	inline glm::mat4 const& GetProjMatrix() const { return m_ProjectionMatrix; }
@@ -26,6 +26,12 @@ public:
 	inline glm::vec3& GetEulerOrientation() { return m_EulerOrientation; }
 	inline glm::vec3 const& GetPosition() const { return m_Position; }
 	inline glm::vec3& GetPosition() { return m_Position; }
+
+	inline float& GetFOV() { return m_FOV; }
+	inline glm::vec2& GetClipPlanes() { return m_Clip; }
+	inline float& GetMovementSpeed() { return m_MovementSpeed; }
+	inline float& GetPitchSpeed() { return m_PitchSpeed; }
+	inline float& GetYawSpeed() { return m_YawSpeed; }
 
 	inline bool IsCameraInUserControl() const { return m_CameraInUserControl; }
 	inline bool& IsCameraInUserControl() { return m_CameraInUserControl; }
@@ -45,6 +51,7 @@ private:
 	float m_MovementSpeed{ 1.f };
 	float m_PitchSpeed{ 1.f };
 	float m_YawSpeed{ 1.f };
+	float m_ZoomSpeed{ 0.1f }; // Scrolling scale factor. Meant for finer fwd/bwd movement
 
 	Mode m_CameraMode{};
 

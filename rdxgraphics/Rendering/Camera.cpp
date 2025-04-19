@@ -12,6 +12,19 @@ Camera::Camera(
 	m_AspectRatio(aspect.s / aspect.t), m_FOV(fov), m_CameraMode(camMode)
 {
 	UpdateCameraVectors();
+
+	EventDispatcher<double, double>::RegisterEvent(RX_EVENT_SCROLL_CALLBACK,
+		[&](double, double yoffset)
+		{
+			if (!IsCameraInUserControl())
+				return;
+
+			float moveSpeed = m_ZoomSpeed;
+			if (Input::IsKeyDown(GLFW_KEY_LEFT_CONTROL))
+				moveSpeed *= 2.f;
+
+			m_Position += ((float)yoffset * moveSpeed) * glm::vec3{ m_Front.x, 0.f, m_Front.z };
+		});
 }
 
 void Camera::UpdateCameraVectors()
@@ -53,38 +66,37 @@ void Camera::UpdateCameraVectors()
 	}
 }
 
-void Camera::Inputs()
+void Camera::Inputs(float dt)
 {
 	// Speed modifiers
+	float moveSpeed = m_MovementSpeed * dt;
 	if (Input::IsKeyDown(GLFW_KEY_LEFT_CONTROL))
-		m_MovementSpeed = 0.4f;
-	else if (Input::IsKeyUp(GLFW_KEY_LEFT_CONTROL))
-		m_MovementSpeed = 0.1f;
+		moveSpeed *= 2.f;
 
 	if (Input::IsKeyDown(GLFW_KEY_W))
-		m_Position += m_MovementSpeed * glm::vec3{ m_Front.x, 0.f, m_Front.z };
+		m_Position += moveSpeed * glm::vec3{ m_Front.x, 0.f, m_Front.z };
 	if (Input::IsKeyDown(GLFW_KEY_S))
-		m_Position -= m_MovementSpeed * glm::vec3{ m_Front.x, 0.f, m_Front.z };
+		m_Position -= moveSpeed * glm::vec3{ m_Front.x, 0.f, m_Front.z };
 	if (Input::IsKeyDown(GLFW_KEY_D))
-		m_Position += m_MovementSpeed * glm::normalize(glm::cross(m_Front, m_WorldUp));
+		m_Position += moveSpeed * glm::normalize(glm::cross(m_Front, m_WorldUp));
 	if (Input::IsKeyDown(GLFW_KEY_A))
-		m_Position -= m_MovementSpeed * glm::normalize(glm::cross(m_Front, m_WorldUp));
+		m_Position -= moveSpeed * glm::normalize(glm::cross(m_Front, m_WorldUp));
 
 	if (Input::IsKeyDown(GLFW_KEY_SPACE))
-		m_Position += m_MovementSpeed * m_WorldUp;
+		m_Position += moveSpeed * m_WorldUp;
 	if (Input::IsKeyDown(GLFW_KEY_LEFT_SHIFT))
-		m_Position += m_MovementSpeed * -m_WorldUp;
+		m_Position += moveSpeed * -m_WorldUp;
 
-	glm::vec2 cursorPos = (glm::vec2)GLFWWindow::GetCursorPos();
+	// Scroll controls, see ctor. Registered to scroll event.
+
+	glm::vec2 cursorPos  = (glm::vec2)GLFWWindow::GetCursorPos();
 	glm::vec2 windowDims = (glm::vec2)GLFWWindow::GetWindowDims();
 
-	float pitch = windowDims.y ? m_YawSpeed   * ((windowDims.y * 0.5f - cursorPos.y) / windowDims.y) : 0.f;
-	float yaw	= windowDims.x ? m_PitchSpeed * ((cursorPos.x - windowDims.x * 0.5f) / windowDims.x) : 0.f;
+	float pitch = windowDims.y ? dt * m_YawSpeed   * ((windowDims.y * 0.5f - cursorPos.y) / windowDims.y) : 0.f;
+	float yaw	= windowDims.x ? dt * m_PitchSpeed * ((cursorPos.x - windowDims.x * 0.5f) / windowDims.x) : 0.f;
 
 	m_EulerOrientation.x += pitch;
 	m_EulerOrientation.y += yaw;
 
 	GLFWWindow::CenterCursor();
-
-	UpdateCameraVectors();
 }
