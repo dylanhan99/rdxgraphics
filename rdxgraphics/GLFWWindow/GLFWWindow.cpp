@@ -52,7 +52,7 @@ bool GLFWWindow::Init()
 	glfwSetInputMode(g.m_pWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
 	glfwMakeContextCurrent(g.m_pWindow);
-	glfwSwapInterval(1); // Enable vsync
+	SetIsVSync(false); // Disable vsync
 
 	Input::Init();
 	RegisterCallbacks();

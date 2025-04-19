@@ -92,8 +92,8 @@ void Camera::Inputs(float dt)
 	glm::vec2 cursorPos  = (glm::vec2)GLFWWindow::GetCursorPos();
 	glm::vec2 windowDims = (glm::vec2)GLFWWindow::GetWindowDims();
 
-	float pitch = windowDims.y ? dt * m_YawSpeed   * ((windowDims.y * 0.5f - cursorPos.y) / windowDims.y) : 0.f;
-	float yaw	= windowDims.x ? dt * m_PitchSpeed * ((cursorPos.x - windowDims.x * 0.5f) / windowDims.x) : 0.f;
+	float pitch = windowDims.y ? m_YawSpeed   * ((windowDims.y * 0.5f - cursorPos.y) / windowDims.y) : 0.f;
+	float yaw	= windowDims.x ? m_PitchSpeed * ((cursorPos.x - windowDims.x * 0.5f) / windowDims.x) : 0.f;
 
 	m_EulerOrientation.x += pitch;
 	m_EulerOrientation.y += yaw;

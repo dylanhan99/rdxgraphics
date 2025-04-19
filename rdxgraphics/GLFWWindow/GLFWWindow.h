@@ -10,6 +10,7 @@ public:
 	static void EndFrame();
 
 	static void ToggleMinMaxWindow();
+	static void SetWindowTitle(std::string const& title) { glfwSetWindowTitle(g.m_pWindow, title.c_str()); }
 	static void CenterCursor();
 	inline static void SetInvisibleCursor(bool b) { glfwSetInputMode(g.m_pWindow, GLFW_CURSOR, b ? GLFW_CURSOR_HIDDEN : GLFW_CURSOR_NORMAL); }
 
@@ -31,10 +32,15 @@ public:
 	inline static int GetWindowDimsX() { return GetWindowDims().x; }
 	inline static int GetWindowDimsY() { return GetWindowDims().y; }
 
+	inline static void SetIsVSync(bool b) { g.m_IsVSync = b; glfwSwapInterval((int)b); }
+	inline static bool& IsVSync() { return g.m_IsVSync; }
+
 private:
 	static void RegisterCallbacks();
 
 private:
 	GLFWwindow* m_pWindow{ nullptr };
 	HWND m_pWindowHandle{};
+
+	bool m_IsVSync{ false };
 };
