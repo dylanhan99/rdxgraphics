@@ -10,7 +10,7 @@
 
 Camera mainCamera{ { 0.f,0.f,0.f }, { 0.f,glm::pi<float>(),0.f }, { 16.f, 9.f }, 90.f };
 extern float move;
-extern bool triangles;
+extern int renderOption;
 
 void RDX::Run()
 {
@@ -82,7 +82,9 @@ void RDX::Run()
 					ImGui::Begin("dxd", nullptr, 0);
 					{
 						ImGui::DragFloat("move", &move);
-						ImGui::Checkbox("triangles", &triangles);
+						ImGui::RadioButton("Mesh", &renderOption, 0); ImGui::SameLine();
+						ImGui::RadioButton("Wire", &renderOption, 1); ImGui::SameLine();
+						ImGui::RadioButton("Both", &renderOption, 2);
 
 						static int s_FPSIndex = 0; // Defaults at 30
 						static std::array<const char*, 6> s_FPSs{ "30", "60", "120", "144", "240", "No Lim." };

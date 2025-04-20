@@ -19,7 +19,7 @@ extern Camera mainCamera;
 
 Object cubeObject{};
 float move = 0.f;
-bool triangles = true;
+int renderOption = 2;
 
 bool RenderSystem::Init()
 {
@@ -34,8 +34,8 @@ bool RenderSystem::Init()
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 
-	//glEnable(GL_CULL_FACE);
-	//glCullFace(GL_BACK);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -89,33 +89,58 @@ void RenderSystem::Update(double dt)
 	glUseProgram(g.m_ShaderProgramID);
 	glUniformMatrix4fv(GetUniformLocation("uViewMatrix"), 1, GL_FALSE, &glm::value_ptr(mainCamera.GetViewMatrix())[0]);
 	glUniformMatrix4fv(GetUniformLocation("uProjMatrix"), 1, GL_FALSE, &glm::value_ptr(mainCamera.GetProjMatrix())[0]);
+	glUniform3fv(GetUniformLocation("uWireframeColor"), 1, glm::value_ptr(glm::vec3{ 0.f,1.f,0.f }));
 
-	//if (false)
-	//{
-	//	glBindVertexArray(tVAO);
-	//	glDrawArrays(GL_TRIANGLES, 0, 3);
-	//}
-	//else
-	//{
-	//	glBindVertexArray(qVAO);
-	//	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-	//}
 
+	// Bind instance xform data to the dynamic buffer
 	glBindBuffer(GL_ARRAY_BUFFER, cubeObject.m_VBOs[(size_t)Object::VertexAttrib::Xform_Inst]);
 	auto& data = cubeObject.m_Xforms;
 	glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(glm::mat4), data.data(), GL_DYNAMIC_DRAW);
 
+	// Bind relevant VAO
 	glBindVertexArray(cubeObject.m_VAO);
-	glDrawElementsInstanced(
-		triangles ? GL_TRIANGLES : GL_LINE_LOOP,
-		cubeObject.m_Indices.size(),
-		GL_UNSIGNED_INT,
-		nullptr,
-		data.size() // Actual count of live instances
-	);
+
+	if (renderOption == 0 || renderOption == 2)
+	{
+		glUniform1i(GetUniformLocation("uIsWireframe"), 0);
+		// First pass: Draw actual filled mesh
+		{
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			glDrawElementsInstanced(
+				GL_TRIANGLES,
+				cubeObject.m_Indices.size(),
+				GL_UNSIGNED_INT,
+				nullptr,
+				data.size() // Actual count of live instances
+			);
+		}
+	}
+
+	if (renderOption == 1 || renderOption == 2)
+	{
+		glUniform1i(GetUniformLocation("uIsWireframe"), 1);
+		// Second pass: Draw wireframe overlay
+		{
+			glEnable(GL_POLYGON_OFFSET_LINE);
+			glPolygonOffset(-1.f, -1.f);
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+			glEnable(GL_LINE_SMOOTH);
+			glLineWidth(1.f);
+			glDrawElementsInstanced(
+				GL_TRIANGLES,
+				cubeObject.m_Indices.size(),
+				GL_UNSIGNED_INT,
+				nullptr,
+				data.size() // Actual count of live instances
+			);
+
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);  // Restore state
+			glDisable(GL_POLYGON_OFFSET_LINE);
+		}
+	}
 
 	data.clear();
-
 	glBindVertexArray(0);
 }
 
