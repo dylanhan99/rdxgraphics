@@ -73,6 +73,7 @@ void RenderSystem::Update(double dt)
 	RX_UNREF_PARAM(dt);
 
 	cubeObject.Submit(glm::translate(glm::vec3(move))); // Submit 1;
+	cubeObject.Submit(glm::translate(glm::vec3(move * 2.f))); // Submit 1;
 
 	glClearColor(g.m_BackColor.x, g.m_BackColor.y, g.m_BackColor.z, 1.f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -232,10 +233,11 @@ void RenderSystem::CreateShapes()
 			glBindBuffer(GL_ARRAY_BUFFER, attrib);
 			auto& data = cubeObject.m_Xforms;
 			glBufferData(GL_ARRAY_BUFFER, /*maxExpectedInstances*/1000 * sizeof(glm::mat4), nullptr, GL_DYNAMIC_DRAW);
-			for (GLuint i = (GLuint)attribI; i < 4; ++i) {
-				glEnableVertexAttribArray(i);
-				glVertexAttribPointer(i, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4) * i));
-				glVertexAttribDivisor(i, 1); // Advance per instance
+			for (GLuint i = 0; i < 4; ++i) {
+				GLuint id = (GLuint)attribI + i;
+				glEnableVertexAttribArray(id);
+				glVertexAttribPointer(id, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4) * i));
+				glVertexAttribDivisor(id, 1); // Advance per instance
 			}
 		}
 
