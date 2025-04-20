@@ -9,6 +9,8 @@
 #include "Utils/FramerateController.h"
 
 Camera mainCamera{ { 0.f,0.f,0.f }, { 0.f,glm::pi<float>(),0.f }, { 16.f, 9.f }, 90.f };
+extern float move;
+extern bool triangles;
 
 void RDX::Run()
 {
@@ -79,6 +81,9 @@ void RDX::Run()
 
 					ImGui::Begin("dxd", nullptr, 0);
 					{
+						ImGui::DragFloat("move", &move);
+						ImGui::Checkbox("triangles", &triangles);
+
 						static int s_FPSIndex = 0; // Defaults at 30
 						static std::array<const char*, 6> s_FPSs{ "30", "60", "120", "144", "240", "No Lim." };
 						static std::array<uint32_t, 6> s_FPSsNum{ 30, 60, 120, 144, 240, std::numeric_limits<uint32_t>::max() };
