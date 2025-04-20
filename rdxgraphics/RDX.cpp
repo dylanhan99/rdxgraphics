@@ -8,7 +8,7 @@
 #include "Rendering/Camera.h"
 #include "Utils/FramerateController.h"
 
-Camera mainCamera{ { 0.f,0.f,0.f }, { 0.f,glm::pi<float>(),0.f }, { 16.f, 9.f }, 90.f };
+Camera mainCamera{ { 0.f,0.f,0.f }, { 0.f,-glm::half_pi<float>(),0.f }, { 16.f, 9.f }, 90.f };
 extern float move;
 extern int renderOption;
 

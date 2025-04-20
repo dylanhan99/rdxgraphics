@@ -31,6 +31,8 @@ bool RenderSystem::Init()
 
 	RX_INFO("GL Version: {}", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
 
+	glFrontFace(GL_CCW);
+
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 
@@ -218,21 +220,21 @@ void RenderSystem::CreateShapes()
 		cubeObject.m_Indices = std::vector<GLuint>{
 			0, 1, 2, 2, 3, 0, // Front face
 			4, 5, 6, 6, 7, 4, // Back face
-			0, 1, 5, 5, 4, 0, // Bottom face
-			2, 3, 7, 7, 6, 2, // Top face
-			0, 3, 7, 7, 4, 0, // Left face
-			1, 2, 6, 6, 5, 1  // Right face
+			6, 5, 2, 2, 1, 6, // Bottom face
+			0, 3, 4, 4, 7, 0, // Top face
+			7, 6, 1, 1, 0, 7, // Left face
+			3, 2, 5, 5, 4, 3  // Right face
 		};
 
 		cubeObject.m_Positions = std::vector<glm::vec3>{
-			{ -0.5f, -0.5f, -0.5f },
-			{  0.5f, -0.5f, -0.5f },
-			{  0.5f,  0.5f, -0.5f },
-			{ -0.5f,  0.5f, -0.5f },
+			{ -0.5f,  0.5f,  0.5f },
 			{ -0.5f, -0.5f,  0.5f },
 			{  0.5f, -0.5f,  0.5f },
 			{  0.5f,  0.5f,  0.5f },
-			{ -0.5f,  0.5f,  0.5f }
+			{  0.5f,  0.5f, -0.5f },
+			{  0.5f, -0.5f, -0.5f },
+			{ -0.5f, -0.5f, -0.5f },
+			{ -0.5f,  0.5f, -0.5f },
 		};
 
 		glGenVertexArrays(1, &cubeObject.m_VAO);
