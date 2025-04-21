@@ -17,7 +17,6 @@ namespace fs = std::filesystem;
 
 extern Camera mainCamera;
 
-Object cubeObject{};
 float move = 0.f;
 int renderOption = 2;
 
@@ -35,9 +34,6 @@ bool RenderSystem::Init()
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
-
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -74,6 +70,8 @@ void RenderSystem::Update(double dt)
 {
 	RX_UNREF_PARAM(dt);
 
+	Object& cubeObject = GetObjekt(Shape::Cube);
+
 	cubeObject.Submit(glm::translate(glm::vec3(move))); // Submit 1;
 	cubeObject.Submit(glm::translate(glm::vec3(move * 2.f))); // Submit 1;
 
@@ -93,18 +91,19 @@ void RenderSystem::Update(double dt)
 	glUniformMatrix4fv(GetUniformLocation("uProjMatrix"), 1, GL_FALSE, &glm::value_ptr(mainCamera.GetProjMatrix())[0]);
 	glUniform3fv(GetUniformLocation("uWireframeColor"), 1, glm::value_ptr(glm::vec3{ 0.f,1.f,0.f }));
 
-
-	// Bind instance xform data to the dynamic buffer
-	glBindBuffer(GL_ARRAY_BUFFER, cubeObject.m_VBOs[(size_t)Object::VertexAttrib::Xform_Inst]);
+	cubeObject.BindInstancedData();
 	auto& data = cubeObject.m_Xforms;
-	glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(glm::mat4), data.data(), GL_DYNAMIC_DRAW);
 
 	// Bind relevant VAO
 	glBindVertexArray(cubeObject.m_VAO);
 
 	if (renderOption == 0 || renderOption == 2)
 	{
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
+
 		glUniform1i(GetUniformLocation("uIsWireframe"), 0);
+
 		// First pass: Draw actual filled mesh
 		{
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -120,6 +119,8 @@ void RenderSystem::Update(double dt)
 
 	if (renderOption == 1 || renderOption == 2)
 	{
+		glDisable(GL_CULL_FACE);
+
 		glUniform1i(GetUniformLocation("uIsWireframe"), 1);
 		// Second pass: Draw wireframe overlay
 		{
@@ -216,17 +217,17 @@ bool RenderSystem::ReloadShaders()
 
 void RenderSystem::CreateShapes()
 {
-	{
-		cubeObject.m_Indices = std::vector<GLuint>{
+	Object::MakeObject(
+		GetObjekt(Shape::Cube),
+		std::vector<GLuint>{
 			0, 1, 2, 2, 3, 0, // Front face
 			4, 5, 6, 6, 7, 4, // Back face
 			6, 5, 2, 2, 1, 6, // Bottom face
 			0, 3, 4, 4, 7, 0, // Top face
 			7, 6, 1, 1, 0, 7, // Left face
 			3, 2, 5, 5, 4, 3  // Right face
-		};
-
-		cubeObject.m_Positions = std::vector<glm::vec3>{
+		},
+		std::vector<glm::vec3>{
 			{ -0.5f,  0.5f,  0.5f },
 			{ -0.5f, -0.5f,  0.5f },
 			{  0.5f, -0.5f,  0.5f },
@@ -234,106 +235,65 @@ void RenderSystem::CreateShapes()
 			{  0.5f,  0.5f, -0.5f },
 			{  0.5f, -0.5f, -0.5f },
 			{ -0.5f, -0.5f, -0.5f },
-			{ -0.5f,  0.5f, -0.5f },
-		};
+			{ -0.5f,  0.5f, -0.5f }
+		});
 
-		glGenVertexArrays(1, &cubeObject.m_VAO);
-		glBindVertexArray(cubeObject.m_VAO);
+	//{
+	//	float vertices[] = {
+	//	-0.5f, -0.5f, 0.0f,
+	//	 0.5f, -0.5f, 0.0f,
+	//	 0.0f,  0.5f, 0.0f
+	//	};
+	//
+	//	{
+	//		glGenVertexArrays(1, &tVAO);
+	//	}
+	//	{
+	//		glBindVertexArray(tVAO);
+	//
+	//		glGenBuffers(1, &tVBO);
+	//		glBindBuffer(GL_ARRAY_BUFFER, tVBO);
+	//		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	//
+	//		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	//		glEnableVertexAttribArray(0);
+	//	}
+	//
+	//	glBindVertexArray(0);
+	//}
+	//
+	//{
+	//	float vertices[] = {
+	//		 0.5f,  0.5f, 0.0f,  // top right
+	//		 0.5f, -0.5f, 0.0f,  // bottom right
+	//		-0.5f, -0.5f, 0.0f,  // bottom left
+	//		-0.5f,  0.5f, 0.0f   // top left 
+	//	};
+	//	unsigned int indices[] = {  // note that we start from 0!
+	//		0, 1, 3,   // first triangle
+	//		1, 2, 3    // second triangle
+	//	};
+	//
+	//	{
+	//		glGenVertexArrays(1, &qVAO);
+	//		glGenBuffers(1, &qVBO);
+	//		glGenBuffers(1, &qEBO);
+	//
+	//		glBindVertexArray(qVAO);
+	//
+	//		glBindBuffer(GL_ARRAY_BUFFER, qVBO);
+	//		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	//
+	//		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, qEBO);
+	//		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	//
+	//		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	//		glEnableVertexAttribArray(0);
+	//	}
+	//
+	//	glBindVertexArray(0);
+	//}
 
-		// Position buffer
-		{
-			size_t attribI = (size_t)Object::VertexAttrib::Position;
-			GLuint& attrib = cubeObject.m_VBOs[attribI];
-			glGenBuffers(1, &attrib);
-			glBindBuffer(GL_ARRAY_BUFFER, attrib);
-			auto& data = cubeObject.m_Positions;
-			glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(glm::vec3), data.data(), GL_STATIC_DRAW);
-			glEnableVertexAttribArray((GLuint)attribI);
-			glVertexAttribPointer((GLuint)attribI, 3, GL_FLOAT, GL_FALSE, 0, nullptr); // 3 x GL_FLOAT (glm::vec3)
-		}
-
-		// Xform buffer (Instanced)
-		{
-			size_t attribI = (size_t)Object::VertexAttrib::Xform_Inst;
-			GLuint& attrib = cubeObject.m_VBOs[attribI];
-			glGenBuffers(1, &attrib);
-			glBindBuffer(GL_ARRAY_BUFFER, attrib);
-			auto& data = cubeObject.m_Xforms;
-			glBufferData(GL_ARRAY_BUFFER, /*maxExpectedInstances*/1000 * sizeof(glm::mat4), nullptr, GL_DYNAMIC_DRAW);
-			for (GLuint i = 0; i < 4; ++i) {
-				GLuint id = (GLuint)attribI + i;
-				glEnableVertexAttribArray(id);
-				glVertexAttribPointer(id, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4) * i));
-				glVertexAttribDivisor(id, 1); // Advance per instance
-			}
-		}
-
-		// Index buffer
-		auto& indices = cubeObject.m_Indices;
-		glGenBuffers(1, &cubeObject.m_EBO);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeObject.m_EBO);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
-
-		// Done
-		glBindVertexArray(0);
-	}
-
-	{
-		float vertices[] = {
-		-0.5f, -0.5f, 0.0f,
-		 0.5f, -0.5f, 0.0f,
-		 0.0f,  0.5f, 0.0f
-		};
-
-		{
-			glGenVertexArrays(1, &tVAO);
-		}
-		{
-			glBindVertexArray(tVAO);
-
-			glGenBuffers(1, &tVBO);
-			glBindBuffer(GL_ARRAY_BUFFER, tVBO);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-			glEnableVertexAttribArray(0);
-		}
-	
-		glBindVertexArray(0);
-	}
-
-	{
-		float vertices[] = {
-			 0.5f,  0.5f, 0.0f,  // top right
-			 0.5f, -0.5f, 0.0f,  // bottom right
-			-0.5f, -0.5f, 0.0f,  // bottom left
-			-0.5f,  0.5f, 0.0f   // top left 
-		};
-		unsigned int indices[] = {  // note that we start from 0!
-			0, 1, 3,   // first triangle
-			1, 2, 3    // second triangle
-		};
-
-		{
-			glGenVertexArrays(1, &qVAO);
-			glGenBuffers(1, &qVBO);
-			glGenBuffers(1, &qEBO);
-
-			glBindVertexArray(qVAO);
-
-			glBindBuffer(GL_ARRAY_BUFFER, qVBO);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, qEBO);
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-			glEnableVertexAttribArray(0);
-		}
-	
-		glBindVertexArray(0);
-	}
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	//glBindBuffer(GL_ARRAY_BUFFER, 0);
+	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
