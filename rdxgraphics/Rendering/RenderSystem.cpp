@@ -5,14 +5,6 @@
 #include "Camera.h"
 
 RX_SINGLETON_EXPLICIT(RenderSystem);
-
-unsigned int tVAO;
-unsigned int tVBO;
-
-unsigned int qVAO;
-unsigned int qVBO;
-unsigned int qEBO;
-
 namespace fs = std::filesystem;
 
 extern Camera mainCamera;
@@ -55,13 +47,8 @@ bool RenderSystem::Init()
 
 void RenderSystem::Terminate()
 {
-	glDeleteVertexArrays(1, &tVAO);
-	glDeleteVertexArrays(1, &qVAO);
-
-	glDeleteBuffers(1, &tVBO);
-	glDeleteBuffers(1, &qVBO);
-
-	glDeleteBuffers(1, &qEBO);
+	for (Object& obj : g.m_Objects)
+		obj.Terminate();
 
 	glDeleteProgram(g.m_ShaderProgramID);
 }
@@ -108,7 +95,7 @@ void RenderSystem::Update(double dt)
 		{
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 			glDrawElementsInstanced(
-				GL_TRIANGLES,
+				cubeObject.m_Primitive,
 				cubeObject.m_Indices.size(),
 				GL_UNSIGNED_INT,
 				nullptr,
@@ -131,7 +118,7 @@ void RenderSystem::Update(double dt)
 			glEnable(GL_LINE_SMOOTH);
 			glLineWidth(1.f);
 			glDrawElementsInstanced(
-				GL_TRIANGLES,
+				cubeObject.m_Primitive,
 				cubeObject.m_Indices.size(),
 				GL_UNSIGNED_INT,
 				nullptr,
@@ -218,7 +205,7 @@ bool RenderSystem::ReloadShaders()
 void RenderSystem::CreateShapes()
 {
 	Object::MakeObject(
-		GetObjekt(Shape::Cube),
+		GetObjekt(Shape::Cube), GL_TRIANGLES,
 		std::vector<GLuint>{
 			0, 1, 2, 2, 3, 0, // Front face
 			4, 5, 6, 6, 7, 4, // Back face

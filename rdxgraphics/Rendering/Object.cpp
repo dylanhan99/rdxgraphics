@@ -1,9 +1,12 @@
 #include <pch.h>
 #include "Object.h"
 
-bool Object::MakeObject(Object& oObject, std::vector<GLuint> const& indices, 
+bool Object::MakeObject(Object& oObject, GLenum primitive, std::vector<GLuint> const& indices,
 	std::vector<Vertex::position_type> const& positions)
 {
+	oObject.Terminate();
+	oObject.m_Primitive = primitive;
+
 	glGenVertexArrays(1, &oObject.m_VAO);
 	glBindVertexArray(oObject.m_VAO);
 
@@ -58,6 +61,19 @@ bool Object::MakeObject(Object& oObject, std::vector<GLuint> const& indices,
 
 	glBindVertexArray(0);
 	return true;
+}
+
+void Object::Terminate()
+{
+	glDeleteVertexArrays(1, &m_VAO);
+	m_VAO = 0;
+	for (auto vbo : m_VBOs)
+	{
+		glDeleteBuffers(1, &vbo);
+		vbo = 0;
+	}
+	glDeleteBuffers(1, &m_EBO);
+	m_EBO = 0;
 }
 
 void Object::BindInstancedData()
