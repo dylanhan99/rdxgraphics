@@ -19,26 +19,6 @@ const std::filesystem::path g_WorkingDir{
 #endif
 };
 
-struct Vertex {
-	// *_inst attributes refer to per-instance attributes
-	enum class Attribute 
-	{ 
-		Position,
-
-		Xform_inst,
-
-		MAX
-	};
-
-	using position_type = glm::vec3;
-	using xform_type = glm::mat4;
-
-	position_type Position{};
-	//glm::vec3 Normal{};
-	// ...
-	xform_type Xform{};
-};
-
 enum class Shape
 {
 	Point,

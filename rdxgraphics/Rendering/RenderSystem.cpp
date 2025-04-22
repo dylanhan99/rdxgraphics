@@ -78,11 +78,7 @@ void RenderSystem::Update(double dt)
 	glUniformMatrix4fv(GetUniformLocation("uProjMatrix"), 1, GL_FALSE, &glm::value_ptr(mainCamera.GetProjMatrix())[0]);
 	glUniform3fv(GetUniformLocation("uWireframeColor"), 1, glm::value_ptr(glm::vec3{ 0.f,1.f,0.f }));
 
-	cubeObject.BindInstancedData();
 	auto& data = cubeObject.m_Xforms;
-
-	// Bind relevant VAO
-	glBindVertexArray(cubeObject.m_VAO);
 
 	if (renderOption == 0 || renderOption == 2)
 	{
@@ -91,44 +87,47 @@ void RenderSystem::Update(double dt)
 
 		glUniform1i(GetUniformLocation("uIsWireframe"), 0);
 
+		cubeObject.Bind();
 		// First pass: Draw actual filled mesh
 		{
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-			glDrawElementsInstanced(
-				cubeObject.m_Primitive,
-				cubeObject.m_Indices.size(),
-				GL_UNSIGNED_INT,
-				nullptr,
-				data.size() // Actual count of live instances
-			);
+			cubeObject.BindInstancedData();
+			cubeObject.Draw();
+			//glDrawElementsInstanced(
+			//	cubeObject.m_Primitive,
+			//	cubeObject.m_Indices.size(),
+			//	GL_UNSIGNED_INT,
+			//	nullptr,
+			//	data.size() // Actual count of live instances
+			//);
 		}
 	}
 
-	if (renderOption == 1 || renderOption == 2)
-	{
-		glDisable(GL_CULL_FACE);
-
-		glUniform1i(GetUniformLocation("uIsWireframe"), 1);
-		// Second pass: Draw wireframe overlay
-		{
-			glEnable(GL_POLYGON_OFFSET_LINE);
-			glPolygonOffset(-1.f, -1.f);
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-			glEnable(GL_LINE_SMOOTH);
-			glLineWidth(1.f);
-			glDrawElementsInstanced(
-				cubeObject.m_Primitive,
-				cubeObject.m_Indices.size(),
-				GL_UNSIGNED_INT,
-				nullptr,
-				data.size() // Actual count of live instances
-			);
-
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);  // Restore state
-			glDisable(GL_POLYGON_OFFSET_LINE);
-		}
-	}
+	//if (renderOption == 1 || renderOption == 2)
+	//{
+	//	glDisable(GL_CULL_FACE);
+	//
+	//	glUniform1i(GetUniformLocation("uIsWireframe"), 1);
+	//	// Second pass: Draw wireframe overlay
+	//	{
+	//		glEnable(GL_POLYGON_OFFSET_LINE);
+	//		glPolygonOffset(-1.f, -1.f);
+	//		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	//
+	//		glEnable(GL_LINE_SMOOTH);
+	//		glLineWidth(1.f);
+	//		glDrawElementsInstanced(
+	//			cubeObject.m_Primitive,
+	//			cubeObject.m_Indices.size(),
+	//			GL_UNSIGNED_INT,
+	//			nullptr,
+	//			data.size() // Actual count of live instances
+	//		);
+	//
+	//		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);  // Restore state
+	//		glDisable(GL_POLYGON_OFFSET_LINE);
+	//	}
+	//}
 
 	data.clear();
 	glBindVertexArray(0);
