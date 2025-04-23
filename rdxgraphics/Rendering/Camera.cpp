@@ -23,7 +23,7 @@ Camera::Camera(
 			if (Input::IsKeyDown(GLFW_KEY_LEFT_CONTROL))
 				moveSpeed *= 2.f;
 
-			m_Position += ((float)yoffset * moveSpeed) * glm::vec3{ m_Front.x, 0.f, m_Front.z };
+			m_Position += ((float)yoffset * moveSpeed) * m_Front;
 		});
 }
 
