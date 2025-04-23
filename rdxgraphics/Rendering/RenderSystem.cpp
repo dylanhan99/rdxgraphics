@@ -34,6 +34,11 @@ bool RenderSystem::Init()
 		{ ShaderType::Vertex,	"Assets/default.vert" },
 		{ ShaderType::Fragment, "Assets/default.frag" }
 		});
+	//g.m_Shader.Init({
+	//	{ ShaderType::Vertex,	"Assets/default_geo.vert" },
+	//	{ ShaderType::Fragment, "Assets/default_geo.frag" },
+	//	{ ShaderType::Geometry, "Assets/default_geo.geom" }
+	//	});
 
 	CreateShapes();
 
@@ -69,8 +74,7 @@ void RenderSystem::Update(double dt)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	g.m_Shader.Bind();
-	g.m_Shader.SetUniformMatrix4f("uViewMatrix", mainCamera.GetViewMatrix());
-	g.m_Shader.SetUniformMatrix4f("uProjMatrix", mainCamera.GetProjMatrix());
+	g.m_Shader.SetUniformMatrix4f("uProjViewMatrix", mainCamera.GetProjMatrix() * mainCamera.GetViewMatrix());
 	g.m_Shader.SetUniform3f("uWireframeColor", glm::vec3{ 0.f,1.f,0.f });
 
 	auto& data = cubeObject.GetVBData<Vertex::Xform>();
@@ -83,7 +87,6 @@ void RenderSystem::Update(double dt)
 
 		g.m_Shader.SetUniform1i("uIsWireframe", 0);
 		cubeObject.Bind();
-
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		for (size_t count{ 0 }, offset{ 0 }; offset < data.size(); offset += count)
