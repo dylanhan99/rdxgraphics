@@ -30,7 +30,10 @@ bool RenderSystem::Init()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	ReloadShaders();
+	g.m_Shader.Init({
+		{ ShaderType::Vertex,	"Assets/default.vert" },
+		{ ShaderType::Fragment, "Assets/default.frag" }
+		});
 
 	CreateShapes();
 
@@ -50,7 +53,7 @@ void RenderSystem::Terminate()
 	for (Object& obj : g.m_Objects)
 		obj.Terminate();
 
-	glDeleteProgram(g.m_ShaderProgramID);
+	g.m_Shader.Terminate();
 }
 
 void RenderSystem::Update(double dt)
@@ -65,49 +68,42 @@ void RenderSystem::Update(double dt)
 	glClearColor(g.m_BackColor.x, g.m_BackColor.y, g.m_BackColor.z, 1.f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	auto GetUniformLocation = [sid = g.m_ShaderProgramID](std::string const& name)->GLint
-		{
-			GLint loc = glGetUniformLocation(sid, name.c_str());
-			if (loc == -1)
-				RX_WARN("Failed to locate '%s' in shader.", name);
-			return loc;
-		};
-	
-	glUseProgram(g.m_ShaderProgramID);
-	glUniformMatrix4fv(GetUniformLocation("uViewMatrix"), 1, GL_FALSE, &glm::value_ptr(mainCamera.GetViewMatrix())[0]);
-	glUniformMatrix4fv(GetUniformLocation("uProjMatrix"), 1, GL_FALSE, &glm::value_ptr(mainCamera.GetProjMatrix())[0]);
-	glUniform3fv(GetUniformLocation("uWireframeColor"), 1, glm::value_ptr(glm::vec3{ 0.f,1.f,0.f }));
+	g.m_Shader.Bind();
+	g.m_Shader.SetUniformMatrix4f("uViewMatrix", mainCamera.GetViewMatrix());
+	g.m_Shader.SetUniformMatrix4f("uProjMatrix", mainCamera.GetProjMatrix());
+	g.m_Shader.SetUniform3f("uWireframeColor", glm::vec3{ 0.f,1.f,0.f });
 
-	auto& data = cubeObject.m_Xforms;
+	auto& data = cubeObject.GetVBData<Vertex::Xform>();
 
+	// First pass: Draw actual filled mesh
 	if (renderOption == 0 || renderOption == 2)
 	{
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 
-		glUniform1i(GetUniformLocation("uIsWireframe"), 0);
-
+		g.m_Shader.SetUniform1i("uIsWireframe", 0);
 		cubeObject.Bind();
-		// First pass: Draw actual filled mesh
+
+
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		for (size_t count{ 0 }, offset{ 0 }; offset < data.size(); offset += count)
 		{
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-			cubeObject.BindInstancedData();
-			cubeObject.Draw();
-			//glDrawElementsInstanced(
-			//	cubeObject.m_Primitive,
-			//	cubeObject.m_Indices.size(),
-			//	GL_UNSIGNED_INT,
-			//	nullptr,
-			//	data.size() // Actual count of live instances
-			//);
+			count = glm::min<size_t>(data.size() - offset, RX_MAX_INSTANCES);
+			cubeObject.BindInstancedData<Vertex::Xform>(offset, count);
+			cubeObject.Draw(count);
 		}
+		//for (size_t i = 0; i < data.size(); i += RX_MAX_INSTANCES)
+		//{
+		//	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		//	cubeObject.Draw();
+		//}
 	}
 
 	//if (renderOption == 1 || renderOption == 2)
 	//{
 	//	glDisable(GL_CULL_FACE);
 	//
-	//	glUniform1i(GetUniformLocation("uIsWireframe"), 1);
+	//	g.m_Shader.SetUniform1i("uIsWireframe", 0);
 	//	// Second pass: Draw wireframe overlay
 	//	{
 	//		glEnable(GL_POLYGON_OFFSET_LINE);
@@ -135,70 +131,7 @@ void RenderSystem::Update(double dt)
 
 bool RenderSystem::ReloadShaders()
 {
-	if (g.m_ShaderProgramID)
-	{
-		glDeleteProgram(g.m_ShaderProgramID);
-		g.m_ShaderProgramID = 0;
-	}
-
-	char infoLog[512]{};
-	auto readAndCompile = 
-		[&infoLog](GLint shaderType, fs::path const& shaderPath)
-		{
-			GLuint shaderID{ 0 };
-
-			std::ifstream ifs{ shaderPath };
-			if (!ifs)
-			{
-				RX_ERROR("Failed to read shader asset path: {}", shaderPath);
-				return 0u;
-			}
-
-			std::string shaderBuffer{ std::istreambuf_iterator<char>{ifs}, {} };
-			RX_DEBUG("{}\n{}", shaderPath, shaderBuffer);
-			const char* shaderBufferCstr = shaderBuffer.c_str();
-
-			shaderID = glCreateShader(shaderType);
-			glShaderSource(shaderID, 1, &shaderBufferCstr, nullptr);
-			glCompileShader(shaderID);
-
-			int success{};
-			glGetShaderiv(shaderID, GL_COMPILE_STATUS, &success);
-			if (!success)
-			{
-				glGetShaderInfoLog(shaderID, 512, nullptr, infoLog);
-				RX_ERROR(R"(Failed to compile shader "{}" - {})", shaderPath, infoLog);
-				return 0u;
-			}
-
-			return shaderID;
-		};
-
-	fs::path fpVert = g_WorkingDir; fpVert.append("Assets/default.vert");
-	fs::path fpFrag = g_WorkingDir; fpFrag.append("Assets/default.frag");
-
-	GLuint vertShader = readAndCompile(GL_VERTEX_SHADER, fpVert);
-	GLuint fragShader = readAndCompile(GL_FRAGMENT_SHADER, fpFrag);
-
-	int success = vertShader && fragShader;
-	if (success)
-	{
-		g.m_ShaderProgramID = glCreateProgram();
-		glAttachShader(g.m_ShaderProgramID, vertShader);
-		glAttachShader(g.m_ShaderProgramID, fragShader);
-		glLinkProgram(g.m_ShaderProgramID);
-
-		glGetProgramiv(g.m_ShaderProgramID, GL_LINK_STATUS, &success);
-		if (!success)
-		{
-			glGetProgramInfoLog(g.m_ShaderProgramID, 512, nullptr, infoLog);
-			RX_ERROR("Failed to link shader program - {}", infoLog);
-		}
-	}
-
-	glDeleteShader(vertShader);
-	glDeleteShader(fragShader);
-	return success;
+	return g.m_Shader.Reload();
 }
 
 void RenderSystem::CreateShapes()

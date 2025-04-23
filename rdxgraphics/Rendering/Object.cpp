@@ -56,11 +56,20 @@ bool Object::MakeObject(Object& oObject, GLenum primitive, std::vector<GLuint> c
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
 	}
 
-	oObject.m_Positions = positions;
+	//oObject.m_Positions = positions;
 	oObject.m_Indices = indices;
 
 	glBindVertexArray(0);
 	return true;
+}
+
+Object::Object()
+{
+	m_VBOs.resize(Vertex::Max()); 
+	m_VBData.clear();
+#define _RX_X(Klass) m_VBData.emplace_back(std::make_shared<Klass>());
+	RX_VERTEX_ATTRIBS
+#undef _RX_X
 }
 
 void Object::Terminate()
@@ -81,21 +90,32 @@ void Object::Bind()
 	glBindVertexArray(m_VAO);
 }
 
-void Object::BindInstancedData()
-{
-	// Bind instance xform data to the dynamic buffer
-	glBindBuffer(GL_ARRAY_BUFFER, m_VBOs[Vertex::Xform::ID]);
-	glBufferData(GL_ARRAY_BUFFER, m_Xforms.size() * sizeof(Vertex::Xform::value_type), m_Xforms.data(), GL_DYNAMIC_DRAW);
-	//m_Xforms.clear();
-}
+//void Object::BindInstancedData()
+//{
+//	// Bind instance xform data to the dynamic buffer
+//	glBindBuffer(GL_ARRAY_BUFFER, m_VBOs[Vertex::Xform::ID]);
+//	glBufferData(GL_ARRAY_BUFFER, m_Xforms.size() * sizeof(Vertex::Xform::value_type), m_Xforms.data(), GL_DYNAMIC_DRAW);
+//	//m_Xforms.clear();
+//}
 
-void Object::Draw()
+//void Object::Draw()
+//{
+//	glDrawElementsInstanced(
+//		m_Primitive,
+//		m_Indices.size(),
+//		GL_UNSIGNED_INT,
+//		nullptr,
+//		m_Xforms.size() // Actual count of live instances
+//	);
+//}
+
+void Object::Draw(size_t count)
 {
 	glDrawElementsInstanced(
 		m_Primitive,
 		m_Indices.size(),
 		GL_UNSIGNED_INT,
 		nullptr,
-		m_Xforms.size() // Actual count of live instances
+		count
 	);
 }

@@ -1,30 +1,33 @@
 #pragma once
 #define RX_MAX_INSTANCES 1000
 
+// This macro helps to automatically call another macro dubbed "_RX_X". 
+// It must meet the usecase
+#define RX_VERTEX_ATTRIBS	 \
+	_RX_X(Vertex::Position); \
+	_RX_X(Vertex::Xform);
+
 class Vertex {
 private:
-	inline static uint32_t _IdGen() { static uint32_t i{ 0 }; 
-	std::cout << i << "\n"; 
-	return i++; }
+	inline static uint32_t _IdGen() { static uint32_t i{ 0 }; return i++; }
 	template <typename T>
 	static uint32_t _IdGenTemp() { static uint32_t i = _IdGen(); return i; }
 
 public:
 	inline static uint32_t Max() { static uint32_t max = _IdGenTemp<Vertex>(); return max; }
-	inline Vertex()
-	{
-		std::cout << 'a';
-		std::cout << Vertex::Max();
-	}
-	class BaseAttribute {};
+
+	class BaseAttribute { public: virtual ~BaseAttribute() = default; };
 #define _RX_ADD_VERTEX(Klass, T, isInstanced, isNormalized)		\
 	class Klass : public BaseAttribute {						\
 		public:													\
 		using value_type = T;									\
+		using container_type = std::vector<T>;					\
 		inline static const uint32_t ID{ _IdGenTemp<T>() };		\
 		inline static const bool IsInstanced{ isInstanced };	\
 		inline static const bool IsNormalized{ isNormalized };	\
-		private: friend class Vertex; inline Klass() {ID;}		\
+		private: friend class Vertex; 							\
+		public: inline Klass() {ID;}							\
+		public: container_type Data{};							\
 	}; private: Klass _rx_hack_##Klass{}; public:
 	
 	_RX_ADD_VERTEX(Position, glm::vec3, false, false);
@@ -41,24 +44,34 @@ public:
 		std::vector<Vertex::Position::value_type> const& positions);
 
 public:
-	inline Object() { m_VBOs.resize(Vertex::Max()); }
+	Object();
 	void Terminate();
-	inline void Submit(glm::mat4 xform = glm::translate(glm::vec3(0.f))) { m_Xforms.emplace_back(std::move(xform)); }
+	inline void Submit(glm::mat4 xform = glm::translate(glm::vec3(0.f))) { GetVBData<Vertex::Xform>().emplace_back(std::move(xform)); }
 
 	void Bind();
-	void BindInstancedData();
+	//void BindInstancedData();
 
 	template <typename T> 
 	std::enable_if_t<std::is_base_of_v<Vertex::BaseAttribute, T>,
-		void> BindInstancedData(GLsizeiptr count, void* pData)
+		void> BindInstancedData(GLsizeiptr offset, GLsizeiptr count)
 	{
-		glBindBuffer(GL_ARRAY_BUFFER, m_VBOs[T::ID]);
-		glBufferData(GL_ARRAY_BUFFER, count * sizeof(T::value_type), pData, GL_DYNAMIC_DRAW);
+		GLuint vbo = GetVBO<T>();
+		typename T::container_type& pData = GetVBData<T>();
+
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		glBufferData(GL_ARRAY_BUFFER, count * sizeof(typename T::value_type), pData.data() + offset, GL_DYNAMIC_DRAW);
 	}
 
-	void Draw();
+	template <typename T>
+	GLuint GetVBO() { return m_VBOs[T::ID]; }
 
-	inline std::vector<glm::mat4>& GetXForms() { return m_Xforms; }
+	template <typename T>
+	typename T::container_type& GetVBData() { return std::dynamic_pointer_cast<T>(m_VBData[T::ID])->Data; }
+
+	//void Draw();
+	void Draw(size_t count);
+
+	//inline std::vector<glm::mat4>& GetXForms() { return m_Xforms; }
 
 public:
 	GLuint m_VAO{};
@@ -66,8 +79,8 @@ public:
 	GLuint m_EBO{};
 
 	GLenum m_Primitive{};
-
 	std::vector<GLuint> m_Indices{};
-	std::vector<Vertex::Position::value_type> m_Positions{};
-	std::vector<Vertex::Xform::value_type> m_Xforms{};
+	std::vector<std::shared_ptr<Vertex::BaseAttribute>> m_VBData{};
+	//std::vector<Vertex::Position::value_type> m_Positions{};
+	//std::vector<Vertex::Xform::value_type> m_Xforms{};
 };

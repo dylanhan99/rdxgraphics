@@ -1,5 +1,6 @@
 #pragma once
 #include "Object.h"
+#include "Shader.h"
 
 class RenderSystem : public BaseSingleton<RenderSystem>
 {
@@ -21,7 +22,8 @@ private:
 
 private:
 	glm::vec3 m_BackColor{ 0.2f, 0.3f, 0.3f };
-	GLuint m_ShaderProgramID{};
+	//GLuint m_ShaderProgramID{};
+	Shader m_Shader{};
 
 	std::array<Object, (size_t)Shape::MAX> m_Objects{};
 };
