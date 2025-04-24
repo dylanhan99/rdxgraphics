@@ -160,6 +160,15 @@ void RenderSystem::CreateShapes()
 			{ -0.5f,  0.5f, -0.5f }
 		});
 
+	
+	//Object<VertexBasic>::BeginObject()
+	Object<VertexFBO> fboQuad{};
+	fboQuad.BeginObject()
+		.PushIndices(indices)
+		.Push<VertexFBO::Position>(positions)
+		.Push<VertexFBO::TexCoords>(texCoords)
+		.EndObject();
+
 	//{
 	//	float vertices[] = {
 	//	-0.5f, -0.5f, 0.0f,
