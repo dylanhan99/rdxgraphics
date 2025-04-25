@@ -34,11 +34,11 @@ bool RenderSystem::Init()
 		{ ShaderType::Vertex,	"Assets/default.vert" },
 		{ ShaderType::Fragment, "Assets/default.frag" }
 		});
-	//g.m_Shader.Init({
-	//	{ ShaderType::Vertex,	"Assets/default_geo.vert" },
-	//	{ ShaderType::Fragment, "Assets/default_geo.frag" },
-	//	{ ShaderType::Geometry, "Assets/default_geo.geom" }
-	//	});
+	g.m_FBOShader.Init({
+		{ ShaderType::Vertex,	"Assets/default_geo.vert" },
+		{ ShaderType::Fragment, "Assets/default_geo.frag" },
+		{ ShaderType::Geometry, "Assets/default_geo.geom" }
+		});
 
 	CreateShapes();
 
@@ -102,6 +102,16 @@ void RenderSystem::Update(double dt)
 		//}
 	}
 
+	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
+	glDisable(GL_DEPTH_TEST); // (optional, just for debugging visibility)
+	glDisable(GL_BLEND);
+
+	g.m_FBOShader.Bind();
+	g.m_FBOShader.SetUniform3f("uWireframeColor", glm::vec3{ 0.f,1.f,0.f });
+	g.m_FBOObject.Bind();
+	g.m_FBOObject.Draw(1);
+
 	//if (renderOption == 1 || renderOption == 2)
 	//{
 	//	glDisable(GL_CULL_FACE);
@@ -139,39 +149,58 @@ bool RenderSystem::ReloadShaders()
 
 void RenderSystem::CreateShapes()
 {
-	std::vector<GLuint> indices{
-		0, 1, 2, 2, 3, 0, // Front face
-		4, 5, 6, 6, 7, 4, // Back face
-		6, 5, 2, 2, 1, 6, // Bottom face
-		0, 3, 4, 4, 7, 0, // Top face
-		7, 6, 1, 1, 0, 7, // Left face
-		3, 2, 5, 5, 4, 3  // Right face
-	};
-	std::vector<glm::vec3> positions{
-		{ -0.5f,  0.5f,  0.5f },
-		{ -0.5f, -0.5f,  0.5f },
-		{  0.5f, -0.5f,  0.5f },
-		{  0.5f,  0.5f,  0.5f },
-		{  0.5f,  0.5f, -0.5f },
-		{  0.5f, -0.5f, -0.5f },
-		{ -0.5f, -0.5f, -0.5f },
-		{ -0.5f,  0.5f, -0.5f }
-	};
+	{
+		std::vector<GLuint> indices{
+			0, 1, 2, 2, 3, 0, // Front face
+			4, 5, 6, 6, 7, 4, // Back face
+			6, 5, 2, 2, 1, 6, // Bottom face
+			0, 3, 4, 4, 7, 0, // Top face
+			7, 6, 1, 1, 0, 7, // Left face
+			3, 2, 5, 5, 4, 3  // Right face
+		};
+		std::vector<glm::vec3> positions{
+			{ -0.5f,  0.5f,  0.5f },
+			{ -0.5f, -0.5f,  0.5f },
+			{  0.5f, -0.5f,  0.5f },
+			{  0.5f,  0.5f,  0.5f },
+			{  0.5f,  0.5f, -0.5f },
+			{  0.5f, -0.5f, -0.5f },
+			{ -0.5f, -0.5f, -0.5f },
+			{ -0.5f,  0.5f, -0.5f }
+		};
 
-	Object<VertexBasic>& cubeObject = GetObjekt(Shape::Cube);
-	cubeObject.BeginObject(GL_TRIANGLES)
-		.PushIndices(indices)
-		.Push<VertexBasic::Position>(positions)
-		.Push<VertexBasic::Xform>(typename VertexBasic::Xform::container_type{})
-		.EndObject();
+		Object<VertexBasic>& cubeObject = GetObjekt(Shape::Cube);
+		cubeObject.BeginObject(GL_TRIANGLES)
+			.PushIndices(indices)
+			.Push<VertexBasic::Position>(positions)
+			.Push<VertexBasic::Xform>(typename VertexBasic::Xform::container_type{})
+			.EndObject();
+	}
 
-	//Object<VertexBasic>::BeginObject()
-	//Object<VertexFBO> fboQuad{};
-	//fboQuad.BeginObject(GL_TRIANGLES)
-	//	.PushIndices(indices)
-	//	.Push<VertexFBO::Position>(positions)
-	//	.Push<VertexFBO::TexCoords>(texCoords)
-	//	.EndObject();
+	{
+		std::vector<GLuint> indices {  // note that we start from 0!
+			0, 1, 2,   // first triangle
+			2, 3, 0    // second triangle
+		};
+		std::vector<glm::vec2> positions{
+			{ -1.0f,  1.0f },
+			{ -1.0f, -1.0f },
+			{  1.0f, -1.0f },
+			{  1.0f,  1.0f }
+		};
+		std::vector<glm::vec2> texCoords{
+			{ 0.f, 1.f },
+			{ 0.f, 0.f },
+			{ 1.f, 0.f },
+			{ 1.f, 1.f }
+		};
+
+		g.m_FBOObject.BeginObject(GL_TRIANGLES)
+			.PushIndices(indices)
+			.Push<VertexFBO::Position>(positions)
+			.Push<VertexFBO::TexCoords>(texCoords)
+			.EndObject();
+	}
 
 	//{
 	//	float vertices[] = {

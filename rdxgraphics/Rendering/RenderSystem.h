@@ -24,6 +24,8 @@ private:
 	glm::vec3 m_BackColor{ 0.2f, 0.3f, 0.3f };
 	//GLuint m_ShaderProgramID{};
 	Shader m_Shader{};
+	Shader m_FBOShader{};
 
 	std::array<Object<VertexBasic>, (size_t)Shape::MAX> m_Objects{};
+	Object<VertexFBO> m_FBOObject{};
 };
