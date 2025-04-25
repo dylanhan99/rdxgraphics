@@ -100,6 +100,9 @@ void RenderSystem::Update(double dt)
 	basePass.DrawThis(
 		[&]()
 		{
+			if (renderOption == 1)
+				return;
+
 			glClearColor(g.m_BackColor.x, g.m_BackColor.y, g.m_BackColor.z, 1.f);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -107,26 +110,17 @@ void RenderSystem::Update(double dt)
 			g.m_Shader.SetUniformMatrix4f("uProjViewMatrix", mainCamera.GetProjMatrix() * mainCamera.GetViewMatrix());
 			g.m_Shader.SetUniform1i("uIsWireframe", 0);
 
-			// First pass: Draw actual filled mesh
-			if (renderOption == 0 || renderOption == 2)
+			glEnable(GL_CULL_FACE);
+			glCullFace(GL_BACK);
+
+			cubeObject.Bind();
+
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			for (size_t count{ 0 }, offset{ 0 }; offset < data.size(); offset += count)
 			{
-				glEnable(GL_CULL_FACE);
-				glCullFace(GL_BACK);
-
-				cubeObject.Bind();
-
-				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-				for (size_t count{ 0 }, offset{ 0 }; offset < data.size(); offset += count)
-				{
-					count = glm::min<size_t>(data.size() - offset, RX_MAX_INSTANCES);
-					cubeObject.BindInstancedData<VertexBasic::Xform>(offset, count);
-					cubeObject.Draw(count);
-				}
-				//for (size_t i = 0; i < data.size(); i += RX_MAX_INSTANCES)
-				//{
-				//	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-				//	cubeObject.Draw();
-				//}
+				count = glm::min<size_t>(data.size() - offset, RX_MAX_INSTANCES);
+				cubeObject.BindInstancedData<VertexBasic::Xform>(offset, count);
+				cubeObject.Draw(count);
 			}
 		}
 	);
@@ -134,6 +128,9 @@ void RenderSystem::Update(double dt)
 	wireframePass.DrawThis(
 		[&]()
 		{
+			if (renderOption == 0)
+				return;
+
 			//glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 			//glClear(GL_COLOR_BUFFER_BIT);
 			//glDisable(GL_DEPTH_TEST); // (optional, just for debugging visibility)
@@ -148,20 +145,17 @@ void RenderSystem::Update(double dt)
 			g.m_Shader.SetUniform3f("uWireframeColor", glm::vec3{ 0.f,1.f,0.f });
 
 			// First pass: Draw actual filled mesh
-			if (renderOption == 0 || renderOption == 2)
+			glDisable(GL_CULL_FACE);
+			//glCullFace(GL_BACK);
+
+			cubeObject.Bind();
+
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			for (size_t count{ 0 }, offset{ 0 }; offset < data.size(); offset += count)
 			{
-				glEnable(GL_CULL_FACE);
-				glCullFace(GL_BACK);
-
-				cubeObject.Bind();
-
-				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-				for (size_t count{ 0 }, offset{ 0 }; offset < data.size(); offset += count)
-				{
-					count = glm::min<size_t>(data.size() - offset, RX_MAX_INSTANCES);
-					cubeObject.BindInstancedData<VertexBasic::Xform>(offset, count);
-					cubeObject.Draw(count);
-				}
+				count = glm::min<size_t>(data.size() - offset, RX_MAX_INSTANCES);
+				cubeObject.BindInstancedData<VertexBasic::Xform>(offset, count);
+				cubeObject.Draw(count);
 			}
 		}
 	);
@@ -176,9 +170,12 @@ void RenderSystem::Update(double dt)
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, basePass.m_TextureBuffer);
 			g.m_FBOShader.SetUniform1i("uBaseTex", 0);
+			g.m_FBOShader.SetUniform1i("uHasBaseTex", renderOption != 1);
+
 			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, wireframePass.m_TextureBuffer);
 			g.m_FBOShader.SetUniform1i("uWireframeTex", 1);
+			g.m_FBOShader.SetUniform1i("uHasWireframeTex", renderOption != 0);
 
 			g.m_FBOObject.Bind();
 			g.m_FBOObject.Draw(1);

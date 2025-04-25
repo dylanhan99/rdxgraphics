@@ -71,6 +71,11 @@ void Shader::Bind() const
 	glUseProgram(m_ShaderProgramID);
 }
 
+void Shader::SetUniform1i(std::string const& name, bool v)
+{
+	glUniform1i(GetUniformLocation(name), (int)v);
+}
+
 void Shader::SetUniform1i(std::string const& name, int const& v)
 {
 	glUniform1i(GetUniformLocation(name), v);

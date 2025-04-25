@@ -18,6 +18,7 @@ public:
 
 	void Bind() const;
 
+	void SetUniform1i(std::string const& name, bool v);
 	void SetUniform1i(std::string const& name, int const& v);
 	void SetUniform3f(std::string const& name, glm::vec3 const& v);
 	void SetUniform3fv(std::string const& name, std::vector<glm::vec3> const& v);
