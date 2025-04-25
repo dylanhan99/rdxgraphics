@@ -15,7 +15,7 @@ public:
 
 	static bool ReloadShaders();
 
-	inline static Object& GetObjekt(Shape shape) { return g.m_Objects[(size_t)shape]; }
+	inline static Object<VertexBasic>& GetObjekt(Shape shape) { return g.m_Objects[(size_t)shape]; }
 
 private:
 	static void CreateShapes();
@@ -25,5 +25,5 @@ private:
 	//GLuint m_ShaderProgramID{};
 	Shader m_Shader{};
 
-	std::array<Object, (size_t)Shape::MAX> m_Objects{};
+	std::array<Object<VertexBasic>, (size_t)Shape::MAX> m_Objects{};
 };
