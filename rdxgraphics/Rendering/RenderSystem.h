@@ -15,7 +15,7 @@ public:
 
 	static bool ReloadShaders();
 
-	inline static Object& GetObjekt(Shape shape) { return g.m_Objects[(size_t)shape]; }
+	inline static Object<VertexBasic>& GetObjekt(Shape shape) { return g.m_Objects[(size_t)shape]; }
 
 private:
 	static void CreateShapes();
@@ -24,6 +24,8 @@ private:
 	glm::vec3 m_BackColor{ 0.2f, 0.3f, 0.3f };
 	//GLuint m_ShaderProgramID{};
 	Shader m_Shader{};
+	Shader m_FBOShader{};
 
-	std::array<Object, (size_t)Shape::MAX> m_Objects{};
+	std::array<Object<VertexBasic>, (size_t)Shape::MAX> m_Objects{};
+	Object<VertexFBO> m_FBOObject{};
 };

@@ -1,86 +1,142 @@
 #pragma once
 #define RX_MAX_INSTANCES 1000
 
+//////////////////////////////////////////////////
+// How many attrib_type make up value_type?	eg 4*vec4 in a mat4, eg 4*float in a vec4
+template <typename T>
+static uint32_t GetAttribCount() { static_assert(false, "Unsupported T"); return 0; }
+#define _RX_SETUP_ATTRIB(Klass, count) template<> static uint32_t GetAttribCount<Klass>() { return count; }
+_RX_SETUP_ATTRIB(glm::mat4, 4); // This is 4*vec4, because we have to "wrap" 4*vec4 attribs as one mat4
+_RX_SETUP_ATTRIB(glm::vec4, 1); // These are only 1, beacuse they can be directly declared as ONE attrib.
+_RX_SETUP_ATTRIB(glm::vec3, 1);
+_RX_SETUP_ATTRIB(glm::vec2, 1);
+_RX_SETUP_ATTRIB(float, 1);
+_RX_SETUP_ATTRIB(unsigned int, 1);
+_RX_SETUP_ATTRIB(unsigned char, 1);
+#undef _RX_SETUP_ATTRIB
+//////////////////////////////////////////////////
+template <typename T>
+static uint32_t GetFundamentalCount() { static_assert(false, "Unsupported T"); return 0; }
+#define _RX_SETUP_FUNDA(Klass, count) template<> static uint32_t GetFundamentalCount<Klass>() { return count; }
+_RX_SETUP_FUNDA(glm::vec4, 4); // These are only 1, beacuse they can be directly declared as ONE attrib.
+_RX_SETUP_FUNDA(glm::vec3, 3);
+_RX_SETUP_FUNDA(glm::vec2, 2);
+_RX_SETUP_FUNDA(float, 1);
+_RX_SETUP_FUNDA(unsigned int, 1);
+_RX_SETUP_FUNDA(unsigned char, 1);
+#undef _RX_SETUP_FUNDA
+//////////////////////////////////////////////////
+template <typename T>
+static GLenum GetFundamentalType() { static_assert(false, "Unsupported T"); return GL_FALSE; }
+#define _RX_SETUP_FUNDA_T(Klass, glType) template<> static GLenum GetFundamentalType<Klass>() { return glType; }
+_RX_SETUP_FUNDA_T(glm::vec4, GL_FLOAT);
+_RX_SETUP_FUNDA_T(glm::vec3, GL_FLOAT);
+_RX_SETUP_FUNDA_T(glm::vec2, GL_FLOAT);
+_RX_SETUP_FUNDA_T(float, GL_FLOAT);
+_RX_SETUP_FUNDA_T(unsigned int, GL_UNSIGNED_INT);
+_RX_SETUP_FUNDA_T(unsigned char, GL_UNSIGNED_BYTE);
+#undef _RX_SETUP_FUNDA_T
+//////////////////////////////////////////////////
+
+//////////////////////////////////////////////////
+#define _RX_SHARED_VERTEX_KLASS(Klass)														\
+private:																					\
+	inline static uint32_t _IdGen() { static uint32_t i{ 0 }; return i++; }					\
+	template <typename T>																	\
+	static uint32_t _IdGenTemp() { static uint32_t i = _IdGen(); return i; }				\
+public:																						\
+	inline static uint32_t Max() { static uint32_t max = _IdGenTemp<Klass>(); return max; }	\
+	class BaseAttribute { public: virtual ~BaseAttribute() = default; };
+//////////////////////////////////////////////////
+#define _RX_ADD_VERTEX(Klass, T, U, isInstanced, isNormalized)								\
+	class Klass : public BaseAttribute {													\
+		public:																				\
+		using value_type = T;																\
+		using attrib_type = U;																\
+		using container_type = std::vector<T>;												\
+		inline static const uint32_t ID{ _IdGenTemp<Klass>() };								\
+		inline static const bool IsInstanced{ isInstanced };								\
+		inline static const bool IsNormalized{ isNormalized };								\
+		private: friend class Vertex; 														\
+		public: inline Klass() { ID;}														\
+		public: container_type Data{};														\
+	}; private: Klass _rx_hack_##Klass{}; public:
+//////////////////////////////////////////////////
+
+// RXVertex refers to the standard vertex being used by ALL objects in this engine.
+class VertexBasic 
+{
+	_RX_SHARED_VERTEX_KLASS(VertexBasic);
+	
+	_RX_ADD_VERTEX(Position, glm::vec3, glm::vec3, false, false);
+	_RX_ADD_VERTEX(Xform, glm::mat4, glm::vec4, true, false);
+}; 
 // This macro helps to automatically call another macro dubbed "_RX_X". 
 // It must meet the usecase
-#define RX_VERTEX_ATTRIBS	 \
-	_RX_X(Vertex::Position); \
-	_RX_X(Vertex::Xform);
+#define RX_VERTEX_BASIC_ATTRIBS		\
+	_RX_X(VertexBasic::Position);	\
+	_RX_X(VertexBasic::Xform);
 
-class Vertex {
-private:
-	inline static uint32_t _IdGen() { static uint32_t i{ 0 }; return i++; }
-	template <typename T>
-	static uint32_t _IdGenTemp() { static uint32_t i = _IdGen(); return i; }
 
-public:
-	inline static uint32_t Max() { static uint32_t max = _IdGenTemp<Vertex>(); return max; }
+// As the name states, the vertex used by vertex buffer output.
+class VertexFBO
+{
+	_RX_SHARED_VERTEX_KLASS(VertexFBO);
 
-	class BaseAttribute { public: virtual ~BaseAttribute() = default; };
-#define _RX_ADD_VERTEX(Klass, T, isInstanced, isNormalized)		\
-	class Klass : public BaseAttribute {						\
-		public:													\
-		using value_type = T;									\
-		using container_type = std::vector<T>;					\
-		inline static const uint32_t ID{ _IdGenTemp<T>() };		\
-		inline static const bool IsInstanced{ isInstanced };	\
-		inline static const bool IsNormalized{ isNormalized };	\
-		private: friend class Vertex; 							\
-		public: inline Klass() {ID;}							\
-		public: container_type Data{};							\
-	}; private: Klass _rx_hack_##Klass{}; public:
-	
-	_RX_ADD_VERTEX(Position, glm::vec3, false, false);
-	_RX_ADD_VERTEX(Xform, glm::mat4, true, false);
+	_RX_ADD_VERTEX(Position, glm::vec2, glm::vec2, false, false);
+	_RX_ADD_VERTEX(TexCoords, glm::vec2, glm::vec2, false, false);
+};
+// This macro helps to automatically call another macro dubbed "_RX_X". 
+// It must meet the usecase
+#define RX_VERTEX_FBO_ATTRIBS		\
+	_RX_X(VertexFBO::Position);		\
+	_RX_X(VertexFBO::TexCoords);
 
-#undef _RX_ADD_VERTEX
-}; 
 
 // Representation of a model
+template <typename T>
 class Object
 {
 public:
-	static bool MakeObject(Object& oObject, GLenum primitive, std::vector<GLuint> const& indices,
-		std::vector<Vertex::Position::value_type> const& positions);
+	using vertex_type = T;
 
 public:
 	Object();
 	void Terminate();
-	inline void Submit(glm::mat4 xform = glm::translate(glm::vec3(0.f))) { GetVBData<Vertex::Xform>().emplace_back(std::move(xform)); }
 
 	void Bind();
-	//void BindInstancedData();
+	template <typename U>
+	std::enable_if_t<std::is_base_of_v<typename T::BaseAttribute, U>,
+		void> BindInstancedData(GLsizeiptr offset, GLsizeiptr count);
 
-	template <typename T> 
-	std::enable_if_t<std::is_base_of_v<Vertex::BaseAttribute, T>,
-		void> BindInstancedData(GLsizeiptr offset, GLsizeiptr count)
-	{
-		GLuint vbo = GetVBO<T>();
-		typename T::container_type& pData = GetVBData<T>();
+	Object& BeginObject(GLenum primitive);
+	void EndObject();
+	Object& PushIndices(std::vector<GLuint> const& indices);
+	template <typename U>
+	std::enable_if_t<std::is_base_of_v<typename T::BaseAttribute, U>,
+		Object&> Push(typename U::container_type const& data);
 
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glBufferData(GL_ARRAY_BUFFER, count * sizeof(typename T::value_type), pData.data() + offset, GL_DYNAMIC_DRAW);
-	}
+	template <typename U>
+	std::enable_if_t<std::is_base_of_v<typename T::BaseAttribute, U>,
+		void> Submit(typename U::value_type val) { GetVBData<U>().emplace_back(std::move(val)); }
 
-	template <typename T>
-	GLuint GetVBO() { return m_VBOs[T::ID]; }
+	template <typename U>
+	std::enable_if_t<std::is_base_of_v<typename T::BaseAttribute, U>,
+		GLuint> GetVBO() { return m_VBOs[U::ID]; }
 
-	template <typename T>
-	typename T::container_type& GetVBData() { return std::dynamic_pointer_cast<T>(m_VBData[T::ID])->Data; }
+	template <typename U>
+	std::enable_if_t<std::is_base_of_v<typename T::BaseAttribute, U>,
+		typename U::container_type&> GetVBData() { return std::dynamic_pointer_cast<U>(m_VBData[U::ID])->Data; }
 
-	//void Draw();
 	void Draw(size_t count);
-
-	//inline std::vector<glm::mat4>& GetXForms() { return m_Xforms; }
 
 public:
 	GLuint m_VAO{};
 	std::vector<GLuint> m_VBOs{};
 	GLuint m_EBO{};
+	GLuint m_Index{}; // Attibute index used in the build pattern
 
 	GLenum m_Primitive{};
 	std::vector<GLuint> m_Indices{};
-	std::vector<std::shared_ptr<Vertex::BaseAttribute>> m_VBData{};
-	//std::vector<Vertex::Position::value_type> m_Positions{};
-	//std::vector<Vertex::Xform::value_type> m_Xforms{};
+	std::vector<std::shared_ptr<typename vertex_type::BaseAttribute>> m_VBData{};
 };

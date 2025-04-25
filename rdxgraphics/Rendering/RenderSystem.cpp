@@ -34,11 +34,11 @@ bool RenderSystem::Init()
 		{ ShaderType::Vertex,	"Assets/default.vert" },
 		{ ShaderType::Fragment, "Assets/default.frag" }
 		});
-	//g.m_Shader.Init({
-	//	{ ShaderType::Vertex,	"Assets/default_geo.vert" },
-	//	{ ShaderType::Fragment, "Assets/default_geo.frag" },
-	//	{ ShaderType::Geometry, "Assets/default_geo.geom" }
-	//	});
+	g.m_FBOShader.Init({
+		{ ShaderType::Vertex,	"Assets/default_geo.vert" },
+		{ ShaderType::Fragment, "Assets/default_geo.frag" },
+		{ ShaderType::Geometry, "Assets/default_geo.geom" }
+		});
 
 	CreateShapes();
 
@@ -55,7 +55,7 @@ bool RenderSystem::Init()
 
 void RenderSystem::Terminate()
 {
-	for (Object& obj : g.m_Objects)
+	for (auto& obj : g.m_Objects)
 		obj.Terminate();
 
 	g.m_Shader.Terminate();
@@ -65,10 +65,10 @@ void RenderSystem::Update(double dt)
 {
 	RX_UNREF_PARAM(dt);
 
-	Object& cubeObject = GetObjekt(Shape::Cube);
+	Object<VertexBasic>& cubeObject = GetObjekt(Shape::Cube);
 
-	cubeObject.Submit(glm::translate(glm::vec3(move))); // Submit 1;
-	cubeObject.Submit(glm::translate(glm::vec3(move * 2.f))); // Submit 1;
+	cubeObject.Submit<VertexBasic::Xform>(glm::translate(glm::vec3(move)));
+	cubeObject.Submit<VertexBasic::Xform>(glm::translate(glm::vec3(move * 2.f)));
 
 	glClearColor(g.m_BackColor.x, g.m_BackColor.y, g.m_BackColor.z, 1.f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -77,7 +77,7 @@ void RenderSystem::Update(double dt)
 	g.m_Shader.SetUniformMatrix4f("uProjViewMatrix", mainCamera.GetProjMatrix() * mainCamera.GetViewMatrix());
 	g.m_Shader.SetUniform3f("uWireframeColor", glm::vec3{ 0.f,1.f,0.f });
 
-	auto& data = cubeObject.GetVBData<Vertex::Xform>();
+	auto& data = cubeObject.GetVBData<VertexBasic::Xform>();
 
 	// First pass: Draw actual filled mesh
 	if (renderOption == 0 || renderOption == 2)
@@ -92,7 +92,7 @@ void RenderSystem::Update(double dt)
 		for (size_t count{ 0 }, offset{ 0 }; offset < data.size(); offset += count)
 		{
 			count = glm::min<size_t>(data.size() - offset, RX_MAX_INSTANCES);
-			cubeObject.BindInstancedData<Vertex::Xform>(offset, count);
+			cubeObject.BindInstancedData<VertexBasic::Xform>(offset, count);
 			cubeObject.Draw(count);
 		}
 		//for (size_t i = 0; i < data.size(); i += RX_MAX_INSTANCES)
@@ -101,6 +101,16 @@ void RenderSystem::Update(double dt)
 		//	cubeObject.Draw();
 		//}
 	}
+
+	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
+	glDisable(GL_DEPTH_TEST); // (optional, just for debugging visibility)
+	glDisable(GL_BLEND);
+
+	g.m_FBOShader.Bind();
+	g.m_FBOShader.SetUniform3f("uWireframeColor", glm::vec3{ 0.f,1.f,0.f });
+	g.m_FBOObject.Bind();
+	g.m_FBOObject.Draw(1);
 
 	//if (renderOption == 1 || renderOption == 2)
 	//{
@@ -139,17 +149,16 @@ bool RenderSystem::ReloadShaders()
 
 void RenderSystem::CreateShapes()
 {
-	Object::MakeObject(
-		GetObjekt(Shape::Cube), GL_TRIANGLES,
-		std::vector<GLuint>{
+	{
+		std::vector<GLuint> indices{
 			0, 1, 2, 2, 3, 0, // Front face
 			4, 5, 6, 6, 7, 4, // Back face
 			6, 5, 2, 2, 1, 6, // Bottom face
 			0, 3, 4, 4, 7, 0, // Top face
 			7, 6, 1, 1, 0, 7, // Left face
 			3, 2, 5, 5, 4, 3  // Right face
-		},
-		std::vector<glm::vec3>{
+		};
+		std::vector<glm::vec3> positions{
 			{ -0.5f,  0.5f,  0.5f },
 			{ -0.5f, -0.5f,  0.5f },
 			{  0.5f, -0.5f,  0.5f },
@@ -158,7 +167,40 @@ void RenderSystem::CreateShapes()
 			{  0.5f, -0.5f, -0.5f },
 			{ -0.5f, -0.5f, -0.5f },
 			{ -0.5f,  0.5f, -0.5f }
-		});
+		};
+
+		Object<VertexBasic>& cubeObject = GetObjekt(Shape::Cube);
+		cubeObject.BeginObject(GL_TRIANGLES)
+			.PushIndices(indices)
+			.Push<VertexBasic::Position>(positions)
+			.Push<VertexBasic::Xform>(typename VertexBasic::Xform::container_type{})
+			.EndObject();
+	}
+
+	{
+		std::vector<GLuint> indices {  // note that we start from 0!
+			0, 1, 2,   // first triangle
+			2, 3, 0    // second triangle
+		};
+		std::vector<glm::vec2> positions{
+			{ -1.0f,  1.0f },
+			{ -1.0f, -1.0f },
+			{  1.0f, -1.0f },
+			{  1.0f,  1.0f }
+		};
+		std::vector<glm::vec2> texCoords{
+			{ 0.f, 1.f },
+			{ 0.f, 0.f },
+			{ 1.f, 0.f },
+			{ 1.f, 1.f }
+		};
+
+		g.m_FBOObject.BeginObject(GL_TRIANGLES)
+			.PushIndices(indices)
+			.Push<VertexFBO::Position>(positions)
+			.Push<VertexFBO::TexCoords>(texCoords)
+			.EndObject();
+	}
 
 	//{
 	//	float vertices[] = {

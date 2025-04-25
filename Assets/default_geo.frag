@@ -1,9 +1,11 @@
 #version 450 core
 
-in vec4 gsFragColor;
-out vec4 oFragColor;
+layout(location = 0) out vec4 oFragColor;
+
+uniform vec3 uWireframeColor;
 
 void main()
 {
-	oFragColor = gsFragColor;
+	oFragColor = vec4(uWireframeColor, 1.0);
+	//oFragColor = vec4(0.0,1.0,0.0, 1.0);
 }
