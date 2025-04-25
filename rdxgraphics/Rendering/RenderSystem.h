@@ -1,6 +1,7 @@
 #pragma once
 #include "Object.h"
 #include "Shader.h"
+#include "RenderPass.h"
 
 class RenderSystem : public BaseSingleton<RenderSystem>
 {
