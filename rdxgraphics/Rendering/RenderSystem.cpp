@@ -12,6 +12,9 @@ extern Camera mainCamera;
 float move = 0.f;
 int renderOption = 2;
 
+GLuint m_FBO{};
+GLuint textureColorBuffer{};
+
 bool RenderSystem::Init()
 {
 	if (!gladLoadGL(glfwGetProcAddress)) 
@@ -35,9 +38,8 @@ bool RenderSystem::Init()
 		{ ShaderType::Fragment, "Assets/default.frag" }
 		});
 	g.m_FBOShader.Init({
-		{ ShaderType::Vertex,	"Assets/default_geo.vert" },
-		{ ShaderType::Fragment, "Assets/default_geo.frag" },
-		{ ShaderType::Geometry, "Assets/default_geo.geom" }
+		{ ShaderType::Vertex,	"Assets/screen.vert" },
+		{ ShaderType::Fragment, "Assets/screen.frag" }
 		});
 
 	CreateShapes();
@@ -49,6 +51,20 @@ bool RenderSystem::Init()
 			GLFWWindow::SetInvisibleCursor(camera.IsCameraInUserControl());
 		});
 	//
+
+	{
+		glCreateFramebuffers(1, &m_FBO);
+		glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
+
+		glGenTextures(1, &textureColorBuffer);
+		glBindTexture(GL_TEXTURE_2D, textureColorBuffer);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 600, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorBuffer, 0);
+	}
 
 	return true;
 }
@@ -69,6 +85,8 @@ void RenderSystem::Update(double dt)
 
 	cubeObject.Submit<VertexBasic::Xform>(glm::translate(glm::vec3(move)));
 	cubeObject.Submit<VertexBasic::Xform>(glm::translate(glm::vec3(move * 2.f)));
+
+	glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
 
 	glClearColor(g.m_BackColor.x, g.m_BackColor.y, g.m_BackColor.z, 1.f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -102,13 +120,18 @@ void RenderSystem::Update(double dt)
 		//}
 	}
 
+	glBindFramebuffer(GL_FRAMEBUFFER, 0); // back to default
+
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glDisable(GL_DEPTH_TEST); // (optional, just for debugging visibility)
 	glDisable(GL_BLEND);
 
 	g.m_FBOShader.Bind();
-	g.m_FBOShader.SetUniform3f("uWireframeColor", glm::vec3{ 0.f,1.f,0.f });
+	//g.m_FBOShader.SetUniform3f("uWireframeColor", glm::vec3{ 0.f,1.f,0.f });
+	
+	glBindTexture(GL_TEXTURE_2D, textureColorBuffer);
+
 	g.m_FBOObject.Bind();
 	g.m_FBOObject.Draw(1);
 
