@@ -54,11 +54,11 @@ public:																						\
 		using value_type = T;																\
 		using attrib_type = U;																\
 		using container_type = std::vector<T>;												\
-		inline static const uint32_t ID{ _IdGenTemp<T>() };									\
+		inline static const uint32_t ID{ _IdGenTemp<Klass>() };								\
 		inline static const bool IsInstanced{ isInstanced };								\
 		inline static const bool IsNormalized{ isNormalized };								\
 		private: friend class Vertex; 														\
-		public: inline Klass() {ID;}														\
+		public: inline Klass() { ID;}														\
 		public: container_type Data{};														\
 	}; private: Klass _rx_hack_##Klass{}; public:
 //////////////////////////////////////////////////

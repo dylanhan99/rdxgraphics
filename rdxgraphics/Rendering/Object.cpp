@@ -16,8 +16,8 @@ RX_VERTEX_FBO_ATTRIBS;
 #undef _RX_X
 
 // Some initialization hack to setup vertex attrib IDs
-VertexBasic _rx_hack_vxb{};
-VertexFBO _rx_hack_vxf{};
+VertexBasic _rx_hack_VertexBasic{};
+VertexFBO _rx_hack_VertexFBO{};
 
 template <typename T>
 Object<T>::Object()
