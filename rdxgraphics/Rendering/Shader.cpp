@@ -78,7 +78,7 @@ void Shader::SetUniform1i(std::string const& name, int const& v)
 
 void Shader::SetUniform3f(std::string const& name, glm::vec3 const& v)
 {
-	glUniformMatrix3fv(GetUniformLocation(name), 1, GL_FALSE, &glm::value_ptr(v)[0]);
+	glUniform3fv(GetUniformLocation(name), 1, &glm::value_ptr(v)[0]);
 }
 
 void Shader::SetUniform3fv(std::string const& name, std::vector<glm::vec3> const& v)

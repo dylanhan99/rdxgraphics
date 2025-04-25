@@ -30,7 +30,7 @@ private:
 	static GLenum GetShaderGLenum(ShaderType shaderType);
 	GLint GetUniformLocation(std::string const& name);
 
-private:
+public:
 	GLuint m_ShaderProgramID{};
 
 	// fs::path is absolute
