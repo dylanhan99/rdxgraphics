@@ -91,11 +91,15 @@ void RenderSystem::Update(double dt)
 {
 	RX_UNREF_PARAM(dt);
 
-	Object<VertexBasic>& cubeObject = GetObjekt(Shape::Cube);
+	//Object<VertexBasic>& object = GetObjekt(Shape::Cube);
+	Object<VertexBasic>& object = GetObjekt(Shape::Sphere);
 
-	cubeObject.Submit<VertexBasic::Xform>(glm::translate(glm::vec3(move)));
-	cubeObject.Submit<VertexBasic::Xform>(glm::translate(glm::vec3(move * 2.f)));
-	auto& data = cubeObject.GetVBData<VertexBasic::Xform>();
+	//object.Submit<VertexBasic::Xform>(glm::translate(glm::vec3(move)));
+	//object.Submit<VertexBasic::Xform>(glm::translate(glm::vec3(move * 2.f)));
+	object.Submit<VertexBasic::Xform>(glm::translate(glm::vec3(move)));
+
+	//auto& data = object.GetVBData<VertexBasic::Xform>();
+	auto& data = object.GetVBData<VertexBasic::Xform>();
 
 	basePass.DrawThis(
 		[&]()
@@ -113,14 +117,14 @@ void RenderSystem::Update(double dt)
 			glEnable(GL_CULL_FACE);
 			glCullFace(GL_BACK);
 
-			cubeObject.Bind();
+			object.Bind();
 
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 			for (size_t count{ 0 }, offset{ 0 }; offset < data.size(); offset += count)
 			{
 				count = glm::min<size_t>(data.size() - offset, RX_MAX_INSTANCES);
-				cubeObject.BindInstancedData<VertexBasic::Xform>(offset, count);
-				cubeObject.Draw(count);
+				object.BindInstancedData<VertexBasic::Xform>(offset, count);
+				object.Draw(count);
 			}
 		}
 	);
@@ -148,14 +152,14 @@ void RenderSystem::Update(double dt)
 			glDisable(GL_CULL_FACE);
 			//glCullFace(GL_BACK);
 
-			cubeObject.Bind();
+			object.Bind();
 
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			for (size_t count{ 0 }, offset{ 0 }; offset < data.size(); offset += count)
 			{
 				count = glm::min<size_t>(data.size() - offset, RX_MAX_INSTANCES);
-				cubeObject.BindInstancedData<VertexBasic::Xform>(offset, count);
-				cubeObject.Draw(count);
+				object.BindInstancedData<VertexBasic::Xform>(offset, count);
+				object.Draw(count);
 			}
 		}
 	);
@@ -193,38 +197,11 @@ bool RenderSystem::ReloadShaders()
 
 void RenderSystem::CreateShapes()
 {
+	// Screen Quad
 	{
 		std::vector<GLuint> indices{
-			0, 1, 2, 2, 3, 0, // Front face
-			4, 5, 6, 6, 7, 4, // Back face
-			6, 5, 2, 2, 1, 6, // Bottom face
-			0, 3, 4, 4, 7, 0, // Top face
-			7, 6, 1, 1, 0, 7, // Left face
-			3, 2, 5, 5, 4, 3  // Right face
-		};
-		std::vector<glm::vec3> positions{
-			{ -0.5f,  0.5f,  0.5f },
-			{ -0.5f, -0.5f,  0.5f },
-			{  0.5f, -0.5f,  0.5f },
-			{  0.5f,  0.5f,  0.5f },
-			{  0.5f,  0.5f, -0.5f },
-			{  0.5f, -0.5f, -0.5f },
-			{ -0.5f, -0.5f, -0.5f },
-			{ -0.5f,  0.5f, -0.5f }
-		};
-
-		Object<VertexBasic>& cubeObject = GetObjekt(Shape::Cube);
-		cubeObject.BeginObject(GL_TRIANGLES)
-			.PushIndices(indices)
-			.Push<VertexBasic::Position>(positions)
-			.Push<VertexBasic::Xform>(typename VertexBasic::Xform::container_type{})
-			.EndObject();
-	}
-
-	{
-		std::vector<GLuint> indices {  // note that we start from 0!
-			0, 1, 2,   // first triangle
-			2, 3, 0    // second triangle
+			0, 1, 2,
+			2, 3, 0 
 		};
 		std::vector<glm::vec2> positions{
 			{ -1.0f,  1.0f },
@@ -246,62 +223,114 @@ void RenderSystem::CreateShapes()
 			.EndObject();
 	}
 
-	//{
-	//	float vertices[] = {
-	//	-0.5f, -0.5f, 0.0f,
-	//	 0.5f, -0.5f, 0.0f,
-	//	 0.0f,  0.5f, 0.0f
-	//	};
-	//
-	//	{
-	//		glGenVertexArrays(1, &tVAO);
-	//	}
-	//	{
-	//		glBindVertexArray(tVAO);
-	//
-	//		glGenBuffers(1, &tVBO);
-	//		glBindBuffer(GL_ARRAY_BUFFER, tVBO);
-	//		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	//
-	//		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	//		glEnableVertexAttribArray(0);
-	//	}
-	//
-	//	glBindVertexArray(0);
-	//}
-	//
-	//{
-	//	float vertices[] = {
-	//		 0.5f,  0.5f, 0.0f,  // top right
-	//		 0.5f, -0.5f, 0.0f,  // bottom right
-	//		-0.5f, -0.5f, 0.0f,  // bottom left
-	//		-0.5f,  0.5f, 0.0f   // top left 
-	//	};
-	//	unsigned int indices[] = {  // note that we start from 0!
-	//		0, 1, 3,   // first triangle
-	//		1, 2, 3    // second triangle
-	//	};
-	//
-	//	{
-	//		glGenVertexArrays(1, &qVAO);
-	//		glGenBuffers(1, &qVBO);
-	//		glGenBuffers(1, &qEBO);
-	//
-	//		glBindVertexArray(qVAO);
-	//
-	//		glBindBuffer(GL_ARRAY_BUFFER, qVBO);
-	//		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	//
-	//		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, qEBO);
-	//		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-	//
-	//		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	//		glEnableVertexAttribArray(0);
-	//	}
-	//
-	//	glBindVertexArray(0);
-	//}
+	{ // Point
+		GetObjekt(Shape::Point).BeginObject(GL_POINTS)
+			.PushIndices({ 0 })
+			.Push<VertexBasic::Position>({{0.f,0.f,0.f}})
+			.Push<VertexBasic::Xform>({})
+			.EndObject();
+	}
 
-	//glBindBuffer(GL_ARRAY_BUFFER, 0);
-	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	{ // Point
+		GetObjekt(Shape::Line).BeginObject(GL_LINES)
+			.PushIndices({ 0, 1 })
+			.Push<VertexBasic::Position>({{0.f,0.f,0.f}, {1.f,0.f,0.f} })
+			.Push<VertexBasic::Xform>({})
+			.EndObject();
+	}
+
+	{ // Quad
+		std::vector<GLuint> indices{
+			0, 1, 2,
+			2, 3, 0 
+		};
+		std::vector<glm::vec3> positions{
+			{ -0.5f,  0.5f,  0.5f },
+			{ -0.5f, -0.5f,  0.5f },
+			{  0.5f, -0.5f,  0.5f },
+			{  0.5f,  0.5f,  0.5f }
+		};
+
+		GetObjekt(Shape::Quad).BeginObject(GL_TRIANGLES)
+			.PushIndices(indices)
+			.Push<VertexBasic::Position>(positions)
+			.Push<VertexBasic::Xform>({})
+			.EndObject();
+	}
+
+	{ // Plane
+		const uint32_t size = 20;
+		std::vector<GLuint> indices{ };
+		std::vector<glm::vec3> positions{};
+
+		float startPos = (float)size * 0.5f;
+		float maxPos = startPos + size;
+		for (float row = startPos; row < maxPos; row += 1.f)
+		{
+			for (float col = 0; col < maxPos; col += 1.f)
+			{
+				positions.emplace_back(col, 0.0f, row);
+			}
+		}
+
+		// Generate indices for triangle strip
+		for (GLuint y = 0; y < size; ++y)
+		{
+			if (y > 0) // Add a degenerate vertex (repeat first vertex) between rows
+				indices.push_back((y + 0) * (size + 1));
+
+			for (GLuint x = 0; x <= size; ++x)
+			{
+				indices.push_back((y + 0) * (size + 1) + x);
+				indices.push_back((y + 1) * (size + 1) + x);
+			}
+
+			if (y < size - 1) // Add a degenerate vertex (repeat last vertex) between rows
+				indices.push_back((y + 1) * (size + 1) + size);
+		}
+
+		GetObjekt(Shape::Plane).BeginObject(GL_TRIANGLE_STRIP)
+			.PushIndices(indices)
+			.Push<VertexBasic::Position>(positions)
+			.Push<VertexBasic::Xform>({})
+			.EndObject();
+	}
+
+	{
+		std::vector<GLuint> indices{
+			0, 1, 2, 2, 3, 0, // Front face
+			4, 5, 6, 6, 7, 4, // Back face
+			6, 5, 2, 2, 1, 6, // Bottom face
+			0, 3, 4, 4, 7, 0, // Top face
+			7, 6, 1, 1, 0, 7, // Left face
+			3, 2, 5, 5, 4, 3  // Right face
+		};
+		std::vector<glm::vec3> positions{
+			{ -0.5f,  0.5f,  0.5f },
+			{ -0.5f, -0.5f,  0.5f },
+			{  0.5f, -0.5f,  0.5f },
+			{  0.5f,  0.5f,  0.5f },
+			{  0.5f,  0.5f, -0.5f },
+			{  0.5f, -0.5f, -0.5f },
+			{ -0.5f, -0.5f, -0.5f },
+			{ -0.5f,  0.5f, -0.5f }
+		};
+
+		GetObjekt(Shape::Cube).BeginObject(GL_TRIANGLES)
+			.PushIndices(indices)
+			.Push<VertexBasic::Position>(positions)
+			.Push<VertexBasic::Xform>({})
+			.EndObject();
+	}
+
+	{
+		std::vector<GLuint> indices{};
+		std::vector<glm::vec3> positions{};
+
+		GetObjekt(Shape::Sphere).BeginObject(GL_TRIANGLES)
+			.PushIndices(indices)
+			.Push<VertexBasic::Position>(positions)
+			.Push<VertexBasic::Xform>({})
+			.EndObject();
+	}
 }
