@@ -92,7 +92,7 @@ void RenderSystem::Update(double dt)
 	RX_UNREF_PARAM(dt);
 
 	//Object<VertexBasic>& object = GetObjekt(Shape::Cube);
-	Object<VertexBasic>& object = GetObjekt(Shape::Sphere);
+	Object<VertexBasic>& object = GetObjekt(Shape::Plane);
 
 	//object.Submit<VertexBasic::Xform>(glm::translate(glm::vec3(move)));
 	//object.Submit<VertexBasic::Xform>(glm::translate(glm::vec3(move * 2.f)));
@@ -258,38 +258,47 @@ void RenderSystem::CreateShapes()
 			.EndObject();
 	}
 
-	{ // Plane
-		const uint32_t size = 20;
-		std::vector<GLuint> indices{ };
+	{ // Plane. Will be a XY plane by default
+		const uint32_t size = 3;
+		const float edgeLength = 1.f;
+		std::vector<GLuint> indices{};
 		std::vector<glm::vec3> positions{};
 
-		float startPos = (float)size * 0.5f;
-		float maxPos = startPos + size;
-		for (float row = startPos; row < maxPos; row += 1.f)
+		float b = (float)size * edgeLength * 0.5f;
+		glm::vec3 startPos{ -b, -b, 0.f };
+		glm::vec3 step{ edgeLength, edgeLength, 0.f };
+
+		for (uint32_t row = 0; row <= size; ++row)
 		{
-			for (float col = 0; col < maxPos; col += 1.f)
+			float y = startPos.y + (float)row * step.y;
+			for (uint32_t col = 0; col <= size; ++col)
 			{
-				positions.emplace_back(col, 0.0f, row);
+				float x = startPos.x + (float)col * step.x;
+				positions.emplace_back(std::move(glm::vec3{ x, y, 0.f }));
 			}
 		}
 
-		// Generate indices for triangle strip
-		for (GLuint y = 0; y < size; ++y)
+		for (GLuint row = 0; row < size; ++row)
 		{
-			if (y > 0) // Add a degenerate vertex (repeat first vertex) between rows
-				indices.push_back((y + 0) * (size + 1));
-
-			for (GLuint x = 0; x <= size; ++x)
+			GLuint start = row * (size + 1);
+			for (GLuint col = 0; col < size; ++col)
 			{
-				indices.push_back((y + 0) * (size + 1) + x);
-				indices.push_back((y + 1) * (size + 1) + x);
-			}
+				GLuint a = start + col + size + 1;
+				GLuint b = start + col;
+				GLuint c = start + col + 1;
+				GLuint d = start + col + size + 1 + 1;
 
-			if (y < size - 1) // Add a degenerate vertex (repeat last vertex) between rows
-				indices.push_back((y + 1) * (size + 1) + size);
+				indices.push_back(a);
+				indices.push_back(b);
+				indices.push_back(c);
+
+				indices.push_back(c);
+				indices.push_back(d);
+				indices.push_back(a);
+			}
 		}
 
-		GetObjekt(Shape::Plane).BeginObject(GL_TRIANGLE_STRIP)
+		GetObjekt(Shape::Plane).BeginObject(GL_TRIANGLES)
 			.PushIndices(indices)
 			.Push<VertexBasic::Position>(positions)
 			.Push<VertexBasic::Xform>({})
