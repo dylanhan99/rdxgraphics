@@ -323,9 +323,42 @@ void RenderSystem::CreateShapes()
 			.EndObject();
 	}
 
-	{
-		std::vector<GLuint> indices{};
-		std::vector<glm::vec3> positions{};
+	{ // Sphere > https://blog.lslabs.dev/posts/generating_icosphere_with_code
+		// There were some explannations on how the icosphere is formed, but the basis of it
+		// is working off the 3 planes the regular icosahedron is based on.
+		// Tldr, center to a plane's point is 1 unit, while the ratio of width/height = goldenratio.
+		// Using that understanding, we come to the following (half-height = a, half-width = c)
+		// (assume width (c) is the longer edge of the plane)
+		// v0-----v3	v0 - [-c,  a]
+		// |     / |	v1 - [-c, -a]
+		// |   m   |	v2 - [ c, -a]
+		// | /     |	v3 - [ c,  a]
+		// v1-----v2
+
+		float a = 0.525731112119134f;
+		float c = 0.85065080835157f;
+
+		std::vector<GLuint> indices{
+			8, 9, 10,
+			8, 10, 3,
+			8, 
+		};
+		std::vector<glm::vec3> positions{
+			{ -c,  a, 0.f }, // XY plane
+			{ -c, -a, 0.f },
+			{  c, -a, 0.f },
+			{  c,  a, 0.f },
+			{ 0.f, -c,  a }, // YZ plane
+			{ 0.f, -c, -a },
+			{ 0.f,  c, -a },
+			{ 0.f,  c,  a },
+			{ -c, 0.f,  a }, // XZ plane
+			{ -c, 0.f, -a },
+			{  c, 0.f, -a },
+			{  c, 0.f,  a }
+		};
+
+		float 
 
 		GetObjekt(Shape::Sphere).BeginObject(GL_TRIANGLES)
 			.PushIndices(indices)
