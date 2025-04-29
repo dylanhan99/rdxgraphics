@@ -3,6 +3,7 @@
 
 #include "GLFWWindow/GLFWWindow.h"
 #include "Camera.h"
+#include "Entity/EntityManager.h"
 
 RX_SINGLETON_EXPLICIT(RenderSystem);
 namespace fs = std::filesystem;
@@ -48,28 +49,11 @@ bool RenderSystem::Init()
 
 	CreateShapes();
 
-	//
 	EventDispatcher<Camera&>::RegisterEvent(RX_EVENT_CAMERA_USER_TOGGLED,
 		[](Camera& camera)
 		{
 			GLFWWindow::SetInvisibleCursor(camera.IsCameraInUserControl());
 		});
-	//
-
-	//{
-	//	glCreateFramebuffers(1, &m_FBO);
-	//	glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
-	//
-	//	glGenTextures(1, &textureColorBuffer);
-	//	glBindTexture(GL_TEXTURE_2D, textureColorBuffer);
-	//	glm::ivec2 dims = GLFWWindow::GetWindowDims();
-	//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, dims.x, dims.y, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
-	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//	glBindTexture(GL_TEXTURE_2D, 0);
-	//
-	//	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorBuffer, 0);
-	//}
 
 	glm::ivec2 dims = GLFWWindow::GetWindowDims();
 	basePass.Init(dims.x, dims.y);
@@ -92,20 +76,29 @@ void RenderSystem::Update(double dt)
 	RX_UNREF_PARAM(dt);
 
 	//Object<VertexBasic>& object = GetObjekt(Shape::Cube);
-	Object<VertexBasic>& object = GetObjekt(Shape::Plane);
-
+	//Object<VertexBasic>& object = GetObjekt(Shape::Plane);
+	//
+	////object.Submit<VertexBasic::Xform>(glm::translate(glm::vec3(move)));
+	////object.Submit<VertexBasic::Xform>(glm::translate(glm::vec3(move * 2.f)));
 	//object.Submit<VertexBasic::Xform>(glm::translate(glm::vec3(move)));
-	//object.Submit<VertexBasic::Xform>(glm::translate(glm::vec3(move * 2.f)));
-	object.Submit<VertexBasic::Xform>(glm::translate(glm::vec3(move)));
-
+	//
+	////auto& data = object.GetVBData<VertexBasic::Xform>();
+	
 	//auto& data = object.GetVBData<VertexBasic::Xform>();
-	auto& data = object.GetVBData<VertexBasic::Xform>();
 
 	basePass.DrawThis(
 		[&]()
 		{
 			if (renderOption == 1)
 				return;
+
+			for (Entity& ent : EntityManager::GetEntities())
+			{
+				auto& modelDetails = ent.GetModelDetails();
+
+				Object<VertexBasic>& o = GetObjekt(ent.GetModelDetails().ShapeType);
+				o.Submit<VertexBasic::Xform>(modelDetails.Xform);
+			}
 
 			glClearColor(g.m_BackColor.x, g.m_BackColor.y, g.m_BackColor.z, 1.f);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -117,14 +110,22 @@ void RenderSystem::Update(double dt)
 			glEnable(GL_CULL_FACE);
 			glCullFace(GL_BACK);
 
-			object.Bind();
-
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-			for (size_t count{ 0 }, offset{ 0 }; offset < data.size(); offset += count)
+			for (Object<VertexBasic>& object : g.m_Objects)
 			{
-				count = glm::min<size_t>(data.size() - offset, RX_MAX_INSTANCES);
-				object.BindInstancedData<VertexBasic::Xform>(offset, count);
-				object.Draw(count);
+				object.Bind();
+
+				auto& data1 = object.GetVBData<VertexBasic::Xform>();
+				size_t maxVal = data1.size(); // glm::min(data1, data2, ...)
+				for (size_t count{ 0 }, offset{ 0 }; offset < maxVal; offset += count)
+				{
+					count = glm::min<size_t>(maxVal - offset, RX_MAX_INSTANCES);
+					object.BindInstancedData<VertexBasic::Xform>(offset, count);
+					// more binds...
+					object.Draw(count);
+				}
+
+				object.Flush();
 			}
 		}
 	);
@@ -134,6 +135,16 @@ void RenderSystem::Update(double dt)
 		{
 			if (renderOption == 0)
 				return;
+
+			for (Entity& ent : EntityManager::GetEntities())
+			{
+				auto& colDetails = ent.GetColliderDetails();
+				if (colDetails.BVType == BV::NIL || !colDetails.pBV)
+					continue;
+
+				Object<VertexBasic>& o = GetObjekt(ent.GetColliderDetails().BVType);
+				o.Submit<VertexBasic::Xform>(colDetails.pBV->GetXform());
+			}
 
 			//glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 			//glClear(GL_COLOR_BUFFER_BIT);
@@ -152,14 +163,24 @@ void RenderSystem::Update(double dt)
 			glDisable(GL_CULL_FACE);
 			//glCullFace(GL_BACK);
 
-			object.Bind();
+			//object.Bind();
 
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-			for (size_t count{ 0 }, offset{ 0 }; offset < data.size(); offset += count)
+			for (Object<VertexBasic>& object : g.m_Objects)
 			{
-				count = glm::min<size_t>(data.size() - offset, RX_MAX_INSTANCES);
-				object.BindInstancedData<VertexBasic::Xform>(offset, count);
-				object.Draw(count);
+				object.Bind();
+
+				auto& data1 = object.GetVBData<VertexBasic::Xform>();
+				size_t maxVal = data1.size(); // glm::min(data1, data2, ...)
+				for (size_t count{ 0 }, offset{ 0 }; offset < maxVal; offset += count)
+				{
+					count = glm::min<size_t>(maxVal - offset, RX_MAX_INSTANCES);
+					object.BindInstancedData<VertexBasic::Xform>(offset, count);
+					// more binds...
+					object.Draw(count);
+				}
+
+				object.Flush();
 			}
 		}
 	);
@@ -186,13 +207,32 @@ void RenderSystem::Update(double dt)
 		}
 	);
 
-	data.clear();
 	glBindVertexArray(0);
 }
 
 bool RenderSystem::ReloadShaders()
 {
 	return g.m_Shader.Reload();
+}
+
+Object<VertexBasic>& RenderSystem::GetObjekt(BV bv)
+{
+	switch (bv)
+	{
+		case BV::Point:
+			return GetObjekt(Shape::Point);
+		case BV::Ray:
+			return GetObjekt(Shape::Line);
+		case BV::Plane:
+			return GetObjekt(Shape::Plane);
+		case BV::AABB:
+			return GetObjekt(Shape::Cube);
+		case BV::Sphere:
+			return GetObjekt(Shape::Sphere);
+		default:
+			RX_ASSERT(false);
+			return GetObjekt(Shape::Cube);
+	}
 }
 
 void RenderSystem::CreateShapes()
@@ -234,7 +274,7 @@ void RenderSystem::CreateShapes()
 	{ // Point
 		GetObjekt(Shape::Line).BeginObject(GL_LINES)
 			.PushIndices({ 0, 1 })
-			.Push<VertexBasic::Position>({{0.f,0.f,0.f}, {1.f,0.f,0.f} })
+			.Push<VertexBasic::Position>({ {0.f,0.f,0.f}, {1.f,0.f,0.f} })
 			.Push<VertexBasic::Xform>({})
 			.EndObject();
 	}
@@ -245,10 +285,10 @@ void RenderSystem::CreateShapes()
 			2, 3, 0 
 		};
 		std::vector<glm::vec3> positions{
-			{ -0.5f,  0.5f,  0.5f },
-			{ -0.5f, -0.5f,  0.5f },
-			{  0.5f, -0.5f,  0.5f },
-			{  0.5f,  0.5f,  0.5f }
+			{ -0.5f,  0.5f,  0.f },
+			{ -0.5f, -0.5f,  0.f },
+			{  0.5f, -0.5f,  0.f },
+			{  0.5f,  0.5f,  0.f }
 		};
 
 		GetObjekt(Shape::Quad).BeginObject(GL_TRIANGLES)

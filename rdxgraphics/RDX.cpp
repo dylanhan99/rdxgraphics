@@ -4,6 +4,8 @@
 #include "Utils/Input.h"
 #include "GLFWWindow/GLFWWindow.h"
 #include "Rendering/RenderSystem.h"
+#include "Transformation/TransformSystem.h"
+#include "Entity/EntityManager.h"
 
 #include "Rendering/Camera.h"
 #include "Utils/FramerateController.h"
@@ -41,6 +43,13 @@ void RDX::Run()
 	if (!initOK)
 		throw RX_EXCEPTION("System initialization failed");
 
+	auto& entities = EntityManager::GetEntities();
+	Entity newEnt{};
+	auto& ccc = newEnt.GetColliderDetails();
+	ccc.BVType = BV::AABB;
+	ccc.pBV.reset(new AABB());
+	entities.emplace_back(std::move(newEnt));
+
 	while (!GLFWWindow::IsWindowShouldClose())
 	{
 		FramerateController::StartGameLoop();
@@ -72,6 +81,8 @@ void RDX::Run()
 					mainCamera.Inputs(dt);
 
 				mainCamera.UpdateCameraVectors();
+
+				TransformSystem::Update(dt);
 
 				{ // ImGui update
 					ImGui_ImplOpenGL3_NewFrame();
@@ -128,7 +139,7 @@ void RDX::Run()
 
 				// Render
 				{
-					RenderSystem::Update(0.0);
+					RenderSystem::Update(dt);
 
 					glDisable(GL_DEPTH_TEST);
 					ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

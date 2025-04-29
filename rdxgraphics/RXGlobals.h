@@ -30,3 +30,15 @@ enum class Shape
 
 	MAX
 };
+
+enum class BV
+{
+	NIL,
+	Point,
+	Ray,
+	Plane,
+	AABB,
+	Sphere,
+
+	MAX
+};

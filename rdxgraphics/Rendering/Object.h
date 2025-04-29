@@ -129,6 +129,7 @@ public:
 		typename U::container_type&> GetVBData() { return std::dynamic_pointer_cast<U>(m_VBData[U::ID])->Data; }
 
 	void Draw(size_t count);
+	void Flush();
 
 public:
 	GLuint m_VAO{};

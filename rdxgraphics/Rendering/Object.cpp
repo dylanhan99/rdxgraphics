@@ -176,3 +176,22 @@ void Object<T>::Draw(size_t count)
 		count
 	);
 }
+
+template<typename T>
+void Object<T>::Flush()
+{
+#define _RX_X(Klass) if (Klass::IsInstanced) GetVBData<Klass>().clear();
+	if constexpr (std::is_same_v<T, VertexBasic>)
+	{
+		RX_VERTEX_BASIC_ATTRIBS;
+	}
+	else if constexpr (std::is_same_v<T, VertexFBO>)
+	{
+		RX_VERTEX_FBO_ATTRIBS;
+	}
+	else
+	{
+		static_assert(false);
+	}
+#undef _RX_X
+}
