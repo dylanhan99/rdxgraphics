@@ -37,12 +37,10 @@ public:
 	inline bool& IsCameraInUserControl() { return m_CameraInUserControl; }
 
 private:
-	inline static glm::vec3 m_WorldUp{ 0.f,1.f,0.f };
-
 	glm::mat4 m_ViewMatrix{ glm::mat4(1.f) };
 	glm::mat4 m_ProjectionMatrix{ glm::mat4(1.f) };
 	glm::vec3 m_Position{}; // World
-	glm::vec3 m_EulerOrientation{ }; // (Radians) Pitch, Yaw, Roll
+	glm::vec3 m_EulerOrientation{}; // (Radians) Pitch, Yaw, Roll
 	glm::vec3 m_Front{};
 	float m_AspectRatio{};
 	float m_FOV{};

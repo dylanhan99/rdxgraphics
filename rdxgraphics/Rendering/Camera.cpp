@@ -35,11 +35,11 @@ void Camera::UpdateCameraVectors()
 		glm::sin(m_EulerOrientation.y) * glm::cos(m_EulerOrientation.x)
 	};
 
-	glm::vec3 m_Up = m_WorldUp;
+	glm::vec3 m_Up = g_WorldUp;
 	glm::vec3 m_Right{};
 
 	m_Front = glm::normalize(m_Front);
-	m_Right = glm::normalize(glm::cross(m_Front, m_WorldUp)); // Using world-up here, assuming we are NOT allowing cam to roll
+	m_Right = glm::normalize(glm::cross(m_Front, g_WorldUp)); // Using world-up here, assuming we are NOT allowing cam to roll
 	m_Up	= glm::normalize(glm::cross(m_Right, m_Front));
 
 	m_ViewMatrix =
@@ -78,14 +78,14 @@ void Camera::Inputs(float dt)
 	if (Input::IsKeyDown(GLFW_KEY_S))
 		m_Position -= moveSpeed * glm::vec3{ m_Front.x, 0.f, m_Front.z };
 	if (Input::IsKeyDown(GLFW_KEY_D))
-		m_Position += moveSpeed * glm::normalize(glm::cross(m_Front, m_WorldUp));
+		m_Position += moveSpeed * glm::normalize(glm::cross(m_Front, g_WorldUp));
 	if (Input::IsKeyDown(GLFW_KEY_A))
-		m_Position -= moveSpeed * glm::normalize(glm::cross(m_Front, m_WorldUp));
+		m_Position -= moveSpeed * glm::normalize(glm::cross(m_Front, g_WorldUp));
 
 	if (Input::IsKeyDown(GLFW_KEY_SPACE))
-		m_Position += moveSpeed * m_WorldUp;
+		m_Position += moveSpeed * g_WorldUp;
 	if (Input::IsKeyDown(GLFW_KEY_LEFT_SHIFT))
-		m_Position += moveSpeed * -m_WorldUp;
+		m_Position += moveSpeed * -g_WorldUp;
 
 	// Scroll controls, see ctor. Registered to scroll event.
 

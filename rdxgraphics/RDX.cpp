@@ -46,8 +46,8 @@ void RDX::Run()
 	auto& entities = EntityManager::GetEntities();
 	Entity newEnt{};
 	auto& ccc = newEnt.GetColliderDetails();
-	ccc.BVType = BV::AABB;
-	ccc.pBV.reset(new AABB());
+	ccc.BVType = BV::Plane;
+	ccc.pBV = std::make_shared<Plane>();
 	entities.emplace_back(std::move(newEnt));
 
 	while (!GLFWWindow::IsWindowShouldClose())
@@ -56,7 +56,7 @@ void RDX::Run()
 		std::string title = "rdxgraphics [" + std::to_string(FramerateController::GetFPSIntervaled()) + "]";
 		GLFWWindow::SetWindowTitle(title);
 		FramerateController::Update(std::move(
-			[](float dt) 
+			[&](float dt) 
 			{
 				GLFWWindow::StartFrame();
 
@@ -92,6 +92,22 @@ void RDX::Run()
 
 					ImGui::Begin("dxd", nullptr, 0);
 					{
+						//auto& eee = entities[0];
+						//auto& aaa = eee.GetColliderDetails();
+						//auto asd = std::dynamic_pointer_cast<Ray>(aaa.pBV);
+						//ImGui::DragFloat3("colPos", glm::value_ptr(aaa.pBV->GetPosition()));
+						//ImGui::DragFloat3("dir", glm::value_ptr(asd->GetOrientation()));
+						////ImGui::DragFloat("asd", &asd->ang);
+
+						auto& eee = entities[0];
+						auto& aaa = eee.GetColliderDetails();
+						auto asd = std::dynamic_pointer_cast<Plane>(aaa.pBV);
+						ImGui::DragFloat3("colPos", glm::value_ptr(aaa.pBV->GetPosition()));
+						ImGui::DragFloat3("dir", glm::value_ptr(asd->GetOrientation()));
+						//ImGui::DragFloat("asd", &asd->ang);
+
+						ImGui::Separator();
+
 						ImGui::DragFloat("move", &move);
 						ImGui::RadioButton("Mesh", &renderOption, 0); ImGui::SameLine();
 						ImGui::RadioButton("Wire", &renderOption, 1); ImGui::SameLine();

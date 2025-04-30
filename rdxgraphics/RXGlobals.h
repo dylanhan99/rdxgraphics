@@ -19,6 +19,8 @@ const std::filesystem::path g_WorkingDir{
 #endif
 };
 
+const glm::vec3 g_WorldUp{ 0.f,1.f,0.f };
+
 enum class Shape
 {
 	Point,

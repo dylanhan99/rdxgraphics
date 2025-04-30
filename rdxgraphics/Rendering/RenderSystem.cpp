@@ -274,7 +274,7 @@ void RenderSystem::CreateShapes()
 	{ // Point
 		GetObjekt(Shape::Line).BeginObject(GL_LINES)
 			.PushIndices({ 0, 1 })
-			.Push<VertexBasic::Position>({ {0.f,0.f,0.f}, {1.f,0.f,0.f} })
+			.Push<VertexBasic::Position>({ {-0.5f,0.f,0.f}, {0.5f,0.f,0.f} })
 			.Push<VertexBasic::Xform>({})
 			.EndObject();
 	}
@@ -299,7 +299,7 @@ void RenderSystem::CreateShapes()
 	}
 
 	{ // Plane. Will be a XY plane by default
-		const uint32_t size = 3;
+		const uint32_t size = 20;
 		const float edgeLength = 1.f;
 		std::vector<GLuint> indices{};
 		std::vector<glm::vec3> positions{};
