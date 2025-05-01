@@ -144,6 +144,8 @@ void RenderSystem::Update(double dt)
 
 				Object<VertexBasic>& o = GetObjekt(ent.GetColliderDetails().BVType);
 				o.Submit<VertexBasic::Xform>(colDetails.pBV->GetXform());
+				o.Submit<VertexBasic::IsCollide>(
+					(typename VertexBasic::IsCollide::value_type)colDetails.pBV->IsCollide());
 			}
 
 			//glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -268,6 +270,7 @@ void RenderSystem::CreateShapes()
 			.PushIndices({ 0 })
 			.Push<VertexBasic::Position>({{0.f,0.f,0.f}})
 			.Push<VertexBasic::Xform>({})
+			.Push<VertexBasic::IsCollide>({})
 			.EndObject();
 	}
 
@@ -276,6 +279,7 @@ void RenderSystem::CreateShapes()
 			.PushIndices({ 0, 1 })
 			.Push<VertexBasic::Position>({ {-0.5f,0.f,0.f}, {0.5f,0.f,0.f} })
 			.Push<VertexBasic::Xform>({})
+			.Push<VertexBasic::IsCollide>({})
 			.EndObject();
 	}
 
@@ -295,6 +299,7 @@ void RenderSystem::CreateShapes()
 			.PushIndices(indices)
 			.Push<VertexBasic::Position>(positions)
 			.Push<VertexBasic::Xform>({})
+			.Push<VertexBasic::IsCollide>({})
 			.EndObject();
 	}
 
@@ -342,6 +347,7 @@ void RenderSystem::CreateShapes()
 			.PushIndices(indices)
 			.Push<VertexBasic::Position>(positions)
 			.Push<VertexBasic::Xform>({})
+			.Push<VertexBasic::IsCollide>({})
 			.EndObject();
 	}
 
@@ -369,6 +375,7 @@ void RenderSystem::CreateShapes()
 			.PushIndices(indices)
 			.Push<VertexBasic::Position>(positions)
 			.Push<VertexBasic::Xform>({})
+			.Push<VertexBasic::IsCollide>({})
 			.EndObject();
 	}
 
@@ -476,6 +483,7 @@ void RenderSystem::CreateShapes()
 			.PushIndices(indices)
 			.Push<VertexBasic::Position>(positions)
 			.Push<VertexBasic::Xform>({})
+			.Push<VertexBasic::IsCollide>({})
 			.EndObject();
 	}
 }

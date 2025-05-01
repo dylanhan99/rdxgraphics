@@ -8,12 +8,13 @@ public:
 	virtual void UpdateXform() = 0;
 
 	inline glm::mat4 const& GetXform() const { return m_Xform; }
-	inline glm::vec3 const& GetPosition() const { return m_Position; }
 	inline glm::vec3& GetPosition() { return m_Position; }
+	inline bool& IsCollide() { return m_IsCollide; }
 
 protected:
 	glm::mat4 m_Xform{};
 	glm::vec3 m_Position{};
+	bool m_IsCollide{ false };
 };
 
 class Point : public BaseBoundingVolume
@@ -68,6 +69,8 @@ public:
 		m_Xform = glm::translate(m_Position) * glm::scale(m_HalfExtents);
 	}
 
+	inline glm::vec3 GetHalfExtents() { return m_HalfExtents; }
+
 private:
 	glm::vec3 m_HalfExtents{ 1.f, 1.f, 1.f };
 };
@@ -79,6 +82,8 @@ public:
 	{
 		m_Xform = glm::translate(m_Position) * glm::scale(glm::vec3{ m_Radius });
 	}
+
+	inline float& GetRadius() { return m_Radius; }
 
 private:
 	float m_Radius{ 1.f };

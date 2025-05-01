@@ -11,8 +11,8 @@ _RX_SETUP_ATTRIB(glm::vec4, 1); // These are only 1, beacuse they can be directl
 _RX_SETUP_ATTRIB(glm::vec3, 1);
 _RX_SETUP_ATTRIB(glm::vec2, 1);
 _RX_SETUP_ATTRIB(float, 1);
-_RX_SETUP_ATTRIB(unsigned int, 1);
-_RX_SETUP_ATTRIB(unsigned char, 1);
+_RX_SETUP_ATTRIB(uint32_t, 1);
+_RX_SETUP_ATTRIB(uint8_t, 1);
 #undef _RX_SETUP_ATTRIB
 //////////////////////////////////////////////////
 template <typename T>
@@ -22,8 +22,8 @@ _RX_SETUP_FUNDA(glm::vec4, 4); // These are only 1, beacuse they can be directly
 _RX_SETUP_FUNDA(glm::vec3, 3);
 _RX_SETUP_FUNDA(glm::vec2, 2);
 _RX_SETUP_FUNDA(float, 1);
-_RX_SETUP_FUNDA(unsigned int, 1);
-_RX_SETUP_FUNDA(unsigned char, 1);
+_RX_SETUP_FUNDA(uint32_t, 1);
+_RX_SETUP_FUNDA(uint8_t, 1);
 #undef _RX_SETUP_FUNDA
 //////////////////////////////////////////////////
 template <typename T>
@@ -33,8 +33,8 @@ _RX_SETUP_FUNDA_T(glm::vec4, GL_FLOAT);
 _RX_SETUP_FUNDA_T(glm::vec3, GL_FLOAT);
 _RX_SETUP_FUNDA_T(glm::vec2, GL_FLOAT);
 _RX_SETUP_FUNDA_T(float, GL_FLOAT);
-_RX_SETUP_FUNDA_T(unsigned int, GL_UNSIGNED_INT);
-_RX_SETUP_FUNDA_T(unsigned char, GL_UNSIGNED_BYTE);
+_RX_SETUP_FUNDA_T(uint32_t, GL_UNSIGNED_INT);
+_RX_SETUP_FUNDA_T(uint8_t, GL_UNSIGNED_BYTE);
 #undef _RX_SETUP_FUNDA_T
 //////////////////////////////////////////////////
 
@@ -70,12 +70,14 @@ class VertexBasic
 	
 	_RX_ADD_VERTEX(Position, glm::vec3, glm::vec3, false, false);
 	_RX_ADD_VERTEX(Xform, glm::mat4, glm::vec4, true, false);
+	_RX_ADD_VERTEX(IsCollide, float, float, true, false);
 }; 
 // This macro helps to automatically call another macro dubbed "_RX_X". 
 // It must meet the usecase
 #define RX_VERTEX_BASIC_ATTRIBS		\
 	_RX_X(VertexBasic::Position);	\
-	_RX_X(VertexBasic::Xform);
+	_RX_X(VertexBasic::Xform);		\
+	_RX_X(VertexBasic::IsCollide);
 
 
 // As the name states, the vertex used by vertex buffer output.

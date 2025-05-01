@@ -5,6 +5,7 @@
 #include "GLFWWindow/GLFWWindow.h"
 #include "Rendering/RenderSystem.h"
 #include "Transformation/TransformSystem.h"
+#include "Collision/CollisionSystem.h"
 #include "Entity/EntityManager.h"
 
 #include "Rendering/Camera.h"
@@ -83,6 +84,7 @@ void RDX::Run()
 				mainCamera.UpdateCameraVectors();
 
 				TransformSystem::Update(dt);
+				CollisionSystem::Update(dt);
 
 				{ // ImGui update
 					ImGui_ImplOpenGL3_NewFrame();
