@@ -152,7 +152,7 @@ std::enable_if_t<std::is_base_of_v<typename T::BaseAttribute, U>,
 			fundamentalCount, attribFundamentalT, // For this attrib, how many of GLenums?
 			norm,								  // Normalization
 			sizeof(typename U::value_type),		  // Total attribute size
-			(void*)offset);							  // Offset from start of the attribute
+			(void*)offset);						  // Offset from start of the attribute
 
 		if (U::IsInstanced)
 			glVertexAttribDivisor(m_Index, 1);

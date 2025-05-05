@@ -115,15 +115,15 @@ void RenderSystem::Update(double dt)
 			{
 				object.Bind();
 
-				auto& data1 = object.GetVBData<VertexBasic::Xform>();
-				size_t maxVal = data1.size(); // glm::min(data1, data2, ...)
-				for (size_t count{ 0 }, offset{ 0 }; offset < maxVal; offset += count)
-				{
-					count = glm::min<size_t>(maxVal - offset, RX_MAX_INSTANCES);
-					object.BindInstancedData<VertexBasic::Xform>(offset, count);
-					// more binds...
-					object.Draw(count);
-				}
+				//auto& data1 = object.GetVBData<VertexBasic::Xform>();
+				//size_t maxVal = data1.size(); // glm::min(data1, data2, ...)
+				//for (size_t count{ 0 }, offset{ 0 }; offset < maxVal; offset += count)
+				//{
+				//	count = glm::min<size_t>(maxVal - offset, RX_MAX_INSTANCES);
+				//	object.BindInstancedData<VertexBasic::Xform>(offset, count);
+				//	// more binds...
+				//	object.Draw(count);
+				//}
 
 				object.Flush();
 			}
@@ -144,6 +144,7 @@ void RenderSystem::Update(double dt)
 
 				Object<VertexBasic>& o = GetObjekt(ent.GetColliderDetails().BVType);
 				o.Submit<VertexBasic::Xform>(colDetails.pBV->GetXform());
+				RX_WARN("{}", colDetails.pBV->IsCollide());
 				o.Submit<VertexBasic::IsCollide>(
 					(typename VertexBasic::IsCollide::value_type)colDetails.pBV->IsCollide());
 			}
