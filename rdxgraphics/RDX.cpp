@@ -45,11 +45,20 @@ void RDX::Run()
 		throw RX_EXCEPTION("System initialization failed");
 
 	auto& entities = EntityManager::GetEntities();
-	Entity newEnt{};
-	auto& ccc = newEnt.GetColliderDetails();
-	ccc.BVType = BV::Plane;
-	ccc.pBV = std::make_shared<Plane>();
-	entities.emplace_back(std::move(newEnt));
+	{
+		Entity newEnt{};
+		auto& ccc = newEnt.GetColliderDetails();
+		ccc.BVType = BV::AABB;
+		ccc.pBV = std::make_shared<AABB>();
+		entities.emplace_back(std::move(newEnt));
+	}
+	{
+		Entity newEnt{};
+		auto& ccc = newEnt.GetColliderDetails();
+		ccc.BVType = BV::Sphere;
+		ccc.pBV = std::make_shared<Sphere>();
+		entities.emplace_back(std::move(newEnt));
+	}
 
 	while (!GLFWWindow::IsWindowShouldClose())
 	{
@@ -101,11 +110,18 @@ void RDX::Run()
 						//ImGui::DragFloat3("dir", glm::value_ptr(asd->GetOrientation()));
 						////ImGui::DragFloat("asd", &asd->ang);
 
-						auto& eee = entities[0];
-						auto& aaa = eee.GetColliderDetails();
-						auto asd = std::dynamic_pointer_cast<Plane>(aaa.pBV);
-						ImGui::DragFloat3("colPos", glm::value_ptr(aaa.pBV->GetPosition()));
-						ImGui::DragFloat3("dir", glm::value_ptr(asd->GetOrientation()));
+						{
+							auto& eee = entities[0];
+							ImGui::DragFloat3("pos1", &eee.GetModelDetails().Translate[0], 0.1f);
+						}
+						{
+							auto& eee = entities[1];
+							ImGui::DragFloat3("pos2", &eee.GetModelDetails().Translate[0], 0.1f);
+						}
+						//auto& aaa = eee.GetColliderDetails();
+						//auto asd = std::dynamic_pointer_cast<Plane>(aaa.pBV);
+						//ImGui::DragFloat3("colPos", glm::value_ptr(aaa.pBV->GetPosition()));
+						//ImGui::DragFloat3("dir", glm::value_ptr(asd->GetOrientation()));
 						//ImGui::DragFloat("asd", &asd->ang);
 
 						ImGui::Separator();

@@ -7,5 +7,4 @@ public:
 	static void Update(float dt);
 
 private:
-
 };

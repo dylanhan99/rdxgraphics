@@ -133,7 +133,6 @@ void RenderSystem::Update(double dt)
 
 				Object<VertexBasic>& o = GetObjekt(ent.GetColliderDetails().BVType);
 				o.Submit<VertexBasic::Xform>(colDetails.pBV->GetXform());
-				RX_WARN("{}", colDetails.pBV->IsCollide());
 				o.Submit<VertexBasic::IsCollide>(
 					(typename VertexBasic::IsCollide::value_type)colDetails.pBV->IsCollide());
 			}
@@ -154,8 +153,6 @@ void RenderSystem::Update(double dt)
 			// First pass: Draw actual filled mesh
 			glDisable(GL_CULL_FACE);
 			//glCullFace(GL_BACK);
-
-			//object.Bind();
 
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			for (Object<VertexBasic>& object : g.m_Objects)

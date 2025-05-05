@@ -3,7 +3,9 @@
 class BaseBoundingVolume
 {
 public:
+	BaseBoundingVolume() = default;
 	~BaseBoundingVolume() = default;
+	inline BaseBoundingVolume(float x, float y, float z) : m_Position({ x, y, z }) {}
 
 	virtual void UpdateXform() = 0;
 
@@ -20,6 +22,8 @@ protected:
 class Point : public BaseBoundingVolume
 {
 public:
+	inline Point(float x, float y, float z) : BaseBoundingVolume(x, y, z) {}
+
 	inline void UpdateXform() override
 	{
 		m_Xform = glm::translate(m_Position);
@@ -70,6 +74,8 @@ public:
 	}
 
 	inline glm::vec3 GetHalfExtents() { return m_HalfExtents; }
+	inline glm::vec3 GetMinPoint() { return m_Position - 0.5f * m_HalfExtents; }
+	inline glm::vec3 GetMaxPoint() { return m_Position + 0.5f * m_HalfExtents; }
 
 private:
 	glm::vec3 m_HalfExtents{ 1.f, 1.f, 1.f };
