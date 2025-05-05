@@ -75,17 +75,6 @@ void RenderSystem::Update(double dt)
 {
 	RX_UNREF_PARAM(dt);
 
-	//Object<VertexBasic>& object = GetObjekt(Shape::Cube);
-	//Object<VertexBasic>& object = GetObjekt(Shape::Plane);
-	//
-	////object.Submit<VertexBasic::Xform>(glm::translate(glm::vec3(move)));
-	////object.Submit<VertexBasic::Xform>(glm::translate(glm::vec3(move * 2.f)));
-	//object.Submit<VertexBasic::Xform>(glm::translate(glm::vec3(move)));
-	//
-	////auto& data = object.GetVBData<VertexBasic::Xform>();
-	
-	//auto& data = object.GetVBData<VertexBasic::Xform>();
-
 	basePass.DrawThis(
 		[&]()
 		{
@@ -115,15 +104,15 @@ void RenderSystem::Update(double dt)
 			{
 				object.Bind();
 
-				//auto& data1 = object.GetVBData<VertexBasic::Xform>();
-				//size_t maxVal = data1.size(); // glm::min(data1, data2, ...)
-				//for (size_t count{ 0 }, offset{ 0 }; offset < maxVal; offset += count)
-				//{
-				//	count = glm::min<size_t>(maxVal - offset, RX_MAX_INSTANCES);
-				//	object.BindInstancedData<VertexBasic::Xform>(offset, count);
-				//	// more binds...
-				//	object.Draw(count);
-				//}
+				auto& data1 = object.GetVBData<VertexBasic::Xform>();
+				size_t maxVal = data1.size(); // glm::min(data1, data2, ...)
+				for (size_t count{ 0 }, offset{ 0 }; offset < maxVal; offset += count)
+				{
+					count = glm::min<size_t>(maxVal - offset, RX_MAX_INSTANCES);
+					object.BindInstancedData<VertexBasic::Xform>(offset, count);
+					// more binds...
+					object.Draw(count);
+				}
 
 				object.Flush();
 			}
@@ -179,6 +168,7 @@ void RenderSystem::Update(double dt)
 				{
 					count = glm::min<size_t>(maxVal - offset, RX_MAX_INSTANCES);
 					object.BindInstancedData<VertexBasic::Xform>(offset, count);
+					object.BindInstancedData<VertexBasic::IsCollide>(offset, count);
 					// more binds...
 					object.Draw(count);
 				}
