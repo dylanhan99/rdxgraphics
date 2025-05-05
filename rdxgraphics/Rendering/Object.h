@@ -133,7 +133,9 @@ public:
 	void Draw(size_t count);
 	void Flush();
 
-public:
+	inline GLenum GetPrimitive() const { return m_Primitive; }
+
+private:
 	GLuint m_VAO{};
 	std::vector<GLuint> m_VBOs{};
 	GLuint m_EBO{};

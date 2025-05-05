@@ -167,7 +167,12 @@ void RenderSystem::Update(double dt)
 					object.BindInstancedData<VertexBasic::Xform>(offset, count);
 					object.BindInstancedData<VertexBasic::IsCollide>(offset, count);
 					// more binds...
+
+					if (object.GetPrimitive() == GL_POINTS)
+						glPointSize(10.f);
+
 					object.Draw(count);
+					glPointSize(1.f);
 				}
 
 				object.Flush();
@@ -265,7 +270,8 @@ void RenderSystem::CreateShapes()
 	{ // Point
 		GetObjekt(Shape::Line).BeginObject(GL_LINES)
 			.PushIndices({ 0, 1 })
-			.Push<VertexBasic::Position>({ {-0.5f,0.f,0.f}, {0.5f,0.f,0.f} })
+			//.Push<VertexBasic::Position>({ {-0.5f,0.f,0.f}, {0.5f,0.f,0.f} })
+			.Push<VertexBasic::Position>({ {0.f,0.f,0.f}, {1.f,0.f,0.f} })
 			.Push<VertexBasic::Xform>({})
 			.Push<VertexBasic::IsCollide>({})
 			.EndObject();

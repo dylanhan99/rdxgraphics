@@ -12,33 +12,45 @@ private:
 	// Assumes pBV is non-null.
 	static bool CheckCollision(Entity::ColliderDetails& lhs, Entity::ColliderDetails& rhs);
 
-	static bool CheckCollision(Point& lhs, Point& rhs);
-	static bool CheckCollision(Point& lhs, Ray& rhs);
-	static bool CheckCollision(Point& lhs, Plane& rhs);
-	static bool CheckCollision(Point& lhs, AABB& rhs);
-	static bool CheckCollision(Point& lhs, Sphere& rhs);
+	static bool CheckCollision(Point const& lhs, Point const& rhs);
+	static bool CheckCollision(Point const& lhs, Ray const& rhs);
+	static bool CheckCollision(Point const& lhs, Triangle const& rhs);
+	static bool CheckCollision(Point const& lhs, Plane const& rhs);
+	static bool CheckCollision(Point const& lhs, AABB const& rhs);
+	static bool CheckCollision(Point const& lhs, Sphere const& rhs);
 
-	static bool CheckCollision(Ray& lhs, Point& rhs);
-	static bool CheckCollision(Ray& lhs, Ray& rhs);
-	static bool CheckCollision(Ray& lhs, Plane& rhs);
-	static bool CheckCollision(Ray& lhs, AABB& rhs);
-	static bool CheckCollision(Ray& lhs, Sphere& rhs);
+	static bool CheckCollision(Ray const& lhs, Point const& rhs);
+	static bool CheckCollision(Ray const& lhs, Ray const& rhs);
+	static bool CheckCollision(Ray const& lhs, Triangle const& rhs);
+	static bool CheckCollision(Ray const& lhs, Plane const& rhs);
+	static bool CheckCollision(Ray const& lhs, AABB const& rhs);
+	static bool CheckCollision(Ray const& lhs, Sphere const& rhs);
 
-	static bool CheckCollision(Plane& lhs, Point& rhs);
-	static bool CheckCollision(Plane& lhs, Ray& rhs);
-	static bool CheckCollision(Plane& lhs, Plane& rhs);
-	static bool CheckCollision(Plane& lhs, AABB& rhs);
-	static bool CheckCollision(Plane& lhs, Sphere& rhs);
+	static bool CheckCollision(Triangle const& lhs, Point const& rhs);
+	static bool CheckCollision(Triangle const& lhs, Ray const& rhs);
+	static bool CheckCollision(Triangle const& lhs, Triangle const& rhs);
+	static bool CheckCollision(Triangle const& lhs, Plane const& rhs);
+	static bool CheckCollision(Triangle const& lhs, AABB const& rhs);
+	static bool CheckCollision(Triangle const& lhs, Sphere const& rhs);
 
-	static bool CheckCollision(AABB& lhs, Point& rhs);
-	static bool CheckCollision(AABB& lhs, Ray& rhs);
-	static bool CheckCollision(AABB& lhs, Plane& rhs);
-	static bool CheckCollision(AABB& lhs, AABB& rhs);
-	static bool CheckCollision(AABB& lhs, Sphere& rhs);
+	static bool CheckCollision(Plane const& lhs, Point const& rhs);
+	static bool CheckCollision(Plane const& lhs, Ray const& rhs);
+	static bool CheckCollision(Plane const& lhs, Triangle const& rhs);
+	static bool CheckCollision(Plane const& lhs, Plane const& rhs);
+	static bool CheckCollision(Plane const& lhs, AABB const& rhs);
+	static bool CheckCollision(Plane const& lhs, Sphere const& rhs);
 
-	static bool CheckCollision(Sphere& lhs, Point& rhs);
-	static bool CheckCollision(Sphere& lhs, Ray& rhs);
-	static bool CheckCollision(Sphere& lhs, Plane& rhs);
-	static bool CheckCollision(Sphere& lhs, AABB& rhs);
-	static bool CheckCollision(Sphere& lhs, Sphere& rhs);
+	static bool CheckCollision(AABB const& lhs, Point const& rhs);
+	static bool CheckCollision(AABB const& lhs, Ray const& rhs);
+	static bool CheckCollision(AABB const& lhs, Triangle const& rhs);
+	static bool CheckCollision(AABB const& lhs, Plane const& rhs);
+	static bool CheckCollision(AABB const& lhs, AABB const& rhs);
+	static bool CheckCollision(AABB const& lhs, Sphere const& rhs);
+
+	static bool CheckCollision(Sphere const& lhs, Point const& rhs);
+	static bool CheckCollision(Sphere const& lhs, Ray const& rhs);
+	static bool CheckCollision(Sphere const& lhs, Triangle const& rhs);
+	static bool CheckCollision(Sphere const& lhs, Plane const& rhs);
+	static bool CheckCollision(Sphere const& lhs, AABB const& rhs);
+	static bool CheckCollision(Sphere const& lhs, Sphere const& rhs);
 };

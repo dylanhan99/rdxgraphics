@@ -41,22 +41,24 @@ void CollisionSystem::Update(float dt)
 bool CollisionSystem::CheckCollision(Entity::ColliderDetails& lhs, Entity::ColliderDetails& rhs)
 {
 #define _RX_C_C(LKlass, RKlass) case BV::RKlass: return CheckCollision(*(LKlass*)(lhs.pBV.get()), *(RKlass*)(rhs.pBV.get()))
-#define _RX_C_X(LKlass)						\
-	case BV::LKlass:						\
-		switch (rhs.BVType)					\
-		{									\
-			_RX_C_C(LKlass, Point);			\
-			_RX_C_C(LKlass, Ray);			\
-			_RX_C_C(LKlass, Plane);			\
-			_RX_C_C(LKlass, AABB);			\
-			_RX_C_C(LKlass, Sphere);		\
-			default: RX_ASSERT(false); break; \
+#define _RX_C_X(LKlass)							\
+	case BV::LKlass:							\
+		switch (rhs.BVType)						\
+		{										\
+			_RX_C_C(LKlass, Point);				\
+			_RX_C_C(LKlass, Ray);				\
+			_RX_C_C(LKlass, Triangle);			\
+			_RX_C_C(LKlass, Plane);				\
+			_RX_C_C(LKlass, AABB);				\
+			_RX_C_C(LKlass, Sphere);			\
+			default: RX_ASSERT(false); break;   \
 		}
 
 	switch (lhs.BVType)
 	{
 		_RX_C_X(Point);
 		_RX_C_X(Ray);
+		_RX_C_X(Triangle);
 		_RX_C_X(Plane);
 		_RX_C_X(AABB);
 		_RX_C_X(Sphere);
@@ -67,103 +69,173 @@ bool CollisionSystem::CheckCollision(Entity::ColliderDetails& lhs, Entity::Colli
 #undef _RX_C_X
 }
 
-bool CollisionSystem::CheckCollision(Point& lhs, Point& rhs)
+bool CollisionSystem::CheckCollision(Point const& lhs, Point const& rhs)
 {
 	return lhs.GetPosition() == rhs.GetPosition();
 }
 
-bool CollisionSystem::CheckCollision(Point& lhs, Ray& rhs)
+bool CollisionSystem::CheckCollision(Point const& lhs, Ray const& rhs)
+{
+	glm::vec3 op = rhs.GetPosition() - lhs.GetPosition();
+	glm::vec3 dir = rhs.GetDirection();
+	float t = glm::dot(op, dir); // Is along the ray direction
+	bool isColinear = glm::length2(glm::cross(op, dir)) < glm::epsilon<float>();
+
+	return (t >= 0.f) && isColinear;
+}
+
+bool CollisionSystem::CheckCollision(Point const& lhs, Triangle const& rhs)
 {
 	return false;
 }
 
-bool CollisionSystem::CheckCollision(Point& lhs, Plane& rhs)
+bool CollisionSystem::CheckCollision(Point const& lhs, Plane const& rhs)
 {
-	return false;
+	glm::vec3 pp = lhs.GetPosition() - rhs.GetPosition();
+	return glm::dot(pp, rhs.GetNormal()) == 0.f;
 }
 
-bool CollisionSystem::CheckCollision(Point& lhs, AABB& rhs)
+bool CollisionSystem::CheckCollision(Point const& lhs, AABB const& rhs)
 {
-	return false;
+	glm::vec3 pos = lhs.GetPosition();
+	glm::vec3 min = rhs.GetMinPoint();
+	glm::vec3 max = rhs.GetMaxPoint();
+	return  (min.x <= pos.x && pos.x <= max.x) &&
+			(min.y <= pos.y && pos.y <= max.y) &&
+			(min.z <= pos.z && pos.z <= max.z);
 }
 
-bool CollisionSystem::CheckCollision(Point& lhs, Sphere& rhs)
+bool CollisionSystem::CheckCollision(Point const& lhs, Sphere const& rhs)
 {
 	float d2 = glm::distance2(lhs.GetPosition(), rhs.GetPosition());
 	return d2 < glm::pow(rhs.GetRadius(), 2.f);
 }
 
-bool CollisionSystem::CheckCollision(Ray& lhs, Point& rhs)
+bool CollisionSystem::CheckCollision(Ray const& lhs, Point const& rhs)
+{
+	return CheckCollision(rhs, lhs);
+}
+
+bool CollisionSystem::CheckCollision(Ray const& lhs, Ray const& rhs)
 {
 	return false;
 }
 
-bool CollisionSystem::CheckCollision(Ray& lhs, Ray& rhs)
+bool CollisionSystem::CheckCollision(Ray const& lhs, Triangle const& rhs)
 {
 	return false;
 }
 
-bool CollisionSystem::CheckCollision(Ray& lhs, Plane& rhs)
+bool CollisionSystem::CheckCollision(Ray const& lhs, Plane const& rhs)
 {
 	return false;
 }
 
-bool CollisionSystem::CheckCollision(Ray& lhs, AABB& rhs)
+bool CollisionSystem::CheckCollision(Ray const& lhs, AABB const& rhs)
 {
 	return false;
 }
 
-bool CollisionSystem::CheckCollision(Ray& lhs, Sphere& rhs)
+bool CollisionSystem::CheckCollision(Ray const& lhs, Sphere const& rhs)
 {
 	return false;
 }
 
-bool CollisionSystem::CheckCollision(Plane& lhs, Point& rhs)
+bool CollisionSystem::CheckCollision(Triangle const& lhs, Point const& rhs)
 {
 	return false;
 }
 
-bool CollisionSystem::CheckCollision(Plane& lhs, Ray& rhs)
+bool CollisionSystem::CheckCollision(Triangle const& lhs, Ray const& rhs)
 {
 	return false;
 }
 
-bool CollisionSystem::CheckCollision(Plane& lhs, Plane& rhs)
+bool CollisionSystem::CheckCollision(Triangle const& lhs, Triangle const& rhs)
 {
 	return false;
 }
 
-bool CollisionSystem::CheckCollision(Plane& lhs, AABB& rhs)
+bool CollisionSystem::CheckCollision(Triangle const& lhs, Plane const& rhs)
 {
 	return false;
 }
 
-bool CollisionSystem::CheckCollision(Plane& lhs, Sphere& rhs)
+bool CollisionSystem::CheckCollision(Triangle const& lhs, AABB const& rhs)
 {
 	return false;
 }
 
-bool CollisionSystem::CheckCollision(AABB& lhs, Point& rhs)
+bool CollisionSystem::CheckCollision(Triangle const& lhs, Sphere const& rhs)
 {
 	return false;
 }
 
-bool CollisionSystem::CheckCollision(AABB& lhs, Ray& rhs)
+bool CollisionSystem::CheckCollision(Plane const& lhs, Point const& rhs)
+{
+	return CheckCollision(rhs, lhs);
+}
+
+bool CollisionSystem::CheckCollision(Plane const& lhs, Ray const& rhs)
+{
+	return CheckCollision(rhs, lhs);
+}
+
+bool CollisionSystem::CheckCollision(Plane const& lhs, Triangle const& rhs)
 {
 	return false;
 }
 
-bool CollisionSystem::CheckCollision(AABB& lhs, Plane& rhs)
+bool CollisionSystem::CheckCollision(Plane const& lhs, Plane const& rhs)
 {
 	return false;
 }
 
-bool CollisionSystem::CheckCollision(AABB& lhs, AABB& rhs)
+bool CollisionSystem::CheckCollision(Plane const& lhs, AABB const& rhs)
 {
 	return false;
 }
 
-bool CollisionSystem::CheckCollision(AABB& lhs, Sphere& rhs)
+bool CollisionSystem::CheckCollision(Plane const& lhs, Sphere const& rhs)
+{
+	return false;
+}
+
+bool CollisionSystem::CheckCollision(AABB const& lhs, Point const& rhs)
+{
+	return CheckCollision(rhs, lhs);
+}
+
+bool CollisionSystem::CheckCollision(AABB const& lhs, Ray const& rhs)
+{
+	return CheckCollision(rhs, lhs);
+}
+
+bool CollisionSystem::CheckCollision(AABB const& lhs, Triangle const& rhs)
+{
+	return false;
+}
+
+bool CollisionSystem::CheckCollision(AABB const& lhs, Plane const& rhs)
+{
+	return CheckCollision(rhs, lhs);
+}
+
+bool CollisionSystem::CheckCollision(AABB const& lhs, AABB const& rhs)
+{
+	glm::vec3 minL{ lhs.GetMinPoint() }, maxL{ lhs.GetMaxPoint() };
+	glm::vec3 minR{ rhs.GetMinPoint() }, maxR{ rhs.GetMaxPoint() };
+
+	return
+		minL.x <= maxR.x &&
+		maxL.x >= minR.x &&
+		minL.y <= maxR.y &&
+		maxL.y >= minR.y &&
+		minL.z <= maxR.z &&
+		maxL.z >= minR.z;
+}
+
+bool CollisionSystem::CheckCollision(AABB const& lhs, Sphere const& rhs)
 {
 	// https://developer.mozilla.org/en-US/docs/Games/Techniques/3D_collision_detection
 
@@ -180,27 +252,35 @@ bool CollisionSystem::CheckCollision(AABB& lhs, Sphere& rhs)
 	return CheckCollision(closestPoint, rhs);
 }
 
-bool CollisionSystem::CheckCollision(Sphere& lhs, Point& rhs)
+bool CollisionSystem::CheckCollision(Sphere const& lhs, Point const& rhs)
+{
+	return CheckCollision(rhs, lhs);
+}
+
+bool CollisionSystem::CheckCollision(Sphere const& lhs, Ray const& rhs)
+{
+	return CheckCollision(rhs, lhs);
+}
+
+bool CollisionSystem::CheckCollision(Sphere const& lhs, Triangle const& rhs)
 {
 	return false;
 }
 
-bool CollisionSystem::CheckCollision(Sphere& lhs, Ray& rhs)
+bool CollisionSystem::CheckCollision(Sphere const& lhs, Plane const& rhs)
 {
-	return false;
+	return CheckCollision(rhs, lhs);
 }
 
-bool CollisionSystem::CheckCollision(Sphere& lhs, Plane& rhs)
+bool CollisionSystem::CheckCollision(Sphere const& lhs, AABB const& rhs)
 {
-	return false;
+	return CheckCollision(rhs, lhs);
 }
 
-bool CollisionSystem::CheckCollision(Sphere& lhs, AABB& rhs)
+bool CollisionSystem::CheckCollision(Sphere const& lhs, Sphere const& rhs)
 {
-	return false;
-}
-
-bool CollisionSystem::CheckCollision(Sphere& lhs, Sphere& rhs)
-{
-	return false;
+	return CheckCollision(
+		Point{ lhs.GetPosition() },
+		Sphere{ rhs.GetPosition(), lhs.GetRadius() + rhs.GetRadius() }
+	);
 }

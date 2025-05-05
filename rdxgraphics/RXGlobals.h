@@ -38,6 +38,7 @@ enum class BV
 	NIL,
 	Point,
 	Ray,
+	Triangle,
 	Plane,
 	AABB,
 	Sphere,

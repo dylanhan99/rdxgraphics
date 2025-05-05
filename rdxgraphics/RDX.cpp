@@ -48,15 +48,15 @@ void RDX::Run()
 	{
 		Entity newEnt{};
 		auto& ccc = newEnt.GetColliderDetails();
-		ccc.BVType = BV::AABB;
-		ccc.pBV = std::make_shared<AABB>();
+		ccc.BVType = BV::Ray;
+		ccc.pBV = std::make_shared<Plane>();
 		entities.emplace_back(std::move(newEnt));
 	}
 	{
 		Entity newEnt{};
 		auto& ccc = newEnt.GetColliderDetails();
-		ccc.BVType = BV::Sphere;
-		ccc.pBV = std::make_shared<Sphere>();
+		ccc.BVType = BV::Point;
+		ccc.pBV = std::make_shared<Point>();
 		entities.emplace_back(std::move(newEnt));
 	}
 
