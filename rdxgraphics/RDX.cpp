@@ -47,16 +47,12 @@ void RDX::Run()
 	auto& entities = EntityManager::GetEntities();
 	{
 		Entity newEnt{};
-		auto& ccc = newEnt.GetColliderDetails();
-		ccc.BVType = BV::Ray;
-		ccc.pBV = std::make_shared<Ray>();
+		newEnt.SetCollider<Ray>();
 		entities.emplace_back(std::move(newEnt));
 	}
 	{
 		Entity newEnt{};
-		auto& ccc = newEnt.GetColliderDetails();
-		ccc.BVType = BV::Sphere;
-		ccc.pBV = std::make_shared<Sphere>();
+		newEnt.SetCollider<Sphere>();
 		entities.emplace_back(std::move(newEnt));
 	}
 

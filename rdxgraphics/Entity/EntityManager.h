@@ -22,6 +22,15 @@ public:
 	};
 
 public:
+	template <typename T, typename ...Args>
+	std::enable_if_t<std::is_constructible_v<T, Args...>, 
+		void> SetCollider(Args&& ...args)
+	{
+		auto& colDets = GetColliderDetails();
+		colDets.BVType = T::BVType;
+		colDets.pBV = std::make_shared<T>(std::forward(args)...);
+	}
+
 	inline ModelDetails& GetModelDetails() { return m_ModelDetails; }
 	inline ColliderDetails& GetColliderDetails() { return m_ColliderDetails; }
 

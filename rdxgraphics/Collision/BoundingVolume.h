@@ -1,4 +1,5 @@
 #pragma once
+#define _RX_BV_DEC(Klass) public: inline static const BV BVType{ BV::Klass }; Klass()=default; private:
 
 class BaseBoundingVolume
 {
@@ -24,8 +25,8 @@ protected:
 
 class Point : public BaseBoundingVolume
 {
+	_RX_BV_DEC(Point);
 public:
-	Point() = default;
 	inline Point(glm::vec3 const& p) : BaseBoundingVolume(p) {}
 	inline Point(float x, float y, float z) : BaseBoundingVolume(x, y, z) {}
 
@@ -37,9 +38,8 @@ public:
 
 class Ray : public BaseBoundingVolume
 {
+	_RX_BV_DEC(Ray);
 public:
-	Ray() = default;
-
 	inline void UpdateXform() override
 	{
 		//RX_INFO("{} > {} > {}", GetDirection().x, GetDirection().y, GetDirection().z);
@@ -65,9 +65,8 @@ private:
 
 class Triangle : public BaseBoundingVolume
 {
+	_RX_BV_DEC(Triangle);
 public:
-	Triangle() = default;
-
 	inline void UpdateXform() override
 	{
 
@@ -78,9 +77,8 @@ private:
 
 class Plane : public BaseBoundingVolume
 {
+	_RX_BV_DEC(Plane);
 public:
-	Plane() = default;
-
 	inline void UpdateXform() override
 	{
 		m_Xform = glm::translate(m_Position) * glm::scale(s_Scale) *
@@ -108,9 +106,8 @@ private:
 
 class AABB : public BaseBoundingVolume
 {
+	_RX_BV_DEC(AABB);
 public:
-	AABB() = default;
-
 	inline void UpdateXform() override
 	{
 		m_Xform = glm::translate(m_Position) * glm::scale(m_HalfExtents);
@@ -127,8 +124,8 @@ private:
 
 class Sphere : public BaseBoundingVolume
 {
+	_RX_BV_DEC(Sphere);
 public:
-	Sphere() = default;
 	inline Sphere(glm::vec3 const& p, float r) : BaseBoundingVolume(p), m_Radius(r) {}
 
 	inline void UpdateXform() override
