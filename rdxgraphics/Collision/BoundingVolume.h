@@ -42,21 +42,20 @@ public:
 
 	inline void UpdateXform() override
 	{
-		m_Xform = glm::translate(m_Position) * glm::scale(glm::vec3(s_Scale)) *
-			glm::mat4_cast(glm::quat{ m_EulerOrientation });
+		//RX_INFO("{} > {} > {}", GetDirection().x, GetDirection().y, GetDirection().z);
+		m_Xform = glm::translate(m_Position) * glm::scale(glm::vec3{s_Scale}) *
+			glm::mat4_cast(GetOrientationQuat());
 	}
 
 	inline glm::vec3 const& GetOrientation() const { return m_EulerOrientation; }
 	inline glm::vec3& GetOrientation() { return m_EulerOrientation; }
-	inline glm::vec3 GetDirection() const
-	{
-		glm::vec3 norm{
-			glm::cos(m_EulerOrientation.y) * glm::cos(m_EulerOrientation.x),
-			glm::sin(m_EulerOrientation.x),
-			glm::sin(m_EulerOrientation.y) * glm::cos(m_EulerOrientation.x)
-		};
-		return glm::normalize(norm);
-	}
+	inline glm::quat GetOrientationQuat() const { return std::move(glm::quat{ m_EulerOrientation }); }
+
+	// inward facing is the agreed upon standard for ray
+	inline glm::vec3 GetDirection() const { return GetDirection(glm::quat{ m_EulerOrientation }); }
+
+public:
+	inline static glm::vec3 GetDirection(glm::quat const& quat) { return quat * glm::vec3{ 0.f,0.f,-1.f }; }
 
 private:
 	glm::vec3 m_EulerOrientation{ 0.f,0.f,0.f }; // (Radians) Pitch, Yaw, Roll

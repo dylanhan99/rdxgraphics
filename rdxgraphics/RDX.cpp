@@ -49,7 +49,7 @@ void RDX::Run()
 		Entity newEnt{};
 		auto& ccc = newEnt.GetColliderDetails();
 		ccc.BVType = BV::Ray;
-		ccc.pBV = std::make_shared<Plane>();
+		ccc.pBV = std::make_shared<Ray>();
 		entities.emplace_back(std::move(newEnt));
 	}
 	{
@@ -66,7 +66,7 @@ void RDX::Run()
 		std::string title = "rdxgraphics [" + std::to_string(FramerateController::GetFPSIntervaled()) + "]";
 		GLFWWindow::SetWindowTitle(title);
 		FramerateController::Update(std::move(
-			[&](float dt) 
+			[&](float dt)
 			{
 				GLFWWindow::StartFrame();
 
@@ -113,10 +113,20 @@ void RDX::Run()
 						{
 							auto& eee = entities[0];
 							ImGui::DragFloat3("pos1", &eee.GetModelDetails().Translate[0], 0.1f);
+							if (Ray* pp = (Ray*)eee.GetColliderDetails().pBV.get())
+							{
+								glm::vec3 dir = pp->GetDirection();
+								ImGui::DragFloat3("eul1", &pp->GetOrientation()[0], 0.1f);
+								ImGui::DragFloat3("dir1", &dir[0], 0.1f);
+							}
 						}
 						{
 							auto& eee = entities[1];
 							ImGui::DragFloat3("pos2", &eee.GetModelDetails().Translate[0], 0.1f);
+							//if (Plane* pp = (Plane*)eee.GetColliderDetails().pBV.get())
+							//{
+							//	ImGui::DragFloat3("eul2", &pp->GetOrientation()[0], 0.1f);
+							//}
 						}
 						//auto& aaa = eee.GetColliderDetails();
 						//auto asd = std::dynamic_pointer_cast<Plane>(aaa.pBV);

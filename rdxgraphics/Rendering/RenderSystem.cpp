@@ -267,11 +267,11 @@ void RenderSystem::CreateShapes()
 			.EndObject();
 	}
 
-	{ // Point
+	{ // Line
+		// inward facing is the agreed upon standard for ray
 		GetObjekt(Shape::Line).BeginObject(GL_LINES)
 			.PushIndices({ 0, 1 })
-			//.Push<VertexBasic::Position>({ {-0.5f,0.f,0.f}, {0.5f,0.f,0.f} })
-			.Push<VertexBasic::Position>({ {0.f,0.f,0.f}, {1.f,0.f,0.f} })
+			.Push<VertexBasic::Position>({ {0.f,0.f,0.f}, {0.f,0.f,-1.f} })
 			.Push<VertexBasic::Xform>({})
 			.Push<VertexBasic::IsCollide>({})
 			.EndObject();

@@ -76,7 +76,7 @@ bool CollisionSystem::CheckCollision(Point const& lhs, Point const& rhs)
 
 bool CollisionSystem::CheckCollision(Point const& lhs, Ray const& rhs)
 {
-	glm::vec3 op = rhs.GetPosition() - lhs.GetPosition();
+	glm::vec3 op = lhs.GetPosition() - rhs.GetPosition();
 	glm::vec3 dir = rhs.GetDirection();
 	float t = glm::dot(op, dir); // Is along the ray direction
 	bool isColinear = glm::length2(glm::cross(op, dir)) < glm::epsilon<float>();
