@@ -34,6 +34,7 @@ void RDX::Run()
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
+		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;		  // Enable detatchable imgui windows
 		ImGui::StyleColorsDark();
 
 		// Setup Platform/Renderer bindings
@@ -183,6 +184,12 @@ void RDX::Run()
 
 					glDisable(GL_DEPTH_TEST);
 					ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+					if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+						GLFWwindow* pWindow = GLFWWindow::GetWindowPointer();
+						ImGui::UpdatePlatformWindows();
+						ImGui::RenderPlatformWindowsDefault();
+						glfwMakeContextCurrent(pWindow);
+					}
 				}
 
 				GLFWWindow::EndFrame();
