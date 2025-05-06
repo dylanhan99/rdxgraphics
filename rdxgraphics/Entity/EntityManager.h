@@ -22,7 +22,6 @@ public:
 	};
 
 public:
-
 	inline ModelDetails& GetModelDetails() { return m_ModelDetails; }
 	inline ColliderDetails& GetColliderDetails() { return m_ColliderDetails; }
 
