@@ -1,6 +1,10 @@
 #include <pch.h>
-#include "GLFWWindow.h"
 
+// GLFW
+#include <GLFW/glfw3.h>
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3native.h>
+#include "GLFWWindow.h"
 #include "Utils/Input.h"
 
 RX_SINGLETON_EXPLICIT(GLFWWindow)
@@ -86,10 +90,62 @@ void GLFWWindow::ToggleMinMaxWindow()
 		glfwMaximizeWindow(g.m_pWindow);
 }
 
+void GLFWWindow::SetWindowTitle(std::string const& title) 
+{
+	glfwSetWindowTitle(g.m_pWindow, title.c_str()); 
+}
+
 void GLFWWindow::CenterCursor()
 {
 	glm::vec2 winDims = (glm::vec2)GetWindowDims();
 	glfwSetCursorPos(g.m_pWindow, (int)(winDims.x * 0.5f), (int)(winDims.y * 0.5f));
+}
+
+void GLFWWindow::SetInvisibleCursor(bool b) 
+{ 
+	glfwSetInputMode(g.m_pWindow, GLFW_CURSOR, b ? GLFW_CURSOR_HIDDEN : GLFW_CURSOR_NORMAL); 
+}
+
+bool GLFWWindow::IsWindowShouldClose() 
+{ 
+	return glfwWindowShouldClose(g.m_pWindow); 
+}
+
+void GLFWWindow::SetWindowShouldClose() 
+{ 
+	glfwSetWindowShouldClose(g.m_pWindow, true); 
+}
+
+bool GLFWWindow::IsFocused() 
+{ 
+	return glfwGetWindowAttrib(g.m_pWindow, GLFW_FOCUSED); 
+}
+
+glm::ivec2 GLFWWindow::GetCursorPos() 
+{ 
+	double x{}, y{}; 
+	glfwGetCursorPos(g.m_pWindow, &x, &y); 
+	return { (int)x, (int)y }; 
+}
+
+glm::ivec2 GLFWWindow::GetWindowPos()
+{
+	int x{}, y{};
+	glfwGetWindowPos(g.m_pWindow, &x, &y);
+	return { (int)x, (int)y };
+}
+
+glm::ivec2 GLFWWindow::GetWindowDims() 
+{ 
+	int x{}, y{}; 
+	glfwGetWindowSize(g.m_pWindow, &x, &y); 
+	return { (int)x, (int)y }; 
+}
+
+void GLFWWindow::SetIsVSync(bool b) 
+{ 
+	g.m_IsVSync = b; 
+	glfwSwapInterval((int)b); 
 }
 
 void GLFWWindow::RegisterCallbacks()
