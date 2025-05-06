@@ -16,6 +16,10 @@ public:
 
 	static bool ReloadShaders();
 
+	// Helpful for degbug drawing
+	template <Shape S, typename U>
+	static void Submit(typename U::value_type val) { GetObjekt(S).Submit<U>(val); }
+
 	inline static Object<VertexBasic>& GetObjekt(Shape shape) { return g.m_Objects[(size_t)shape]; }
 	static Object<VertexBasic>& GetObjekt(BV bv);
 
