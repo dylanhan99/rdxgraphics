@@ -44,8 +44,9 @@
 #include <xhash>
 #include <string_view>
 
-// GLAD
-#include <glad/gl.h>
+// GLEW
+#include <GL/glew.h>
+//#include <glad/gl.h>
 
 // GLFW
 #include <GLFW/glfw3.h>

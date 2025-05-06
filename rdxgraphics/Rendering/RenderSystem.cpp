@@ -22,11 +22,13 @@ RenderPass finalPass{};
 
 bool RenderSystem::Init()
 {
-	if (!gladLoadGL(glfwGetProcAddress)) 
-	{
-		RX_ERROR("Failed to initialize GLAD");
-		return false;
-	}
+	GLenum succ = glewInit();
+	RX_INFO("{}", succ);
+	//if (!gladLoadGL(glfwGetProcAddress)) 
+	//{
+	//	RX_ERROR("Failed to initialize GLAD");
+	//	return false;
+	//}
 
 	RX_INFO("GL Version: {}", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
 
