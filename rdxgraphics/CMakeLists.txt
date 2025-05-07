@@ -43,4 +43,5 @@ target_link_libraries("${PROJECT_NAME}"
 	PRIVATE libglew_static
 	PRIVATE imgui
 	PRIVATE spdlog::spdlog
+	PRIVATE EnTT::EnTT
 )

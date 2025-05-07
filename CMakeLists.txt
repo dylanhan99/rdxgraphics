@@ -77,6 +77,11 @@ FetchContent_Declare(spdlog
     GIT_TAG        v1.15.2
 )
 
+FetchContent_Declare(entt
+    GIT_REPOSITORY https://github.com/skypjack/entt.git
+    GIT_TAG        v3.15.0
+)
+
 #########################################################
 # Additional setup for BS_thread_pool. Header-only, no cmakelists
 FetchContent_GetProperties(BS_thread_pool)
@@ -96,7 +101,7 @@ endif()
 #########################################################
 # Only MakeAvailable projects who have cmakelists file
 #FetchContent_MakeAvailable(glfw glm glad imgui spdlog)
-FetchContent_MakeAvailable(glfw glm glew imgui spdlog)
+FetchContent_MakeAvailable(glfw glm glew imgui spdlog entt)
 
 # Add your actual project
 add_subdirectory(rdxgraphics)
