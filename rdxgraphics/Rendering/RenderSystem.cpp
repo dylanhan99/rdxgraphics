@@ -67,8 +67,8 @@ bool RenderSystem::Init()
 
 void RenderSystem::Terminate()
 {
-	for (auto& obj : g.m_Objects)
-		obj.Terminate();
+	for (auto& [uid, object] : g.m_Objects)
+		object.Terminate();
 
 	g.m_Shader.Terminate();
 }
@@ -100,7 +100,7 @@ void RenderSystem::Draw()
 			glCullFace(GL_BACK);
 
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-			for (Object<VertexBasic>& object : g.m_Objects)
+			for (auto& [uid, object] : g.m_Objects)
 			{
 				object.Bind();
 
@@ -155,7 +155,7 @@ void RenderSystem::Draw()
 			//glCullFace(GL_BACK);
 
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-			for (Object<VertexBasic>& object : g.m_Objects)
+			for (auto&[uid, object] : g.m_Objects)
 			{
 				object.Bind();
 
@@ -208,6 +208,11 @@ void RenderSystem::Draw()
 bool RenderSystem::ReloadShaders()
 {
 	return g.m_Shader.Reload();
+}
+
+Object<VertexBasic>& RenderSystem::GetObjekt(Shape shape)
+{
+	return g.m_Objects[Rxuid{ shape }];
 }
 
 Object<VertexBasic>& RenderSystem::GetObjekt(BV bv)

@@ -69,9 +69,9 @@ class VertexBasic
 {
 	_RX_SHARED_VERTEX_KLASS(VertexBasic);
 	
-	_RX_ADD_VERTEX(Position, glm::vec3, glm::vec3, false, false);
-	_RX_ADD_VERTEX(Xform, glm::mat4, glm::vec4, true, false);
-	_RX_ADD_VERTEX(IsCollide, float, float, true, false);
+	_RX_ADD_VERTEX(Position,  glm::vec3, glm::vec3, false, false);
+	_RX_ADD_VERTEX(Xform,	  glm::mat4, glm::vec4, true,  false);
+	_RX_ADD_VERTEX(IsCollide, float,	 float,		true,  false);
 }; 
 // This macro helps to automatically call another macro dubbed "_RX_X". 
 // It must meet the usecase
@@ -86,7 +86,7 @@ class VertexFBO
 {
 	_RX_SHARED_VERTEX_KLASS(VertexFBO);
 
-	_RX_ADD_VERTEX(Position, glm::vec2, glm::vec2, false, false);
+	_RX_ADD_VERTEX(Position,  glm::vec2, glm::vec2, false, false);
 	_RX_ADD_VERTEX(TexCoords, glm::vec2, glm::vec2, false, false);
 };
 // This macro helps to automatically call another macro dubbed "_RX_X". 

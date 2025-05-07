@@ -63,3 +63,4 @@
 #include "Utils/BaseSingleton.h"
 #include "Utils/Logger.h"
 #include "Utils/EventDispatcher/EventDispatcher.h"
+#include "Utils/Rxuid.h"

@@ -19,18 +19,19 @@ const std::filesystem::path g_WorkingDir{
 #endif
 };
 
+const uint64_t RX_INVALID_ID{ 0 };
 const glm::vec3 g_WorldUp{ 0.f,1.f,0.f };
 
 enum class Shape
 {
-	Point,
+	Point = 1,
 	Line,
 	Quad,
 	Plane,
 	Cube,
 	Sphere,
 
-	MAX
+	//MAX
 };
 
 enum class BV

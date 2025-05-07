@@ -20,7 +20,7 @@ public:
 	template <Shape S, typename U>
 	static void Submit(typename U::value_type val) { GetObjekt(S).Submit<U>(val); }
 
-	inline static Object<VertexBasic>& GetObjekt(Shape shape) { return g.m_Objects[(size_t)shape]; }
+	static Object<VertexBasic>& GetObjekt(Shape shape);
 	static Object<VertexBasic>& GetObjekt(BV bv);
 
 private:
@@ -31,6 +31,7 @@ private:
 	Shader m_Shader{};
 	Shader m_FBOShader{};
 
-	std::array<Object<VertexBasic>, (size_t)Shape::MAX> m_Objects{};
+	//std::array<Object<VertexBasic>, (size_t)Shape::MAX> m_Objects{};
+	std::map<Rxuid, Object<VertexBasic>> m_Objects{};
 	Object<VertexFBO> m_FBOObject{};
 };
