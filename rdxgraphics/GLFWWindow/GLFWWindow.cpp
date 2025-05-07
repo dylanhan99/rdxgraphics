@@ -5,9 +5,11 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 #include "GLFWWindow.h"
+#include "FramerateController.h"
 #include "Utils/Input.h"
 
 RX_SINGLETON_EXPLICIT(GLFWWindow)
+RX_SINGLETON_EXPLICIT(FramerateController);
 
 bool GLFWWindow::Init()
 {
@@ -19,12 +21,12 @@ bool GLFWWindow::Init()
 	);
 
 	auto result = glfwInit(); RX_UNREF_PARAM(result);
-	// FF_ASSERT(result == GLFW_TRUE, "glfwInit - Failed to initialize GLFW");
+	RX_ASSERT(result == GLFW_TRUE, "Failed to initialize GLFW");
 	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
 	GLFWvidmode const* videoMode = glfwGetVideoMode(monitor);
 
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);						// oGL version
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);		// Modern oGL
 	glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);						// Double buffering
 	glfwWindowHint(GLFW_RED_BITS,	  videoMode->redBits);				// Window color depth
@@ -121,6 +123,11 @@ bool GLFWWindow::IsFocused()
 	return glfwGetWindowAttrib(g.m_pWindow, GLFW_FOCUSED); 
 }
 
+void GLFWWindow::MakeContextCurrent()
+{
+	glfwMakeContextCurrent(g.m_pWindow);
+}
+
 glm::ivec2 GLFWWindow::GetCursorPos() 
 { 
 	double x{}, y{}; 
@@ -207,4 +214,45 @@ void GLFWWindow::RegisterCallbacks()
 				RX_EVENT_SCROLL_CALLBACK,
 				xoffset, yoffset);
 		});
+}
+
+void FramerateController::Init(uint32_t targetFPS)
+{
+	SetTargetFPS(targetFPS);
+}
+
+void FramerateController::Update(std::function<void(double)> fnUpdate)
+{
+	if (g.m_AccumulatedDT <= g.m_TargetDT)
+		return;
+
+	StartFrame();
+	if (fnUpdate) fnUpdate(GetDT());
+	g.m_AccumulatedDT = 0.0;
+}
+
+void FramerateController::StartGameLoop()
+{
+	g.m_PrevTime = g.m_CurrTime;
+	g.m_CurrTime = glfwGetTime();
+	double dt = g.m_CurrTime - g.m_PrevTime;
+
+	g.m_AccumulatedDT += dt;
+}
+
+void FramerateController::StartFrame()
+{
+	g.m_FPS = static_cast<uint32_t>(1.0 / g.m_AccumulatedDT);
+	g.m_IntervalTimer += GetDT();
+	if (g.m_IntervalTimer >= 1.0)
+	{
+		g.m_IntervalTimer = 0.0;
+		g.m_IntervalFPS = g.m_FPS;
+	}
+}
+
+void FramerateController::SetTargetFPS(uint32_t target)
+{
+	g.m_TargetFPS = target;
+	g.m_TargetDT = 1.0 / g.m_TargetFPS;
 }

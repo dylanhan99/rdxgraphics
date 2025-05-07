@@ -3,13 +3,13 @@
 
 #include "Utils/Input.h"
 #include "GLFWWindow/GLFWWindow.h"
+#include "GLFWWindow/FramerateController.h"
 #include "Rendering/RenderSystem.h"
 #include "Transformation/TransformSystem.h"
 #include "Collision/CollisionSystem.h"
 #include "Entity/EntityManager.h"
 
 #include "Rendering/Camera.h"
-#include "Utils/FramerateController.h"
 
 Camera mainCamera{ { -3.f,3.f,3.f }, { -0.7f,-0.7f,0.f }, { 16.f, 9.f }, 90.f };
 extern float move;
@@ -67,16 +67,16 @@ void RDX::Run()
 			{
 				GLFWWindow::StartFrame();
 
-				if (Input::IsKeyTriggered(GLFW_KEY_ESCAPE))
+				if (Input::IsKeyTriggered(RX_KEY_ESCAPE))
 					GLFWWindow::SetWindowShouldClose();
 
-				if (Input::IsKeyTriggered(GLFW_KEY_F11))
+				if (Input::IsKeyTriggered(RX_KEY_F11))
 					GLFWWindow::ToggleMinMaxWindow();
 
-				if (Input::IsKeyTriggered(GLFW_KEY_F5))
+				if (Input::IsKeyTriggered(RX_KEY_F5))
 					RenderSystem::ReloadShaders();
 
-				if (Input::IsKeyTriggered(GLFW_KEY_TAB))
+				if (Input::IsKeyTriggered(RX_KEY_TAB))
 				{
 					bool& b = mainCamera.IsCameraInUserControl();
 					b = !b;
@@ -188,7 +188,7 @@ void RDX::Run()
 						GLFWwindow* pWindow = GLFWWindow::GetWindowPointer();
 						ImGui::UpdatePlatformWindows();
 						ImGui::RenderPlatformWindowsDefault();
-						glfwMakeContextCurrent(pWindow);
+						GLFWWindow::MakeContextCurrent();
 					}
 				}
 

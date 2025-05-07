@@ -18,6 +18,7 @@ public:
 	static bool IsWindowShouldClose();
 	static void SetWindowShouldClose();
 	static bool IsFocused();
+	static void MakeContextCurrent();
 
 	inline static GLFWwindow* GetWindowPointer() { return g.m_pWindow; }
 
