@@ -44,8 +44,9 @@
 #include <xhash>
 #include <string_view>
 
-// GLAD
-#include <glad/gl.h>
+// GLEW
+#include <GL/glew.h>
+//#include <glad/gl.h>
 
 // GLM
 #define GLM_ENABLE_EXPERIMENTAL
@@ -59,7 +60,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 // BS_thread_pool
-#include <BS_thread_pool.hpp>
+//#include <BS_thread_pool.hpp>
 
 // imgui
 #include <imgui.h>

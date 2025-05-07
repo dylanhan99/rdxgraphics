@@ -36,6 +36,8 @@ set(GLM_BUILD_TESTS     OFF CACHE BOOL "" FORCE)
 
 set(SPDLOG_ENABLE_PCH   ON CACHE BOOL "" FORCE)
 
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libs" FORCE)
+
 FetchContent_Declare(glfw
     GIT_REPOSITORY https://github.com/glfw/glfw.git
     GIT_TAG        3.4
@@ -51,10 +53,15 @@ FetchContent_Declare(BS_thread_pool
     GIT_TAG        v5.0.0
 )
 
-FetchContent_Declare(glad
-    GIT_REPOSITORY https://github.com/Dav1dde/glad.git
-    GIT_TAG        f49229523c58ad7698e941f7c51454e77dd9d6a8
-    SOURCE_SUBDIR  "cmake"
+#FetchContent_Declare(glad
+#    GIT_REPOSITORY https://github.com/Dav1dde/glad.git
+#    GIT_TAG        f49229523c58ad7698e941f7c51454e77dd9d6a8
+#    SOURCE_SUBDIR  "cmake"
+#)
+
+FetchContent_Declare(glew
+    GIT_REPOSITORY https://github.com/omniavinco/glew-cmake.git
+    GIT_TAG master  # Or use a specific commit or tag if preferred
 )
 
 FetchContent_Declare(imgui
@@ -88,7 +95,8 @@ endif()
 #########################################################
 #########################################################
 # Only MakeAvailable projects who have cmakelists file
-FetchContent_MakeAvailable(glfw glm glad imgui spdlog)
+#FetchContent_MakeAvailable(glfw glm glad imgui spdlog)
+FetchContent_MakeAvailable(glfw glm glew imgui spdlog)
 
 # Add your actual project
 add_subdirectory(rdxgraphics)

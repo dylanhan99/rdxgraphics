@@ -260,9 +260,9 @@ bool CollisionSystem::CheckCollision(AABB const& lhs, Sphere const& rhs)
 	glm::vec3 boxMax = lhs.GetMaxPoint();
 	glm::vec3 sphPos = rhs.GetPosition();
 	Point closestPoint{
-		glm::fmax(boxMin.x, glm::fmin(sphPos.x, boxMax.x)),
-		glm::fmax(boxMin.y, glm::fmin(sphPos.y, boxMax.y)),
-		glm::fmax(boxMin.z, glm::fmin(sphPos.z, boxMax.z))
+		glm::max(boxMin.x, glm::min(sphPos.x, boxMax.x)),
+		glm::max(boxMin.y, glm::min(sphPos.y, boxMax.y)),
+		glm::max(boxMin.z, glm::min(sphPos.z, boxMax.z))
 	};
 
 	return CheckCollision(closestPoint, rhs);
