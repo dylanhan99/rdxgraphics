@@ -44,10 +44,6 @@
 #include <xhash>
 #include <string_view>
 
-// GLEW
-#include <GL/glew.h>
-//#include <glad/gl.h>
-
 // GLM
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
@@ -61,12 +57,6 @@
 
 // BS_thread_pool
 //#include <BS_thread_pool.hpp>
-
-// imgui
-#include <imgui.h>
-#include <imgui_internal.h>
-#include <imgui_impl_opengl3.h>
-#include <imgui_impl_glfw.h>
 
 // Local
 #include "RXGlobals.h"

@@ -1,4 +1,5 @@
 #pragma once
+#include "GraphicsCommon.h"
 
 enum ShaderType : int {
 	Vertex,

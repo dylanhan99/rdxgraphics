@@ -1,4 +1,5 @@
 #include <pch.h>
+#include <GL/glew.h>
 #include "Object.h"
 template class Object<VertexBasic>;
 template class Object<VertexFBO>;

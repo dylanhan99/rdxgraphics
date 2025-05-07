@@ -1,4 +1,5 @@
 #include <pch.h>
+#include <GL/glew.h>
 #include "RenderPass.h"
 
 bool RenderPass::Init(void*)
@@ -29,4 +30,17 @@ bool RenderPass::Init(int width, int height)
 void RenderPass::Terminate()
 {
 	glDeleteFramebuffers(1, &m_FBO);
+}
+
+void RenderPass::BindFBO()
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
+}
+
+void RenderPass::DrawThis(std::function<void()> drawStuff)
+{
+	BindFBO();
+	glBindTexture(GL_TEXTURE_2D, m_TextureBuffer);
+	drawStuff();
+	glBindFramebuffer(GL_FRAMEBUFFER, 0); // back to default
 }

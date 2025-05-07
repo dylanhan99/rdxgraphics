@@ -1,4 +1,5 @@
 #pragma once
+#include "GraphicsCommon.h"
 
 class RenderPass
 {
@@ -8,16 +9,10 @@ public:
 	void Terminate();
 
 	// Temporary, while Im still figuring out how scenes/passes will interact
-	inline void BindFBO() { glBindFramebuffer(GL_FRAMEBUFFER, m_FBO); };
+	void BindFBO();
 
 	// maybe something like this will be how drawing could take place (flow-wise)
-	void DrawThis(std::function<void()> drawStuff)
-	{
-		BindFBO();
-		glBindTexture(GL_TEXTURE_2D, m_TextureBuffer);
-		drawStuff();
-		glBindFramebuffer(GL_FRAMEBUFFER, 0); // back to default
-	}
+	void DrawThis(std::function<void()> drawStuff);
 
 public:
 	GLuint m_FBO{};

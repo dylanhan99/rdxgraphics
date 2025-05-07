@@ -1,4 +1,5 @@
 #pragma once
+#include "GraphicsCommon.h"
 #define RX_MAX_INSTANCES 1000
 
 //////////////////////////////////////////////////

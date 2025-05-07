@@ -1,4 +1,5 @@
 #pragma once
+#include "GraphicsCommon.h"
 #include "Object.h"
 #include "Shader.h"
 #include "RenderPass.h"
@@ -9,8 +10,7 @@ class RenderSystem : public BaseSingleton<RenderSystem>
 public:
 	static bool Init();
 	static void Terminate();
-
-	static void Update(double dt);
+	static void Draw();
 
 	inline static glm::vec3& GetBackBufferColor() { return g.m_BackColor; }
 

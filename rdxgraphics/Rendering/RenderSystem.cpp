@@ -1,6 +1,6 @@
 #include <pch.h>
+#include <GL/glew.h>
 #include "RenderSystem.h"
-
 #include "GLFWWindow/GLFWWindow.h"
 #include "Camera.h"
 #include "Entity/EntityManager.h"
@@ -73,10 +73,8 @@ void RenderSystem::Terminate()
 	g.m_Shader.Terminate();
 }
 
-void RenderSystem::Update(double dt)
+void RenderSystem::Draw()
 {
-	RX_UNREF_PARAM(dt);
-
 	basePass.DrawThis(
 		[&]()
 		{

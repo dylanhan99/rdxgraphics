@@ -1,4 +1,5 @@
 #include <pch.h>
+#include <GL/glew.h>
 #include "Shader.h"
 
 namespace fs = std::filesystem;
