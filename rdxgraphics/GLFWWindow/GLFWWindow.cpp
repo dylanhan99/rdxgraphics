@@ -1,9 +1,15 @@
 #include <pch.h>
-#include "GLFWWindow.h"
 
+// GLFW
+#include <GLFW/glfw3.h>
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3native.h>
+#include "GLFWWindow.h"
+#include "FramerateController.h"
 #include "Utils/Input.h"
 
 RX_SINGLETON_EXPLICIT(GLFWWindow)
+RX_SINGLETON_EXPLICIT(FramerateController);
 
 bool GLFWWindow::Init()
 {
@@ -15,12 +21,12 @@ bool GLFWWindow::Init()
 	);
 
 	auto result = glfwInit(); RX_UNREF_PARAM(result);
-	// FF_ASSERT(result == GLFW_TRUE, "glfwInit - Failed to initialize GLFW");
+	RX_ASSERT(result == GLFW_TRUE, "Failed to initialize GLFW");
 	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
 	GLFWvidmode const* videoMode = glfwGetVideoMode(monitor);
 
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);						// oGL version
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);		// Modern oGL
 	glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);						// Double buffering
 	glfwWindowHint(GLFW_RED_BITS,	  videoMode->redBits);				// Window color depth
@@ -86,10 +92,67 @@ void GLFWWindow::ToggleMinMaxWindow()
 		glfwMaximizeWindow(g.m_pWindow);
 }
 
+void GLFWWindow::SetWindowTitle(std::string const& title) 
+{
+	glfwSetWindowTitle(g.m_pWindow, title.c_str()); 
+}
+
 void GLFWWindow::CenterCursor()
 {
 	glm::vec2 winDims = (glm::vec2)GetWindowDims();
 	glfwSetCursorPos(g.m_pWindow, (int)(winDims.x * 0.5f), (int)(winDims.y * 0.5f));
+}
+
+void GLFWWindow::SetInvisibleCursor(bool b) 
+{ 
+	glfwSetInputMode(g.m_pWindow, GLFW_CURSOR, b ? GLFW_CURSOR_HIDDEN : GLFW_CURSOR_NORMAL); 
+}
+
+bool GLFWWindow::IsWindowShouldClose() 
+{ 
+	return glfwWindowShouldClose(g.m_pWindow); 
+}
+
+void GLFWWindow::SetWindowShouldClose() 
+{ 
+	glfwSetWindowShouldClose(g.m_pWindow, true); 
+}
+
+bool GLFWWindow::IsFocused() 
+{ 
+	return glfwGetWindowAttrib(g.m_pWindow, GLFW_FOCUSED); 
+}
+
+void GLFWWindow::MakeContextCurrent()
+{
+	glfwMakeContextCurrent(g.m_pWindow);
+}
+
+glm::ivec2 GLFWWindow::GetCursorPos() 
+{ 
+	double x{}, y{}; 
+	glfwGetCursorPos(g.m_pWindow, &x, &y); 
+	return { (int)x, (int)y }; 
+}
+
+glm::ivec2 GLFWWindow::GetWindowPos()
+{
+	int x{}, y{};
+	glfwGetWindowPos(g.m_pWindow, &x, &y);
+	return { (int)x, (int)y };
+}
+
+glm::ivec2 GLFWWindow::GetWindowDims() 
+{ 
+	int x{}, y{}; 
+	glfwGetWindowSize(g.m_pWindow, &x, &y); 
+	return { (int)x, (int)y }; 
+}
+
+void GLFWWindow::SetIsVSync(bool b) 
+{ 
+	g.m_IsVSync = b; 
+	glfwSwapInterval((int)b); 
 }
 
 void GLFWWindow::RegisterCallbacks()
@@ -151,4 +214,45 @@ void GLFWWindow::RegisterCallbacks()
 				RX_EVENT_SCROLL_CALLBACK,
 				xoffset, yoffset);
 		});
+}
+
+void FramerateController::Init(uint32_t targetFPS)
+{
+	SetTargetFPS(targetFPS);
+}
+
+void FramerateController::Update(std::function<void(double)> fnUpdate)
+{
+	if (g.m_AccumulatedDT <= g.m_TargetDT)
+		return;
+
+	StartFrame();
+	if (fnUpdate) fnUpdate(GetDT());
+	g.m_AccumulatedDT = 0.0;
+}
+
+void FramerateController::StartGameLoop()
+{
+	g.m_PrevTime = g.m_CurrTime;
+	g.m_CurrTime = glfwGetTime();
+	double dt = g.m_CurrTime - g.m_PrevTime;
+
+	g.m_AccumulatedDT += dt;
+}
+
+void FramerateController::StartFrame()
+{
+	g.m_FPS = static_cast<uint32_t>(1.0 / g.m_AccumulatedDT);
+	g.m_IntervalTimer += GetDT();
+	if (g.m_IntervalTimer >= 1.0)
+	{
+		g.m_IntervalTimer = 0.0;
+		g.m_IntervalFPS = g.m_FPS;
+	}
+}
+
+void FramerateController::SetTargetFPS(uint32_t target)
+{
+	g.m_TargetFPS = target;
+	g.m_TargetDT = 1.0 / g.m_TargetFPS;
 }

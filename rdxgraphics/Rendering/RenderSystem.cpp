@@ -41,12 +41,12 @@ bool RenderSystem::Init()
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	g.m_Shader.Init({
-		{ ShaderType::Vertex,	"Assets/default.vert" },
-		{ ShaderType::Fragment, "Assets/default.frag" }
+		{ ShaderType::Vertex,	"shaders/default.vert" },
+		{ ShaderType::Fragment, "shaders/default.frag" }
 		});
 	g.m_FBOShader.Init({
-		{ ShaderType::Vertex,	"Assets/screen.vert" },
-		{ ShaderType::Fragment, "Assets/screen.frag" }
+		{ ShaderType::Vertex,	"shaders/screen.vert" },
+		{ ShaderType::Fragment, "shaders/screen.frag" }
 		});
 
 	CreateShapes();

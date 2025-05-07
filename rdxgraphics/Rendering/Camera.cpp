@@ -20,7 +20,7 @@ Camera::Camera(
 				return;
 
 			float moveSpeed = m_ZoomSpeed;
-			if (Input::IsKeyDown(GLFW_KEY_LEFT_CONTROL))
+			if (Input::IsKeyDown(RX_KEY_LEFT_CONTROL))
 				moveSpeed *= 2.f;
 
 			m_Position += ((float)yoffset * moveSpeed) * m_Front;
@@ -70,21 +70,21 @@ void Camera::Inputs(float dt)
 {
 	// Speed modifiers
 	float moveSpeed = m_MovementSpeed * dt;
-	if (Input::IsKeyDown(GLFW_KEY_LEFT_CONTROL))
+	if (Input::IsKeyDown(RX_KEY_LEFT_CONTROL))
 		moveSpeed *= 2.f;
 
-	if (Input::IsKeyDown(GLFW_KEY_W))
+	if (Input::IsKeyDown(RX_KEY_W))
 		m_Position += moveSpeed * glm::vec3{ m_Front.x, 0.f, m_Front.z };
-	if (Input::IsKeyDown(GLFW_KEY_S))
+	if (Input::IsKeyDown(RX_KEY_S))
 		m_Position -= moveSpeed * glm::vec3{ m_Front.x, 0.f, m_Front.z };
-	if (Input::IsKeyDown(GLFW_KEY_D))
+	if (Input::IsKeyDown(RX_KEY_D))
 		m_Position += moveSpeed * glm::normalize(glm::cross(m_Front, g_WorldUp));
-	if (Input::IsKeyDown(GLFW_KEY_A))
+	if (Input::IsKeyDown(RX_KEY_A))
 		m_Position -= moveSpeed * glm::normalize(glm::cross(m_Front, g_WorldUp));
 
-	if (Input::IsKeyDown(GLFW_KEY_SPACE))
+	if (Input::IsKeyDown(RX_KEY_SPACE))
 		m_Position += moveSpeed * g_WorldUp;
-	if (Input::IsKeyDown(GLFW_KEY_LEFT_SHIFT))
+	if (Input::IsKeyDown(RX_KEY_LEFT_SHIFT))
 		m_Position += moveSpeed * -g_WorldUp;
 
 	// Scroll controls, see ctor. Registered to scroll event.
