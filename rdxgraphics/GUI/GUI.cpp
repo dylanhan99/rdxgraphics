@@ -7,7 +7,7 @@
 #include "Rendering/RenderSystem.h"
 #include "Transformation/TransformSystem.h"
 #include "Collision/CollisionSystem.h"
-#include "Entity/EntityManager.h"
+#include "ECS/EntityManager.h"
 #include "Rendering/Camera.h"
 
 // imgui

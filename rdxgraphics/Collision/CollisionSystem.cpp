@@ -52,7 +52,8 @@ bool CollisionSystem::CheckCollision(Entity::ColliderDetails& lhs, Entity::Colli
 			_RX_C_C(LKlass, AABB);				\
 			_RX_C_C(LKlass, Sphere);			\
 			default: RX_ASSERT(false); break;   \
-		}
+		}										\
+		break;
 
 	switch (lhs.BVType)
 	{
@@ -67,6 +68,7 @@ bool CollisionSystem::CheckCollision(Entity::ColliderDetails& lhs, Entity::Colli
 
 #undef _RX_C_C
 #undef _RX_C_X
+	return false;
 }
 
 bool CollisionSystem::CheckCollision(Point const& lhs, Point const& rhs)

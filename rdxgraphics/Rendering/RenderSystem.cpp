@@ -2,7 +2,7 @@
 #include "RenderSystem.h"
 #include "GLFWWindow/GLFWWindow.h"
 #include "Camera.h"
-#include "Entity/EntityManager.h"
+#include "ECS/EntityManager.h"
 
 #if USE_CSD3151_AUTOMATION == 1
 // This automation hook reads the shader from the submission tutorial's shader directory as a string literal.

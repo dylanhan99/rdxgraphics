@@ -1,5 +1,5 @@
 #pragma once
-#include "Entity/EntityManager.h"
+#include "ECS/EntityManager.h"
 #include "Collision/BoundingVolume.h"
 
 class CollisionSystem : public BaseSingleton<CollisionSystem>
