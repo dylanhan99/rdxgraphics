@@ -22,6 +22,18 @@ public:
 		inline void UpdateXform() const { if (pBV) pBV->UpdateXform(); }
 	};
 
+	template <typename T, typename ...Args>
+	bool AddComponent(Args&& ...args)
+	{
+
+	}
+
+	template <typename T>
+	bool RemoveComponent()
+	{
+
+	}
+
 public:
 	template <typename T, typename ...Args>
 	std::enable_if_t<std::is_constructible_v<T, Args...>,

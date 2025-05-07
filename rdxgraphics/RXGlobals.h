@@ -35,7 +35,8 @@ const glm::vec3 g_WorldUp{ 0.f,1.f,0.f };
 
 enum class Shape
 {
-	Point = 1,
+	NIL = 0, // Supposed to align with RX_INVALID_ID
+	Point,
 	Line,
 	Quad,
 	Plane,
