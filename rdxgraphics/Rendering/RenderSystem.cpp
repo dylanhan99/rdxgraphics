@@ -1,9 +1,26 @@
 #include <pch.h>
-#include <GL/glew.h>
 #include "RenderSystem.h"
 #include "GLFWWindow/GLFWWindow.h"
 #include "Camera.h"
 #include "Entity/EntityManager.h"
+
+#if USE_CSD3151_AUTOMATION == 1
+// This automation hook reads the shader from the submission tutorial's shader directory as a string literal.
+// It requires an automation script to convert the shader files from file format to string literal format.
+// After conversion, the file names must be changed to my-shader.vert and my-shader.frag.
+std::string const assignment_vs = {
+  #include "../shaders/my-shader.vert"
+};
+std::string const assignment_fs = {
+  #include "../shaders/my-shader.frag"
+};
+std::string const fbo_vs = {
+  #include "../shaders/screen.vert"
+};
+std::string const fbo_fs = {
+  #include "../shaders/screen.frag"
+};
+#endif
 
 RX_SINGLETON_EXPLICIT(RenderSystem);
 namespace fs = std::filesystem;
@@ -18,7 +35,6 @@ int renderOption = 2;
 RenderPass basePass{};
 RenderPass wireframePass{};
 RenderPass finalPass{};
-
 
 bool RenderSystem::Init()
 {
@@ -40,14 +56,18 @@ bool RenderSystem::Init()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+#if USE_CSD3151_AUTOMATION == 1
+	// Init shaders with shader buffer directly instead.
+#else
 	g.m_Shader.Init({
-		{ ShaderType::Vertex,	"shaders/default.vert" },
-		{ ShaderType::Fragment, "shaders/default.frag" }
+		{ ShaderType::Vertex,	RX_SHADER_PREFIX"default.vert" },
+		{ ShaderType::Fragment, RX_SHADER_PREFIX"default.frag" }
 		});
 	g.m_FBOShader.Init({
-		{ ShaderType::Vertex,	"shaders/screen.vert" },
-		{ ShaderType::Fragment, "shaders/screen.frag" }
+		{ ShaderType::Vertex,	RX_SHADER_PREFIX"screen.vert" },
+		{ ShaderType::Fragment, RX_SHADER_PREFIX"screen.frag" }
 		});
+#endif
 
 	CreateShapes();
 

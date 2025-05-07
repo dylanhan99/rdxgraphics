@@ -16,8 +16,19 @@ const std::filesystem::path g_WorkingDir{
 	RX_WORKING_DIR
 #else
 	std::filesystem::current_path()
+	// for the csd3151 build, this value is 
+	// R"(.....\sample-framework-csd-3151\build)"
+	// Hence, shaders are accessed via a backtrack first R"(..\shaders\bla.vert)
 #endif
 };
+
+#ifdef RX_HOME
+#ifdef RX_IS_IDE
+#define RX_SHADER_PREFIX RX_WORKING_DIR"/""shaders/"
+#endif
+#else
+#define RX_SHADER_PREFIX "../shaders/"
+#endif
 
 const uint64_t RX_INVALID_ID{ 0 };
 const glm::vec3 g_WorldUp{ 0.f,1.f,0.f };

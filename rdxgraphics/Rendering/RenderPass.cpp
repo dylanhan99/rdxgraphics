@@ -1,5 +1,4 @@
 #include <pch.h>
-#include <GL/glew.h>
 #include "RenderPass.h"
 
 bool RenderPass::Init(void*)

@@ -21,6 +21,7 @@ if (RX_IS_IDE_BUILD)
 	target_compile_definitions("${PROJECT_NAME}" 
 		PRIVATE RX_IS_IDE
 		PRIVATE RX_WORKING_DIR="${CMAKE_SOURCE_DIR}"
+		PRIVATE RX_HOME
 	)
 else()
 	#target_compile_definitions("${PROJECT_NAME}" 

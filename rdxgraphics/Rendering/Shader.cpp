@@ -1,5 +1,4 @@
 #include <pch.h>
-#include <GL/glew.h>
 #include "Shader.h"
 
 namespace fs = std::filesystem;
@@ -11,8 +10,7 @@ bool Shader::Init(std::vector<std::pair<ShaderType, std::filesystem::path>> cons
 	// Loading
 	for (auto const& [t, p] : shaderAssets)
 	{
-		int index = (int)t;
-		m_ShaderAssets[index] = p;
+		m_ShaderAssets[(size_t)t] = p;
 
 		GLenum shaderType = GetShaderGLenum(t);
 		GLuint shaderID = LoadShader(shaderType, p);
@@ -106,7 +104,7 @@ GLuint Shader::LoadShader(GLenum shaderType, std::filesystem::path const& shader
 {
 	GLuint shaderID{ 0 };
 
-	std::ifstream ifs{ g_WorkingDir / shaderPath };
+	std::ifstream ifs{ shaderPath };
 	if (!ifs)
 	{
 		RX_ERROR("Failed to read shader asset path: {}", shaderPath);
