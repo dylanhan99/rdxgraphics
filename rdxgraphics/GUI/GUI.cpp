@@ -4,7 +4,6 @@
 
 #include "Utils/Input.h"
 #include "GLFWWindow/GLFWWindow.h"
-#include "GLFWWindow/FramerateController.h"
 #include "Rendering/RenderSystem.h"
 #include "Transformation/TransformSystem.h"
 #include "Collision/CollisionSystem.h"
@@ -103,7 +102,7 @@ void GUI::Update(double dt)
 		static std::array<uint32_t, 6> s_FPSsNum{ 30, 60, 120, 144, 240, std::numeric_limits<uint32_t>::max() };
 		ImGui::SeparatorText("Window");
 		if (ImGui::SliderInt("FPS", &s_FPSIndex, 0, static_cast<int>(s_FPSs.size() - 1), s_FPSs[s_FPSIndex]))
-			FramerateController::SetTargetFPS(s_FPSsNum[s_FPSIndex]);
+			GLFWWindow::SetTargetFPS(s_FPSsNum[s_FPSIndex]);
 		if (ImGui::Checkbox("VSync", &GLFWWindow::IsVSync()))
 			GLFWWindow::SetIsVSync(GLFWWindow::IsVSync());
 

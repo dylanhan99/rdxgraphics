@@ -1,5 +1,6 @@
 #include <pch.h>
 #include "EntityManager.h"
+#include <entt/entt.hpp>
 
 RX_SINGLETON_EXPLICIT(EntityManager);
 

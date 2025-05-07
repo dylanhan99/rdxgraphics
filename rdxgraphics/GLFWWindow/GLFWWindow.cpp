@@ -3,11 +3,9 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 #include "GLFWWindow.h"
-#include "FramerateController.h"
 #include "Utils/Input.h"
 
 RX_SINGLETON_EXPLICIT(GLFWWindow)
-RX_SINGLETON_EXPLICIT(FramerateController);
 
 bool GLFWWindow::Init()
 {
@@ -61,6 +59,8 @@ bool GLFWWindow::Init()
 	Input::Init();
 	RegisterCallbacks();
 
+	SetTargetFPS(30); // Hardcoded to 30FPS by default.
+
 	return true;
 }
 
@@ -68,17 +68,6 @@ void GLFWWindow::Terminate()
 {
 	glfwDestroyWindow(g.m_pWindow);
 	glfwTerminate();
-}
-
-void GLFWWindow::StartFrame()
-{
-	Input::SwapKeys();
-	glfwPollEvents();
-}
-
-void GLFWWindow::EndFrame()
-{
-	glfwSwapBuffers(g.m_pWindow);
 }
 
 void GLFWWindow::ToggleMinMaxWindow()
@@ -214,42 +203,43 @@ void GLFWWindow::RegisterCallbacks()
 		});
 }
 
-void FramerateController::Init(uint32_t targetFPS)
+void GLFWWindow::Update(std::function<void(double)> fnUpdate)
 {
-	SetTargetFPS(targetFPS);
-}
+	{ // FRC start gameloop
+		g.m_PrevTime = g.m_CurrTime;
+		g.m_CurrTime = glfwGetTime();
+		double dt = g.m_CurrTime - g.m_PrevTime;
 
-void FramerateController::Update(std::function<void(double)> fnUpdate)
-{
+		g.m_AccumulatedDT += dt;
+	}
+
 	if (g.m_AccumulatedDT <= g.m_TargetDT)
 		return;
 
-	StartFrame();
-	if (fnUpdate) fnUpdate(GetDT());
-	g.m_AccumulatedDT = 0.0;
-}
-
-void FramerateController::StartGameLoop()
-{
-	g.m_PrevTime = g.m_CurrTime;
-	g.m_CurrTime = glfwGetTime();
-	double dt = g.m_CurrTime - g.m_PrevTime;
-
-	g.m_AccumulatedDT += dt;
-}
-
-void FramerateController::StartFrame()
-{
-	g.m_FPS = static_cast<uint32_t>(1.0 / g.m_AccumulatedDT);
-	g.m_IntervalTimer += GetDT();
-	if (g.m_IntervalTimer >= 1.0)
-	{
-		g.m_IntervalTimer = 0.0;
-		g.m_IntervalFPS = g.m_FPS;
+	{ // FRC start frame
+		g.m_FPS = static_cast<uint32_t>(1.0 / g.m_AccumulatedDT);
+		g.m_IntervalTimer += GetDT();
+		if (g.m_IntervalTimer >= 1.0)
+		{
+			g.m_IntervalTimer = 0.0;
+			g.m_IntervalFPS = g.m_FPS;
+		}
 	}
+
+	{ // GLFW start frame
+		Input::SwapKeys();
+		glfwPollEvents();
+	}
+
+	if (fnUpdate) 
+		fnUpdate(GetDT());
+
+	// End frame
+	g.m_AccumulatedDT = 0.0;
+	glfwSwapBuffers(g.m_pWindow);
 }
 
-void FramerateController::SetTargetFPS(uint32_t target)
+void GLFWWindow::SetTargetFPS(uint32_t target)
 {
 	g.m_TargetFPS = target;
 	g.m_TargetDT = 1.0 / g.m_TargetFPS;

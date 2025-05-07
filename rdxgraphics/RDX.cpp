@@ -3,7 +3,6 @@
 
 #include "Utils/Input.h"
 #include "GLFWWindow/GLFWWindow.h"
-#include "GLFWWindow/FramerateController.h"
 #include "Rendering/RenderSystem.h"
 #include "Transformation/TransformSystem.h"
 #include "Collision/CollisionSystem.h"
@@ -17,7 +16,6 @@ Camera mainCamera{ { -3.f,3.f,3.f }, { -0.7f,-0.7f,0.f }, { 16.f, 9.f }, 90.f };
 void RDX::Run()
 {
 	Logger::Init();
-	FramerateController::Init(30);
 
 	bool initOK = true;
 	initOK &= GLFWWindow::Init();
@@ -40,14 +38,11 @@ void RDX::Run()
 
 	while (!GLFWWindow::IsWindowShouldClose())
 	{
-		FramerateController::StartGameLoop();
-		std::string title = "rdxgraphics [" + std::to_string(FramerateController::GetFPSIntervaled()) + "]";
+		std::string title = "rdxgraphics [" + std::to_string(GLFWWindow::GetFPSIntervaled()) + "]";
 		GLFWWindow::SetWindowTitle(title);
-		FramerateController::Update(std::move(
+		GLFWWindow::Update(std::move(
 			[&](float dt)
 			{
-				GLFWWindow::StartFrame();
-
 				if (Input::IsKeyTriggered(RX_KEY_ESCAPE))
 					GLFWWindow::SetWindowShouldClose();
 
@@ -79,8 +74,6 @@ void RDX::Run()
 					RenderSystem::Draw();
 					GUI::Draw();
 				}
-
-				GLFWWindow::EndFrame();
 			}
 		));
 	}
