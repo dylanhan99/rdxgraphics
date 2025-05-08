@@ -6,29 +6,51 @@ RX_SINGLETON_EXPLICIT(TransformSystem);
 
 void TransformSystem::Update(float dt)
 {
-	static std::set<entt::entity> seen{};
 	auto xformView = EntityManager::GetInstance().m_Registry.view<Xform>();
 	for (auto [handle, xform] : xformView.each())
 	{
 		xform.UpdateXform();
-		seen.insert(handle);
 	}
 
 	auto colView = EntityManager::GetInstance().m_Registry.view<const Collider>();
 	for (auto [handle, col] : colView.each())
 	{
-		//if (seen.find(handle) != seen.end())
-		//	continue;
-		//if (col.GetBVType() == BV::NIL)
-		//	continue;
+		if (col.GetBVType() == BV::NIL)
+			continue;
 
-		// hardcode test
-		if (col.GetBVType() == BV::AABB)
+		// Hardcode to follow xform for now?
 		{
-			// Should check ensure that get<BV> exists
-			AABBBV& bv = EntityManager::GetInstance().m_Registry.get<AABBBV>(handle);
-			bv.UpdateXform();
+			Xform& xform = EntityManager::GetInstance().m_Registry.get<Xform>(handle);
+#define _RX_X(Klass)																		\
+		case BV::Klass:																		\
+		{																					\
+			Klass##BV& bv = EntityManager::GetInstance().m_Registry.get<Klass##BV>(handle); \
+			bv.GetPosition() = xform.GetTranslate();										\
+	} break;
+
+			switch (col.GetBVType())
+			{
+				RX_DO_ALL_BV_ENUM;
+			default:
+				break;
+			}
+#undef _RX_X
 		}
+
+#define _RX_X(Klass)																	\
+	case BV::Klass:																		\
+	{																					\
+		/*Should check ensure that get<BV> exists*/										\
+		Klass##BV& bv = EntityManager::GetInstance().m_Registry.get<Klass##BV>(handle); \
+		bv.UpdateXform();																\
+	} break;
+
+		switch (col.GetBVType())
+		{
+			RX_DO_ALL_BV_ENUM;
+		default:
+			break;
+		}
+#undef _RX_X
 	}
-	seen.clear();
 }

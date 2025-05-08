@@ -1,6 +1,6 @@
 #pragma once
-#include "Entity.h"
 #include <entt/entt.hpp>
+#include "BaseComponent.h"
 	
 // Helper to check that component has the HasEnttHandle boolean
 template <typename, typename = void>
@@ -58,10 +58,6 @@ public:
 	//	return m_Registry.view<Args...>();
 	//}
 
-	//inline static std::vector<Entity>& GetEntities() { return g.m_Entities; }
-
 public:
-	//std::vector<Entity> m_Entities{};
-
 	entt::registry m_Registry{};
 };

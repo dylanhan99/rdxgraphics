@@ -166,16 +166,17 @@ void RenderSystem::Draw()
 				if (bvType == BV::NIL)
 					continue;
 
-				// Hardcode test
-				if (bvType == BV::AABB)
-				{
-					// Should check ensure that get<BV> exists
-					AABBBV& bv = EntityManager::GetInstance().m_Registry.get<AABBBV>(handle);
-
-					Object<VertexBasic>& o = GetObjekt(bvType);
-					o.Submit<VertexBasic::Xform>(bv.GetXform());
-					o.Submit<VertexBasic::IsCollide>(bv.IsCollide());
+				#define _RX_X(Klass)															   \
+				if (bvType == BV::Klass)														   \
+				{																				   \
+					/*Should check ensure that get<BV> exists*/									   \
+					Klass##BV& bv = EntityManager::GetInstance().m_Registry.get<Klass##BV>(handle);\
+					Object<VertexBasic>& o = GetObjekt(bvType);									   \
+					o.Submit<VertexBasic::Xform>(bv.GetXform());								   \
+					o.Submit<VertexBasic::IsCollide>(bv.IsCollide());							   \
 				}
+				RX_DO_ALL_BV_ENUM;
+				#undef _RX_X
 			}
 
 			//glClearColor(1.0f, 1.0f, 1.0f, 1.0f);

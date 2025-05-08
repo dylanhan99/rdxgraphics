@@ -5,7 +5,7 @@
 #include "GLFWWindow/GLFWWindow.h"
 #include "Rendering/RenderSystem.h"
 #include "Transformation/TransformSystem.h"
-#include "Collision/CollisionSystem.h"
+#include "ECS/Systems/CollisionSystem.h"
 #include "ECS/EntityManager.h"
 #include "GUI/GUI.h"
 
@@ -30,9 +30,10 @@ void RDX::Run()
 		EntityManager::AddComponent<Collider>(handle, BV::AABB);
 	}
 	{
-		//auto handle = EntityManager::CreateEntity();
-		//EntityManager::AddComponent<Xform>(handle, glm::vec3{1.f, 1.f, 1.f});
-		//EntityManager::AddComponent<Model>(handle, Shape::Sphere);
+		auto handle = EntityManager::CreateEntity();
+		EntityManager::AddComponent<Xform>(handle, glm::vec3{1.f, 1.f, 1.f});
+		EntityManager::AddComponent<Model>(handle, Shape::Quad);
+		EntityManager::AddComponent<Collider>(handle, BV::AABB);
 	}
 
 	while (!GLFWWindow::IsWindowShouldClose())

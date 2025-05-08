@@ -6,7 +6,7 @@
 #include "GLFWWindow/GLFWWindow.h"
 #include "Rendering/RenderSystem.h"
 #include "Transformation/TransformSystem.h"
-#include "Collision/CollisionSystem.h"
+#include "ECS/Systems/CollisionSystem.h"
 #include "ECS/EntityManager.h"
 #include "Rendering/Camera.h"
 

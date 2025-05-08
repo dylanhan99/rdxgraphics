@@ -71,6 +71,7 @@ public:
 	//	m_BVType = GetBVType<T>();
 	//}
 	void SetBV(BV bvType);
+	inline entt::entity GetEntityHandle() const { return m_Handle; }
 
 private:
 	BV m_BVType{ BV::NIL };
@@ -99,6 +100,83 @@ protected:
 	bool m_IsCollide{ false };
 };
 
+class PointBV : public BaseBV
+{
+public:
+	inline PointBV(glm::vec3 const& p) : BaseBV(p) {}
+	inline PointBV(float x, float y, float z) : BaseBV(x, y, z) {}
+
+	inline void UpdateXform() override
+	{
+		m_Xform = glm::translate(m_Position);
+	}
+};
+
+class RayBV : public BaseBV
+{
+public:
+	inline void UpdateXform() override
+	{
+		//RX_INFO("{} > {} > {}", GetDirection().x, GetDirection().y, GetDirection().z);
+		m_Xform = glm::translate(m_Position) * glm::scale(glm::vec3{ s_Scale }) *
+			glm::mat4_cast(GetOrientationQuat());
+	}
+
+	inline glm::vec3 const& GetOrientation() const { return m_EulerOrientation; }
+	inline glm::vec3& GetOrientation() { return m_EulerOrientation; }
+	inline glm::quat GetOrientationQuat() const { return std::move(glm::quat{ m_EulerOrientation }); }
+
+	// inward facing is the agreed upon standard for ray
+	inline glm::vec3 GetDirection() const { return GetDirection(glm::quat{ m_EulerOrientation }); }
+
+public:
+	inline static glm::vec3 GetDirection(glm::quat const& quat) { return quat * glm::vec3{ 0.f,0.f,-1.f }; }
+
+private:
+	glm::vec3 m_EulerOrientation{ 0.f,0.f,0.f }; // (Radians) Pitch, Yaw, Roll
+
+	inline static float s_Scale{ 10.f };
+};
+
+class TriangleBV : public BaseBV
+{
+public:
+	inline void UpdateXform() override
+	{
+
+	}
+
+private:
+};
+
+class PlaneBV : public BaseBV
+{
+public:
+	inline void UpdateXform() override
+	{
+		m_Xform = glm::translate(m_Position) * glm::scale(s_Scale) *
+			glm::mat4_cast(glm::quat{ m_EulerOrientation });
+	}
+
+	inline glm::vec3 const& GetOrientation() const { return m_EulerOrientation; }
+	inline glm::vec3& GetOrientation() { return m_EulerOrientation; }
+	inline glm::vec3 GetNormal() const
+	{
+		glm::vec3 norm{
+			glm::cos(m_EulerOrientation.y) * glm::cos(m_EulerOrientation.x),
+			glm::sin(m_EulerOrientation.x),
+			glm::sin(m_EulerOrientation.y) * glm::cos(m_EulerOrientation.x)
+		};
+		return glm::normalize(norm);
+	}
+
+private:
+	// Orientation of the normal
+	glm::vec3 m_EulerOrientation{ 0.f,0.f,0.f }; // (Radians) Pitch, Yaw, Roll
+
+	inline static glm::vec3 s_Scale{ 1.f, 1.f, 1.f };
+};
+
 class AABBBV : public BaseBV
 {
 public:
@@ -115,4 +193,21 @@ public:
 private:
 	glm::vec3 m_HalfExtents{ 1.f, 1.f, 1.f };
 
+};
+
+class SphereBV : public BaseBV
+{
+public:
+	inline SphereBV(glm::vec3 const& p, float r) : BaseBV(p), m_Radius(r) {}
+
+	inline void UpdateXform() override
+	{
+		m_Xform = glm::translate(m_Position) * glm::scale(glm::vec3{ m_Radius });
+	}
+
+	inline float const& GetRadius() const { return m_Radius; }
+	inline float& GetRadius() { return m_Radius; }
+
+private:
+	float m_Radius{ 1.f };
 };
