@@ -4,38 +4,38 @@
 
 void CollisionSystem::Update(float dt)
 {
-	auto& entities = EntityManager::GetEntities();
-
-	// Hardcoding here to un-set it for the next frame for now
-	// Not really sure how else to handle this rn, considering the design choice in the "ECS"
-	for (Entity& e : entities)
-	{
-		if (auto pp = e.GetColliderDetails().pBV)
-			pp->IsCollide() = false;
-	}
-
-	for (Entity& lhs : entities)
-	{
-		Entity::ColliderDetails& lhsCol = lhs.GetColliderDetails();
-		if (!lhsCol.pBV)
-			continue;
-
-		for (Entity& rhs : entities)
-		{
-			Entity::ColliderDetails& rhsCol = rhs.GetColliderDetails();
-			if (!rhsCol.pBV)
-				continue;
-
-			if (lhsCol.pBV.get() == rhsCol.pBV.get())
-				continue;
-
-			if (CheckCollision(lhsCol, rhsCol))
-			{
-				lhsCol.pBV->IsCollide() |= true;
-				rhsCol.pBV->IsCollide() |= true;
-			}
-		}
-	}
+	//auto& entities = EntityManager::GetEntities();
+	//
+	//// Hardcoding here to un-set it for the next frame for now
+	//// Not really sure how else to handle this rn, considering the design choice in the "ECS"
+	//for (Entity& e : entities)
+	//{
+	//	if (auto pp = e.GetColliderDetails().pBV)
+	//		pp->IsCollide() = false;
+	//}
+	//
+	//for (Entity& lhs : entities)
+	//{
+	//	Entity::ColliderDetails& lhsCol = lhs.GetColliderDetails();
+	//	if (!lhsCol.pBV)
+	//		continue;
+	//
+	//	for (Entity& rhs : entities)
+	//	{
+	//		Entity::ColliderDetails& rhsCol = rhs.GetColliderDetails();
+	//		if (!rhsCol.pBV)
+	//			continue;
+	//
+	//		if (lhsCol.pBV.get() == rhsCol.pBV.get())
+	//			continue;
+	//
+	//		if (CheckCollision(lhsCol, rhsCol))
+	//		{
+	//			lhsCol.pBV->IsCollide() |= true;
+	//			rhsCol.pBV->IsCollide() |= true;
+	//		}
+	//	}
+	//}
 }
 
 bool CollisionSystem::CheckCollision(Entity::ColliderDetails& lhs, Entity::ColliderDetails& rhs)

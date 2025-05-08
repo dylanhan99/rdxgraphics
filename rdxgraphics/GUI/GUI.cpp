@@ -50,8 +50,6 @@ void GUI::Terminate()
 
 void GUI::Update(double dt)
 {
-	auto& entities = EntityManager::GetEntities();
-
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
@@ -59,6 +57,22 @@ void GUI::Update(double dt)
 
 	ImGui::Begin("dxd", nullptr, 0);
 	{
+		auto view = EntityManager::GetInstance().m_Registry.view<Xform, Model>();
+		std::string name = "Ent #";
+		for (auto [handle, xform, model] : view.each())
+		{
+			std::string id = name + std::to_string((uint32_t)handle);
+			if (ImGui::TreeNode(id.c_str()))
+			{
+				ImGui::SeparatorText("Xform");
+				ImGui::DragFloat3(("Pos##" + id).c_str(), glm::value_ptr(xform.GetTranslate()), 0.01f);
+				ImGui::DragFloat3(("Scl##" + id).c_str(), glm::value_ptr(xform.GetScale()), 0.01f);
+				ImGui::DragFloat3(("Rot##" + id).c_str(), glm::value_ptr(xform.GetEulerOrientation()), 0.01f);
+				ImGui::TreePop();
+				ImGui::SeparatorText("");
+			}
+		}
+
 		//auto& eee = entities[0];
 		//auto& aaa = eee.GetColliderDetails();
 		//auto asd = std::dynamic_pointer_cast<Ray>(aaa.pBV);
@@ -66,24 +80,24 @@ void GUI::Update(double dt)
 		//ImGui::DragFloat3("dir", glm::value_ptr(asd->GetOrientation()));
 		////ImGui::DragFloat("asd", &asd->ang);
 
-		{
-			auto& eee = entities[0];
-			ImGui::DragFloat3("pos1", &eee.GetModelDetails().Translate[0], 0.1f);
-			if (Ray* pp = (Ray*)eee.GetColliderDetails().pBV.get())
-			{
-				glm::vec3 dir = pp->GetDirection();
-				ImGui::DragFloat3("eul1", &pp->GetOrientation()[0], 0.1f);
-				ImGui::DragFloat3("dir1", &dir[0], 0.1f);
-			}
-		}
-		{
-			auto& eee = entities[1];
-			ImGui::DragFloat3("pos2", &eee.GetModelDetails().Translate[0], 0.1f);
-			//if (Plane* pp = (Plane*)eee.GetColliderDetails().pBV.get())
-			//{
-			//	ImGui::DragFloat3("eul2", &pp->GetOrientation()[0], 0.1f);
-			//}
-		}
+		//{
+		//	auto& eee = entities[0];
+		//	ImGui::DragFloat3("pos1", &eee.GetModelDetails().Translate[0], 0.1f);
+		//	if (Ray* pp = (Ray*)eee.GetColliderDetails().pBV.get())
+		//	{
+		//		glm::vec3 dir = pp->GetDirection();
+		//		ImGui::DragFloat3("eul1", &pp->GetOrientation()[0], 0.1f);
+		//		ImGui::DragFloat3("dir1", &dir[0], 0.1f);
+		//	}
+		//}
+		//{
+		//	auto& eee = entities[1];
+		//	ImGui::DragFloat3("pos2", &eee.GetModelDetails().Translate[0], 0.1f);
+		//	//if (Plane* pp = (Plane*)eee.GetColliderDetails().pBV.get())
+		//	//{
+		//	//	ImGui::DragFloat3("eul2", &pp->GetOrientation()[0], 0.1f);
+		//	//}
+		//}
 		//auto& aaa = eee.GetColliderDetails();
 		//auto asd = std::dynamic_pointer_cast<Plane>(aaa.pBV);
 		//ImGui::DragFloat3("colPos", glm::value_ptr(aaa.pBV->GetPosition()));

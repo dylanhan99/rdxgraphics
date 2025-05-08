@@ -48,7 +48,7 @@ enum class Shape
 
 enum class BV
 {
-	NIL,
+	NIL = 0,
 	Point,
 	Ray,
 	Triangle,
@@ -56,5 +56,5 @@ enum class BV
 	AABB,
 	Sphere,
 
-	MAX
+	//MAX
 };

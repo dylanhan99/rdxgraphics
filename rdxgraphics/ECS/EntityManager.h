@@ -14,7 +14,7 @@ public:
 		entt::entity> CreateEntity()
 	{
 		entt::entity handle = g.m_Registry.create();
-		AddComponent<Args>(handle), ...; // Default ctor each type provided
+		(AddComponent<Args>(handle), ...); // Default ctor each type provided
 		return handle;
 	}
 
@@ -31,13 +31,19 @@ public:
 	static std::enable_if_t<std::is_base_of_v<BaseComponent, T>,
 		void> RemoveComponent(entt::entity handle)
 	{
-		g.m_Registry.remove<T>(handle)
+		g.m_Registry.remove<T>(handle);
 	}
 
-	inline static std::vector<Entity>& GetEntities() { return g.m_Entities; }
+	//template <typename ...Args>
+	//static auto View()
+	//{
+	//	return m_Registry.view<Args...>();
+	//}
 
-private:
-	std::vector<Entity> m_Entities{};
+	//inline static std::vector<Entity>& GetEntities() { return g.m_Entities; }
+
+public:
+	//std::vector<Entity> m_Entities{};
 
 	entt::registry m_Registry{};
 };

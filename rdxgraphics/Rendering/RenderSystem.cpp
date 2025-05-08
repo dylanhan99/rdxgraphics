@@ -101,12 +101,15 @@ void RenderSystem::Draw()
 			if (renderOption == 1)
 				return;
 
-			for (Entity& ent : EntityManager::GetEntities())
+			auto view = EntityManager::GetInstance().m_Registry.view<Xform, Model>();
+			for (auto [handle, xform, model] : view.each())
 			{
-				auto& modelDetails = ent.GetModelDetails();
+				Rxuid meshID = model.GetMesh();
+				if (meshID == RX_INVALID_ID)
+					continue;
 
-				Object<VertexBasic>& o = GetObjekt(ent.GetModelDetails().ShapeType);
-				o.Submit<VertexBasic::Xform>(modelDetails.Xform);
+				Object<VertexBasic>& o = GetObjekt(meshID);
+				o.Submit<VertexBasic::Xform>(xform.GetXform());
 			}
 
 			glClearColor(g.m_BackColor.x, g.m_BackColor.y, g.m_BackColor.z, 1.f);
@@ -142,20 +145,22 @@ void RenderSystem::Draw()
 	wireframePass.DrawThis(
 		[&]()
 		{
+			return;
+
 			if (renderOption == 0)
 				return;
 
-			for (Entity& ent : EntityManager::GetEntities())
-			{
-				auto& colDetails = ent.GetColliderDetails();
-				if (colDetails.BVType == BV::NIL || !colDetails.pBV)
-					continue;
-
-				Object<VertexBasic>& o = GetObjekt(ent.GetColliderDetails().BVType);
-				o.Submit<VertexBasic::Xform>(colDetails.pBV->GetXform());
-				o.Submit<VertexBasic::IsCollide>(
-					(typename VertexBasic::IsCollide::value_type)colDetails.pBV->IsCollide());
-			}
+			//for (Entity& ent : EntityManager::GetEntities())
+			//{
+			//	auto& colDetails = ent.GetColliderDetails();
+			//	if (colDetails.BVType == BV::NIL || !colDetails.pBV)
+			//		continue;
+			//
+			//	Object<VertexBasic>& o = GetObjekt(ent.GetColliderDetails().BVType);
+			//	o.Submit<VertexBasic::Xform>(colDetails.pBV->GetXform());
+			//	o.Submit<VertexBasic::IsCollide>(
+			//		(typename VertexBasic::IsCollide::value_type)colDetails.pBV->IsCollide());
+			//}
 
 			//glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 			//glClear(GL_COLOR_BUFFER_BIT);
@@ -215,7 +220,7 @@ void RenderSystem::Draw()
 			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, wireframePass.m_TextureBuffer);
 			g.m_FBOShader.SetUniform1i("uWireframeTex", 1);
-			g.m_FBOShader.SetUniform1i("uHasWireframeTex", renderOption != 0);
+			g.m_FBOShader.SetUniform1i("uHasWireframeTex", false);// renderOption != 0);
 
 			g.m_FBOObject.Bind();
 			g.m_FBOObject.Draw(1);
@@ -228,6 +233,12 @@ void RenderSystem::Draw()
 bool RenderSystem::ReloadShaders()
 {
 	return g.m_Shader.Reload();
+}
+
+Object<VertexBasic>& RenderSystem::GetObjekt(Rxuid uid)
+{
+	RX_ASSERT(uid != RX_INVALID_ID);
+	return g.m_Objects[uid];
 }
 
 Object<VertexBasic>& RenderSystem::GetObjekt(Shape shape)

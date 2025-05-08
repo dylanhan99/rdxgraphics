@@ -24,16 +24,14 @@ void RDX::Run()
 	if (!initOK)
 		throw RX_EXCEPTION("System initialization failed");
 
-	auto& entities = EntityManager::GetEntities();
 	{
-		Entity newEnt{};
-		newEnt.SetCollider<Ray>();
-		entities.emplace_back(std::move(newEnt));
+		auto handle = EntityManager::CreateEntity<Xform>();
+		EntityManager::AddComponent<Model>(handle, Shape::Cube);
 	}
 	{
-		Entity newEnt{};
-		newEnt.SetCollider<Sphere>();
-		entities.emplace_back(std::move(newEnt));
+		auto handle = EntityManager::CreateEntity();
+		EntityManager::AddComponent<Xform>(handle, glm::vec3{1.f, 1.f, 1.f});
+		EntityManager::AddComponent<Model>(handle, Shape::Sphere);
 	}
 
 	while (!GLFWWindow::IsWindowShouldClose())

@@ -6,12 +6,23 @@ RX_SINGLETON_EXPLICIT(TransformSystem);
 
 void TransformSystem::Update(float dt)
 {
-	for (Entity& ent : EntityManager::GetEntities())
+	static std::set<entt::entity> seen{};
+	auto xformView = EntityManager::GetInstance().m_Registry.view<Xform>();
+	for (auto [handle, xform] : xformView.each())
 	{
-		if (auto pBV = ent.GetColliderDetails().pBV)
-			pBV->GetPosition() = ent.GetModelDetails().Translate; // Lazily having col and model's position be the same
-
-		ent.GetModelDetails().UpdateXform();
-		ent.GetColliderDetails().UpdateXform();
+		xform.UpdateXform();
+		seen.insert(handle);
 	}
+
+	auto colView = EntityManager::GetInstance().m_Registry.view<const Collider>();
+	for (auto [handle, col] : colView.each())
+	{
+		if (seen.find(handle) != seen.end())
+			continue;
+		//if (col.GetBVType() == BV::NIL)
+		//	continue;
+
+		//
+	}
+	seen.clear();
 }
