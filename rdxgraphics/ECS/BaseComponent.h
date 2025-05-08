@@ -1,4 +1,5 @@
 #pragma once
+#include <entt/entt.hpp>
 
 class BaseComponent
 {
@@ -42,17 +43,20 @@ public:
 
 private:
 	Rxuid m_MeshID{ Rxuid{ Shape::NIL } };
-	//Shape ShapeType{ Shape::Quad };
 };
 
 class Collider : public BaseComponent
 {
 public:
-	Collider() = default;
+	inline static const bool HasEnttHandle{ true };
 
-	template <typename T, typename ...Args>
+public:
+	Collider() = delete; // We want to force the entt::entity
+	inline Collider(entt::entity handle) : m_Handle(handle) {};
+
+	//template <typename T, typename ...Args>
 	//inline Collider(Args&& ...args) { SetBV<T>(args...); }
-	//inline Collider(BV bvType) { SetBV(bvType); }
+	inline Collider(entt::entity handle, BV bvType) : Collider(handle) { SetBV(bvType); }
 
 	inline BV GetBVType() const { return m_BVType; }
 
@@ -66,18 +70,49 @@ public:
 	//
 	//	m_BVType = GetBVType<T>();
 	//}
-	//inline void SetBV(BV bvType);
+	void SetBV(BV bvType);
 
 private:
 	BV m_BVType{ BV::NIL };
+	entt::entity m_Handle{};
 };
 
-//class BaseBoundingVolume
-//{
-//	
-//};
-//
-//class RayBV : public BaseBoundingVolume
-//{
-//
-//};
+class BaseBV : public BaseComponent
+{
+public:
+	BaseBV() = default;
+	~BaseBV() = default;
+	inline BaseBV(glm::vec3 const& p) : m_Position(p) {}
+	inline BaseBV(float x, float y, float z) : m_Position({ x, y, z }) {}
+
+	virtual void UpdateXform() = 0;
+
+	inline glm::mat4 const& GetXform() const { return m_Xform; }
+	inline glm::vec3 const& GetPosition() const { return m_Position; }
+	inline glm::vec3& GetPosition() { return m_Position; }
+	inline bool const& IsCollide() const { return m_IsCollide; }
+	inline bool& IsCollide() { return m_IsCollide; }
+
+protected:
+	glm::mat4 m_Xform{};
+	glm::vec3 m_Position{};
+	bool m_IsCollide{ false };
+};
+
+class AABBBV : public BaseBV
+{
+public:
+	inline void UpdateXform() override
+	{
+		m_Xform = glm::translate(m_Position) * glm::scale(m_HalfExtents);
+	}
+
+	inline glm::vec3 const& GetHalfExtents() const { return m_HalfExtents; }
+	inline glm::vec3& GetHalfExtents() { return m_HalfExtents; }
+	inline glm::vec3 GetMinPoint() const { return m_Position - 0.5f * m_HalfExtents; }
+	inline glm::vec3 GetMaxPoint() const { return m_Position + 0.5f * m_HalfExtents; }
+
+private:
+	glm::vec3 m_HalfExtents{ 1.f, 1.f, 1.f };
+
+};

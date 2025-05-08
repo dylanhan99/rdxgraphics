@@ -145,8 +145,6 @@ void RenderSystem::Draw()
 	wireframePass.DrawThis(
 		[&]()
 		{
-			return;
-
 			if (renderOption == 0)
 				return;
 
@@ -161,6 +159,24 @@ void RenderSystem::Draw()
 			//	o.Submit<VertexBasic::IsCollide>(
 			//		(typename VertexBasic::IsCollide::value_type)colDetails.pBV->IsCollide());
 			//}
+			auto view = EntityManager::GetInstance().m_Registry.view<Collider>();
+			for (auto [handle, collider] : view.each())
+			{
+				BV bvType = collider.GetBVType();
+				if (bvType == BV::NIL)
+					continue;
+
+				// Hardcode test
+				if (bvType == BV::AABB)
+				{
+					// Should check ensure that get<BV> exists
+					AABBBV& bv = EntityManager::GetInstance().m_Registry.get<AABBBV>(handle);
+
+					Object<VertexBasic>& o = GetObjekt(bvType);
+					o.Submit<VertexBasic::Xform>(bv.GetXform());
+					o.Submit<VertexBasic::IsCollide>(bv.IsCollide());
+				}
+			}
 
 			//glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 			//glClear(GL_COLOR_BUFFER_BIT);
@@ -220,7 +236,7 @@ void RenderSystem::Draw()
 			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, wireframePass.m_TextureBuffer);
 			g.m_FBOShader.SetUniform1i("uWireframeTex", 1);
-			g.m_FBOShader.SetUniform1i("uHasWireframeTex", false);// renderOption != 0);
+			g.m_FBOShader.SetUniform1i("uHasWireframeTex", renderOption != 0);
 
 			g.m_FBOObject.Bind();
 			g.m_FBOObject.Draw(1);

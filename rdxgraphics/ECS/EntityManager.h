@@ -1,6 +1,14 @@
 #pragma once
 #include "Entity.h"
 #include <entt/entt.hpp>
+	
+// Helper to check that component has the HasEnttHandle boolean
+template <typename, typename = void>
+struct has_entt_handle : std::false_type {};
+template <typename T>
+struct has_entt_handle<T, std::void_t<decltype(T::HasEnttHandle)>> : std::true_type {};
+template<typename T>
+constexpr bool has_entt_handle_v = has_entt_handle<T>::value;
 
 class EntityManager : public BaseSingleton<EntityManager>
 {
@@ -21,10 +29,20 @@ public:
 	template <typename T, typename ...Args>
 	static std::enable_if_t<
 		std::is_base_of_v<BaseComponent, T> &&
-		std::is_constructible_v<T, Args...>,
+		(has_entt_handle_v<T> ? 
+			std::is_constructible_v<T, entt::entity, Args...> :
+			std::is_constructible_v<T, Args...>),
 		void> AddComponent(entt::entity handle, Args&& ...args)
 	{
-		g.m_Registry.emplace_or_replace<T, Args...>(handle, std::forward<Args>(args)...);
+		if constexpr (has_entt_handle<T>::value)
+		{
+			entt::entity copyHandle = handle;
+			g.m_Registry.emplace_or_replace<T, entt::entity, Args...>(handle, std::move(copyHandle), std::forward<Args>(args)...);
+		}
+		else
+		{
+			g.m_Registry.emplace_or_replace<T, Args...>(handle, std::forward<Args>(args)...);
+		}
 	}
 
 	template <typename T>
