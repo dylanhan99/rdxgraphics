@@ -1,6 +1,6 @@
 #pragma once
 #include <entt/entt.hpp>
-#include "BaseComponent.h"
+#include "Components/BaseComponent.h"
 	
 // Helper to check that component has the HasEnttHandle boolean
 template <typename, typename = void>
@@ -32,7 +32,7 @@ public:
 		(has_entt_handle_v<T> ? 
 			std::is_constructible_v<T, entt::entity, Args...> :
 			std::is_constructible_v<T, Args...>),
-		void> AddComponent(entt::entity handle, Args&& ...args)
+		T&> AddComponent(entt::entity handle, Args&& ...args)
 	{
 		if constexpr (has_entt_handle<T>::value)
 		{
@@ -43,6 +43,8 @@ public:
 		{
 			g.m_Registry.emplace_or_replace<T, Args...>(handle, std::forward<Args>(args)...);
 		}
+
+		return GetComponent<T>(handle);
 	}
 
 	template <typename T>
@@ -57,6 +59,14 @@ public:
 		bool> HasComponent(entt::entity handle)
 	{
 		return g.m_Registry.all_of<Args...>(handle);
+	}
+
+	template <typename T>
+	static std::enable_if_t<std::is_base_of_v<BaseComponent, T>,
+		T&> GetComponent(entt::entity handle)
+	{
+		RX_ASSERT(HasComponent<T>(handle), R"(Check HasComponent<T> before GetComponent.)");
+		return g.m_Registry.get<T>(handle);
 	}
 
 	//template <typename ...Args>

@@ -1,8 +1,7 @@
 #include <pch.h>
 #include "RenderSystem.h"
 #include "GLFWWindow/GLFWWindow.h"
-#include "Graphics/Camera.h"
-#include "ECS/EntityManager.h"
+#include "ECS/Components/Camera.h"
 
 #if USE_CSD3151_AUTOMATION == 1
 // This automation hook reads the shader from the submission tutorial's shader directory as a string literal.
@@ -24,8 +23,6 @@ std::string const fbo_fs = {
 
 RX_SINGLETON_EXPLICIT(RenderSystem);
 namespace fs = std::filesystem;
-
-extern Camera mainCamera;
 
 float move = 0.f;
 int renderOption = 2;
@@ -95,6 +92,10 @@ void RenderSystem::Terminate()
 
 void RenderSystem::Draw()
 {
+	entt::entity const camEnt = GetActiveCamera();
+	RX_ASSERT(EntityManager::HasComponent<Camera>(camEnt), "Active camera entity is missing Camera component");
+	Camera& activeCamera = EntityManager::GetComponent<Camera>(camEnt);
+
 	basePass.DrawThis(
 		[&]()
 		{
@@ -116,7 +117,7 @@ void RenderSystem::Draw()
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 			g.m_Shader.Bind();
-			g.m_Shader.SetUniformMatrix4f("uProjViewMatrix", mainCamera.GetProjMatrix() * mainCamera.GetViewMatrix());
+			g.m_Shader.SetUniformMatrix4f("uProjViewMatrix", activeCamera.GetProjMatrix() * activeCamera.GetViewMatrix());
 			g.m_Shader.SetUniform1i("uIsWireframe", 0);
 
 			glEnable(GL_CULL_FACE);
@@ -188,7 +189,7 @@ void RenderSystem::Draw()
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 			g.m_Shader.Bind();
-			g.m_Shader.SetUniformMatrix4f("uProjViewMatrix", mainCamera.GetProjMatrix() * mainCamera.GetViewMatrix());
+			g.m_Shader.SetUniformMatrix4f("uProjViewMatrix", activeCamera.GetProjMatrix() * activeCamera.GetViewMatrix());
 			g.m_Shader.SetUniform1i("uIsWireframe", 1);
 			g.m_Shader.SetUniform3f("uWireframeColor", glm::vec3{ 0.f,1.f,0.f });
 

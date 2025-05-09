@@ -7,7 +7,7 @@
 #include "Transformation/TransformSystem.h"
 #include "ECS/Systems/CollisionSystem.h"
 #include "ECS/EntityManager.h"
-#include "Graphics/Camera.h"
+#include "ECS/Components/Camera.h"
 
 // imgui
 #include <imgui.h>
@@ -18,7 +18,6 @@
 RX_SINGLETON_EXPLICIT(GUI);
 extern float move;
 extern int renderOption;
-extern Camera mainCamera;
 
 bool GUI::Init()
 {
@@ -124,13 +123,13 @@ void GUI::Update(double dt)
 
 		ImGui::SeparatorText("Camera Settings");
 		{
-			Camera& cam = mainCamera;
+			Camera& cam = EntityManager::GetComponent<Camera>(RenderSystem::GetActiveCamera());
 			glm::vec3 camPos{}, camFace{};
-			camPos = cam.GetPosition();
-			camFace = cam.GetEulerOrientation();
-
-			ImGui::Text("Cam [Pos]|X:% -4.1f |Y:% -4.1f |Z:% -4.1f", camPos.x, camPos.y, camPos.z);
-			ImGui::Text("    [Dir]|X:% -4.1f |Y:% -4.1f |Z:% -4.1f", camFace.x, camFace.y, camFace.z);
+			//camPos = cam.GetPosition();
+			//camFace = cam.GetEulerOrientation();
+			//
+			//ImGui::Text("Cam [Pos]|X:% -4.1f |Y:% -4.1f |Z:% -4.1f", camPos.x, camPos.y, camPos.z);
+			//ImGui::Text("    [Dir]|X:% -4.1f |Y:% -4.1f |Z:% -4.1f", camFace.x, camFace.y, camFace.z);
 			if (ImGui::Checkbox("CameraToggled", &cam.IsCameraInUserControl()))
 				EventDispatcher<Camera&>::FireEvent(RX_EVENT_CAMERA_USER_TOGGLED, cam);
 

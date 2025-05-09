@@ -9,9 +9,9 @@
 #include "ECS/EntityManager.h"
 #include "GUI/GUI.h"
 
-#include "Graphics/Camera.h" // To be a component.
+#include "ECS/Components/Camera.h"
 
-Camera mainCamera{ { -3.f,3.f,3.f }, { -0.7f,-0.7f,0.f }, { 16.f, 9.f }, 90.f };
+//Camera mainCamera{ { -3.f,3.f,3.f }, { -0.7f,-0.7f,0.f }, { 16.f, 9.f }, 90.f };
 
 void RDX::Run()
 {
@@ -35,6 +35,17 @@ void RDX::Run()
 		EntityManager::AddComponent<Model>(handle, Shape::Quad);
 		EntityManager::AddComponent<Collider>(handle, BV::Sphere);
 	}
+	entt::entity mainCameraHandle{};
+	{
+		auto& handle = mainCameraHandle;
+		handle = EntityManager::CreateEntity();
+		EntityManager::AddComponent<Camera>(handle,
+			glm::vec3{ -3.f, 3.f, 3.f }, 
+			glm::vec3{ -0.7f, -0.7f, 0.f }, 
+			glm::vec2{ 16.f, 9.f }, 90.f);
+	}
+	RenderSystem::SetActiveCamera(mainCameraHandle);
+	Camera& mainCamera = EntityManager::GetComponent<Camera>(mainCameraHandle);
 
 	while (!GLFWWindow::IsWindowShouldClose())
 	{

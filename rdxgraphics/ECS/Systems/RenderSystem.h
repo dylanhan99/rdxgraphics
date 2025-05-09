@@ -3,6 +3,7 @@
 #include "Graphics/Object.h"
 #include "Graphics/Shader.h"
 #include "Graphics/RenderPass.h"
+#include "ECS/EntityManager.h"
 
 class RenderSystem : public BaseSingleton<RenderSystem>
 {
@@ -24,6 +25,9 @@ public:
 	static Object<VertexBasic>& GetObjekt(Shape shape);
 	static Object<VertexBasic>& GetObjekt(BV bv);
 
+	inline static entt::entity GetActiveCamera() { return g.m_ActiveCamera; }
+	inline static void SetActiveCamera(entt::entity handle) { g.m_ActiveCamera = handle; }
+
 private:
 	static void CreateShapes();
 
@@ -35,4 +39,6 @@ private:
 	//std::array<Object<VertexBasic>, (size_t)Shape::MAX> m_Objects{};
 	std::map<Rxuid, Object<VertexBasic>> m_Objects{};
 	Object<VertexFBO> m_FBOObject{};
+
+	entt::entity m_ActiveCamera{};
 };
