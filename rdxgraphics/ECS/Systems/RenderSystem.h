@@ -28,6 +28,9 @@ public:
 	inline static entt::entity GetActiveCamera() { return g.m_ActiveCamera; }
 	inline static void SetActiveCamera(entt::entity handle) { g.m_ActiveCamera = handle; }
 
+	inline static entt::entity GetMinimapCamera() { return g.m_MinimapCamera; }
+	inline static void SetMinimapCamera(entt::entity handle) { g.m_MinimapCamera = handle; }
+
 private:
 	static void CreateShapes();
 
@@ -41,4 +44,5 @@ private:
 	Object<VertexFBO> m_FBOObject{};
 
 	entt::entity m_ActiveCamera{};
+	entt::entity m_MinimapCamera{};
 };

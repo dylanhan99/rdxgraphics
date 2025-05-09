@@ -30,6 +30,7 @@ int renderOption = 2;
 //GLuint m_FBO{};
 //GLuint textureColorBuffer{};
 RenderPass basePass{};
+RenderPass minimapPass{};
 RenderPass wireframePass{};
 RenderPass finalPass{};
 
@@ -75,8 +76,9 @@ bool RenderSystem::Init()
 		});
 
 	glm::ivec2 dims = GLFWWindow::GetWindowDims();
-	basePass.Init(dims.x, dims.y);
-	wireframePass.Init(dims.x, dims.y);
+	basePass.Init(0, 0, dims.x, dims.y);
+	minimapPass.Init(dims.x - 400, dims.y - 400, 400, 400);
+	wireframePass.Init(0, 0, dims.x, dims.y);
 	finalPass.Init(nullptr);
 
 	return true;
@@ -93,8 +95,10 @@ void RenderSystem::Terminate()
 void RenderSystem::Draw()
 {
 	entt::entity const camEnt = GetActiveCamera();
+	entt::entity const miniEnt = GetMinimapCamera();
 	RX_ASSERT(EntityManager::HasComponent<Camera>(camEnt), "Active camera entity is missing Camera component");
 	Camera& activeCamera = EntityManager::GetComponent<Camera>(camEnt);
+	Camera& minimapCamera = EntityManager::GetComponent<Camera>(miniEnt);
 
 	basePass.DrawThis(
 		[&]()
@@ -118,6 +122,52 @@ void RenderSystem::Draw()
 
 			g.m_Shader.Bind();
 			g.m_Shader.SetUniformMatrix4f("uProjViewMatrix", activeCamera.GetProjMatrix() * activeCamera.GetViewMatrix());
+			g.m_Shader.SetUniform1i("uIsWireframe", 0);
+
+			glEnable(GL_CULL_FACE);
+			glCullFace(GL_BACK);
+
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			for (auto& [uid, object] : g.m_Objects)
+			{
+				object.Bind();
+
+				auto& data1 = object.GetVBData<VertexBasic::Xform>();
+				size_t maxVal = data1.size(); // glm::min(data1, data2, ...)
+				for (size_t count{ 0 }, offset{ 0 }; offset < maxVal; offset += count)
+				{
+					count = glm::min<size_t>(maxVal - offset, RX_MAX_INSTANCES);
+					object.BindInstancedData<VertexBasic::Xform>(offset, count);
+					// more binds...
+					object.Draw(count);
+				}
+
+				object.Flush();
+			}
+		}
+	);
+
+	minimapPass.DrawThis(
+		[&]()
+		{
+			// Effectively same as base pass
+
+			auto view = EntityManager::GetInstance().m_Registry.view<Xform, Model>();
+			for (auto [handle, xform, model] : view.each())
+			{
+				Rxuid meshID = model.GetMesh();
+				if (meshID == RX_INVALID_ID)
+					continue;
+
+				Object<VertexBasic>& o = GetObjekt(meshID);
+				o.Submit<VertexBasic::Xform>(xform.GetXform());
+			}
+
+			glClearColor(1.f - g.m_BackColor.x, 1.f - g.m_BackColor.y, 1.f - g.m_BackColor.z, 1.f);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+			g.m_Shader.Bind();
+			g.m_Shader.SetUniformMatrix4f("uProjViewMatrix", minimapCamera.GetProjMatrix() * activeCamera.GetViewMatrix());
 			g.m_Shader.SetUniform1i("uIsWireframe", 0);
 
 			glEnable(GL_CULL_FACE);
@@ -239,6 +289,11 @@ void RenderSystem::Draw()
 			glBindTexture(GL_TEXTURE_2D, wireframePass.m_TextureBuffer);
 			g.m_FBOShader.SetUniform1i("uWireframeTex", 1);
 			g.m_FBOShader.SetUniform1i("uHasWireframeTex", renderOption != 0);
+
+			glActiveTexture(GL_TEXTURE3);
+			glBindTexture(GL_TEXTURE_2D, minimapPass.m_TextureBuffer);
+			g.m_FBOShader.SetUniform1i("uMinimapTex", 2);
+			//g.m_FBOShader.SetUniform1i("uHasWireframeTex", renderOption != 0);
 
 			g.m_FBOObject.Bind();
 			g.m_FBOObject.Draw(1);

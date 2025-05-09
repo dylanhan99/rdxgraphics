@@ -6,10 +6,10 @@
 #include "ECS/EntityManager.h"
 
 Camera::Camera(
-	entt::entity handle,
+	entt::entity handle, Mode camMode,
 	glm::vec3 const& position,
 	glm::vec3 const& orientation,
-	glm::vec2 aspect, float fov, Mode camMode)
+	glm::vec2 aspect, float fov)
 	: Camera(handle)
 {
 	m_AspectRatio = aspect.s / aspect.t;
@@ -22,6 +22,12 @@ Camera::Camera(
 	}
 
 	UpdateCameraVectors();
+
+	EventDispatcher<int, int>::RegisterEvent(RX_EVENT_FRAMEBUFFER_RESIZE,
+		[&](int x, int y)
+		{
+			m_AspectRatio = (float)x / (float)y;
+		});
 }
 
 void Camera::UpdateCameraVectors()

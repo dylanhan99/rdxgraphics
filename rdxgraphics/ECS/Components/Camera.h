@@ -12,12 +12,11 @@ public:
 
 public:
 	Camera(
-		entt::entity handle,
-		glm::vec3 const& position,
+		entt::entity handle, Mode camMode,
+		glm::vec3 const& position = { 0.f, 0.f, 0.f },
 		glm::vec3 const& orientation = { 0.f,0.f,-1.f },
 		glm::vec2 aspect = { 4.f, 3.f },
-		float fov = 90,
-		Mode camMode = Mode::Perspective
+		float fov = 90
 	);
 
 	void UpdateCameraVectors();

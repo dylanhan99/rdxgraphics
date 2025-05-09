@@ -5,7 +5,7 @@ class RenderPass
 {
 public:
 	bool Init(void*); // For final pass, no fbo, direct to screen.
-	bool Init(int width, int height);
+	bool Init(int x, int y, int width, int height);
 	void Terminate();
 
 	// Temporary, while Im still figuring out how scenes/passes will interact
@@ -17,4 +17,7 @@ public:
 public:
 	GLuint m_FBO{};
 	GLuint m_TextureBuffer{};
+
+	glm::ivec2 m_WindowPos{};
+	glm::ivec2 m_BufferDims{};
 };

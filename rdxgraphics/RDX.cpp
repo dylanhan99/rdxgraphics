@@ -26,13 +26,13 @@ void RDX::Run()
 
 	{
 		auto handle = EntityManager::CreateEntity<Xform>();
-		EntityManager::AddComponent<Model>(handle, Shape::Quad);
+		EntityManager::AddComponent<Model>(handle, Shape::Cube);
 		EntityManager::AddComponent<Collider>(handle, BV::AABB);
 	}
 	{
 		auto handle = EntityManager::CreateEntity();
 		EntityManager::AddComponent<Xform>(handle, glm::vec3{1.f, 1.f, 1.f});
-		EntityManager::AddComponent<Model>(handle, Shape::Quad);
+		EntityManager::AddComponent<Model>(handle, Shape::Cube);
 		EntityManager::AddComponent<Collider>(handle, BV::Sphere);
 	}
 	entt::entity mainCameraHandle{};
@@ -40,12 +40,26 @@ void RDX::Run()
 		auto& handle = mainCameraHandle;
 		handle = EntityManager::CreateEntity();
 		EntityManager::AddComponent<Camera>(handle,
+			Camera::Mode::Perspective,
 			glm::vec3{ -3.f, 3.f, 3.f }, 
 			glm::vec3{ -0.7f, -0.7f, 0.f }, 
 			glm::vec2{ 16.f, 9.f }, 90.f);
 	}
 	RenderSystem::SetActiveCamera(mainCameraHandle);
+	entt::entity minimapCameraHandle{};
+	{
+		auto& handle = minimapCameraHandle;
+		handle = EntityManager::CreateEntity();
+		EntityManager::AddComponent<Camera>(handle,
+			Camera::Mode::Orthorgonal,
+			glm::vec3{ 0.f, 6.f, 0.f },
+			glm::vec3{ -glm::pi<float>(), 0.f, 0.f},
+			glm::vec2{ 16.f, 9.f }, 90.f);
+	}
+	RenderSystem::SetMinimapCamera(minimapCameraHandle);
+
 	Camera& mainCamera = EntityManager::GetComponent<Camera>(mainCameraHandle);
+	Camera& mainmapCamera = EntityManager::GetComponent<Camera>(minimapCameraHandle);
 
 	while (!GLFWWindow::IsWindowShouldClose())
 	{
@@ -75,6 +89,7 @@ void RDX::Run()
 					mainCamera.Inputs(dt);
 
 				mainCamera.UpdateCameraVectors();
+				mainmapCamera.UpdateCameraVectors();
 
 				TransformSystem::Update(dt);
 				CollisionSystem::Update(dt);
