@@ -1,8 +1,8 @@
 #pragma once
-#include "GraphicsCommon.h"
-#include "Object.h"
-#include "Shader.h"
-#include "RenderPass.h"
+#include "Graphics/GraphicsCommon.h"
+#include "Graphics/Object.h"
+#include "Graphics/Shader.h"
+#include "Graphics/RenderPass.h"
 
 class RenderSystem : public BaseSingleton<RenderSystem>
 {

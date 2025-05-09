@@ -1,7 +1,7 @@
 #include <pch.h>
 #include "RenderSystem.h"
 #include "GLFWWindow/GLFWWindow.h"
-#include "Camera.h"
+#include "Graphics/Camera.h"
 #include "ECS/EntityManager.h"
 
 #if USE_CSD3151_AUTOMATION == 1

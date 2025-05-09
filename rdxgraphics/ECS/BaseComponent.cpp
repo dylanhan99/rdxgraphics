@@ -9,20 +9,43 @@ void Xform::UpdateXform()
 
 void Collider::SetBV(BV bvType)
 {
-	if (GetBVType() != BV::NIL)
-	{
-		// Remove the old one,
-	}
-	
+	RemoveBV(); // Remove the existing BV first
 	m_BVType = bvType;
+	
+#define _RX_X(Klass)									 \
+	case BV::Klass:										 \
+		EntityManager::AddComponent<Klass##BV>(m_Handle);\
+		break;
+
 	switch (m_BVType)
 	{
-	case BV::AABB:
-		EntityManager::AddComponent<AABBBV>(m_Handle);
-		break;
+		RX_DO_ALL_BV_ENUM;
 	default:
-		// do nothing for now
-		m_BVType = BV::NIL;
-		return;
+		RX_ASSERT(false, "How did you get here");
+		break;
 	}
+#undef _RX_X
+}
+
+void Collider::RemoveBV()
+{
+	if (m_BVType == BV::NIL)
+		return;
+
+#define _RX_X(Klass)												\
+	case BV::Klass:													\
+		RX_ASSERT(EntityManager::HasComponent<Klass##BV>(m_Handle));\
+		EntityManager::RemoveComponent<Klass##BV>(m_Handle);		\
+		break;
+
+	switch (m_BVType)
+	{
+		RX_DO_ALL_BV_ENUM;
+	default:
+		RX_ASSERT(false, "How did you get here");
+		break;
+	}
+#undef _RX_X
+
+	m_BVType = BV::NIL;
 }

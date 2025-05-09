@@ -71,6 +71,7 @@ public:
 	//	m_BVType = GetBVType<T>();
 	//}
 	void SetBV(BV bvType);
+	void RemoveBV();
 	inline entt::entity GetEntityHandle() const { return m_Handle; }
 
 private:
@@ -103,6 +104,7 @@ protected:
 class PointBV : public BaseBV
 {
 public:
+	PointBV() = default;
 	inline PointBV(glm::vec3 const& p) : BaseBV(p) {}
 	inline PointBV(float x, float y, float z) : BaseBV(x, y, z) {}
 
@@ -115,6 +117,7 @@ public:
 class RayBV : public BaseBV
 {
 public:
+	RayBV() = default;
 	inline void UpdateXform() override
 	{
 		//RX_INFO("{} > {} > {}", GetDirection().x, GetDirection().y, GetDirection().z);
@@ -141,6 +144,7 @@ private:
 class TriangleBV : public BaseBV
 {
 public:
+	TriangleBV() = default;
 	inline void UpdateXform() override
 	{
 
@@ -152,6 +156,7 @@ private:
 class PlaneBV : public BaseBV
 {
 public:
+	PlaneBV() = default;
 	inline void UpdateXform() override
 	{
 		m_Xform = glm::translate(m_Position) * glm::scale(s_Scale) *
@@ -180,6 +185,7 @@ private:
 class AABBBV : public BaseBV
 {
 public:
+	AABBBV() = default;
 	inline void UpdateXform() override
 	{
 		m_Xform = glm::translate(m_Position) * glm::scale(m_HalfExtents);
@@ -198,6 +204,7 @@ private:
 class SphereBV : public BaseBV
 {
 public:
+	SphereBV() = default;
 	inline SphereBV(glm::vec3 const& p, float r) : BaseBV(p), m_Radius(r) {}
 
 	inline void UpdateXform() override

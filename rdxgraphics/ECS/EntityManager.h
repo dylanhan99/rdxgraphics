@@ -52,6 +52,13 @@ public:
 		g.m_Registry.remove<T>(handle);
 	}
 
+	template <typename ...Args>
+	static std::enable_if_t<(std::is_base_of_v<BaseComponent, Args> && ...),
+		bool> HasComponent(entt::entity handle)
+	{
+		return g.m_Registry.all_of<Args...>(handle);
+	}
+
 	//template <typename ...Args>
 	//static auto View()
 	//{

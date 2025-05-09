@@ -25,7 +25,7 @@ void CollisionSystem::Update(float dt)
 		{
 			if (lhandle == rhandle)
 				continue;
-			BV rBVType = lcol.GetBVType();
+			BV rBVType = rcol.GetBVType();
 			if (rBVType == BV::NIL)
 				continue;
 

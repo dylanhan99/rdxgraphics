@@ -1,14 +1,13 @@
 #include <pch.h>
-#include "Rendering/GraphicsCommon.h"
 #include "GUI.h"
 
 #include "Utils/Input.h"
 #include "GLFWWindow/GLFWWindow.h"
-#include "Rendering/RenderSystem.h"
+#include "ECS/Systems/RenderSystem.h"
 #include "Transformation/TransformSystem.h"
 #include "ECS/Systems/CollisionSystem.h"
 #include "ECS/EntityManager.h"
-#include "Rendering/Camera.h"
+#include "Graphics/Camera.h"
 
 // imgui
 #include <imgui.h>

@@ -3,13 +3,13 @@
 
 #include "Utils/Input.h"
 #include "GLFWWindow/GLFWWindow.h"
-#include "Rendering/RenderSystem.h"
+#include "ECS/Systems/RenderSystem.h"
 #include "Transformation/TransformSystem.h"
 #include "ECS/Systems/CollisionSystem.h"
 #include "ECS/EntityManager.h"
 #include "GUI/GUI.h"
 
-#include "Rendering/Camera.h"
+#include "Graphics/Camera.h" // To be a component.
 
 Camera mainCamera{ { -3.f,3.f,3.f }, { -0.7f,-0.7f,0.f }, { 16.f, 9.f }, 90.f };
 
@@ -33,7 +33,7 @@ void RDX::Run()
 		auto handle = EntityManager::CreateEntity();
 		EntityManager::AddComponent<Xform>(handle, glm::vec3{1.f, 1.f, 1.f});
 		EntityManager::AddComponent<Model>(handle, Shape::Quad);
-		EntityManager::AddComponent<Collider>(handle, BV::AABB);
+		EntityManager::AddComponent<Collider>(handle, BV::Sphere);
 	}
 
 	while (!GLFWWindow::IsWindowShouldClose())
