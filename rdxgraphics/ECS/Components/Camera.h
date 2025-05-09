@@ -21,7 +21,7 @@ public:
 	);
 
 	void UpdateCameraVectors();
-	void Inputs(float dt = 1.f);
+	void Inputs(float dt);
 
 	inline glm::mat4 const& GetViewMatrix() const { return m_ViewMatrix; }
 	inline glm::mat4 const& GetProjMatrix() const { return m_ProjectionMatrix; }

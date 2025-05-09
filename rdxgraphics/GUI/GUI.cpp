@@ -123,13 +123,13 @@ void GUI::Update(double dt)
 
 		ImGui::SeparatorText("Camera Settings");
 		{
+			Xform& xform = EntityManager::GetComponent<Xform>(RenderSystem::GetActiveCamera());
 			Camera& cam = EntityManager::GetComponent<Camera>(RenderSystem::GetActiveCamera());
-			glm::vec3 camPos{}, camFace{};
-			//camPos = cam.GetPosition();
-			//camFace = cam.GetEulerOrientation();
-			//
-			//ImGui::Text("Cam [Pos]|X:% -4.1f |Y:% -4.1f |Z:% -4.1f", camPos.x, camPos.y, camPos.z);
-			//ImGui::Text("    [Dir]|X:% -4.1f |Y:% -4.1f |Z:% -4.1f", camFace.x, camFace.y, camFace.z);
+			glm::vec3 camPos = xform.GetTranslate();
+			glm::vec3 camFace = xform.GetEulerOrientation();
+
+			ImGui::Text("Cam [Pos]|X:% -4.1f |Y:% -4.1f |Z:% -4.1f", camPos.x, camPos.y, camPos.z);
+			ImGui::Text("    [Dir]|X:% -4.1f |Y:% -4.1f |Z:% -4.1f", camFace.x, camFace.y, camFace.z);
 			if (ImGui::Checkbox("CameraToggled", &cam.IsCameraInUserControl()))
 				EventDispatcher<Camera&>::FireEvent(RX_EVENT_CAMERA_USER_TOGGLED, cam);
 

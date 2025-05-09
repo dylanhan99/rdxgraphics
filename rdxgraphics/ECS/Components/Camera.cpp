@@ -82,35 +82,39 @@ void Camera::UpdateCameraVectors()
 
 void Camera::Inputs(float dt)
 {
+	Xform& xform = EntityManager::GetComponent<Xform>(GetEntityHandle());
+	glm::vec3& position = xform.GetTranslate();
+	glm::vec3& eulerOrientation = xform.GetEulerOrientation();
+
 	// Speed modifiers
-	//float moveSpeed = m_MovementSpeed * dt;
-	//if (Input::IsKeyDown(RX_KEY_LEFT_CONTROL))
-	//	moveSpeed *= 2.f;
-	//
-	//if (Input::IsKeyDown(RX_KEY_W))
-	//	m_Position += moveSpeed * glm::vec3{ m_Front.x, 0.f, m_Front.z };
-	//if (Input::IsKeyDown(RX_KEY_S))
-	//	m_Position -= moveSpeed * glm::vec3{ m_Front.x, 0.f, m_Front.z };
-	//if (Input::IsKeyDown(RX_KEY_D))
-	//	m_Position += moveSpeed * glm::normalize(glm::cross(m_Front, g_WorldUp));
-	//if (Input::IsKeyDown(RX_KEY_A))
-	//	m_Position -= moveSpeed * glm::normalize(glm::cross(m_Front, g_WorldUp));
-	//
-	//if (Input::IsKeyDown(RX_KEY_SPACE))
-	//	m_Position += moveSpeed * g_WorldUp;
-	//if (Input::IsKeyDown(RX_KEY_LEFT_SHIFT))
-	//	m_Position += moveSpeed * -g_WorldUp;
-	//
-	//// Scroll controls, see ctor. Registered to scroll event.
-	//
-	//glm::vec2 cursorPos  = (glm::vec2)GLFWWindow::GetCursorPos();
-	//glm::vec2 windowDims = (glm::vec2)GLFWWindow::GetWindowDims();
-	//
-	//float pitch = windowDims.y ? m_YawSpeed   * ((windowDims.y * 0.5f - cursorPos.y) / windowDims.y) : 0.f;
-	//float yaw	= windowDims.x ? m_PitchSpeed * ((cursorPos.x - windowDims.x * 0.5f) / windowDims.x) : 0.f;
-	//
-	//m_EulerOrientation.x += pitch;
-	//m_EulerOrientation.y += yaw;
-	//
+	float moveSpeed = m_MovementSpeed * dt;
+	if (Input::IsKeyDown(RX_KEY_LEFT_CONTROL))
+		moveSpeed *= 2.f;
+	
+	if (Input::IsKeyDown(RX_KEY_W))
+		position += moveSpeed * glm::vec3{ m_Front.x, 0.f, m_Front.z };
+	if (Input::IsKeyDown(RX_KEY_S))
+		position -= moveSpeed * glm::vec3{ m_Front.x, 0.f, m_Front.z };
+	if (Input::IsKeyDown(RX_KEY_D))
+		position += moveSpeed * glm::normalize(glm::cross(m_Front, g_WorldUp));
+	if (Input::IsKeyDown(RX_KEY_A))
+		position -= moveSpeed * glm::normalize(glm::cross(m_Front, g_WorldUp));
+	
+	if (Input::IsKeyDown(RX_KEY_SPACE))
+		position += moveSpeed * g_WorldUp;
+	if (Input::IsKeyDown(RX_KEY_LEFT_SHIFT))
+		position += moveSpeed * -g_WorldUp;
+	
+	// Scroll controls, see ctor. Registered to scroll event.
+	
+	glm::vec2 cursorPos  = (glm::vec2)GLFWWindow::GetCursorPos();
+	glm::vec2 windowDims = (glm::vec2)GLFWWindow::GetWindowDims();
+	
+	float pitch = windowDims.y ? m_YawSpeed   * ((windowDims.y * 0.5f - cursorPos.y) / windowDims.y) : 0.f;
+	float yaw	= windowDims.x ? m_PitchSpeed * ((cursorPos.x - windowDims.x * 0.5f) / windowDims.x) : 0.f;
+	
+	eulerOrientation.x = glm::clamp(eulerOrientation.x + pitch, -glm::pi<float>(), glm::pi<float>());
+	eulerOrientation.y += yaw;
+
 	GLFWWindow::CenterCursor();
 }
