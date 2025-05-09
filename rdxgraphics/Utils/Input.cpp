@@ -11,6 +11,7 @@ void Input::SwapKeys()
 {
 	std::ranges::copy(g.m_Keys.begin(), g.m_Keys.end(), g.m_KeysPrev.begin());
 	std::ranges::copy(g.m_Buttons.begin(), g.m_Buttons.end(), g.m_ButtonsPrev.begin());
+	g.m_ScrollOffset = 0.0;
 }
 
 void Input::KeyCallback(int key, int scancode, int action)
@@ -31,6 +32,11 @@ void Input::ButtonCallback(int btn, int action)
 
 	g.m_ButtonsPrev[btn] = g.m_Buttons[btn];
 	g.m_Buttons[btn] = action;
+}
+
+void Input::ScrollCallback(double, double yoffset)
+{
+	g.m_ScrollOffset = yoffset;
 }
 
 bool Input::IsKeyTriggered(unsigned int key)

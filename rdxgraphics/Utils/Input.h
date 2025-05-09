@@ -155,6 +155,7 @@ public:
 
 	static void KeyCallback(int key, int scancode, int action);
 	static void ButtonCallback(int btn, int action);
+	static void ScrollCallback(double xoffset, double yoffset);
 
 	static bool IsKeyTriggered(unsigned int key);
 	static bool IsKeyReleased(unsigned int key);
@@ -166,9 +167,13 @@ public:
 	static bool IsMouseDown(unsigned int key);
 	static bool IsMouseUp(unsigned int key);
 
+	inline static bool IsMouseScrolled() { return static_cast<bool>(g.m_ScrollOffset); }
+	inline static double GetMouseScrollOffset() { return g.m_ScrollOffset; }
+
 private:
 	std::array<bool, RX_KEY_LAST + 1>			 m_Keys{ false };
 	std::array<bool, RX_MOUSE_BUTTON_LAST + 1> m_Buttons{ false };
 	std::array<bool, RX_KEY_LAST + 1>			 m_KeysPrev{ false };
 	std::array<bool, RX_MOUSE_BUTTON_LAST + 1> m_ButtonsPrev{ false };
+	double m_ScrollOffset{ 0.f };
 };

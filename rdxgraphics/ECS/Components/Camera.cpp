@@ -22,19 +22,6 @@ Camera::Camera(
 	}
 
 	UpdateCameraVectors();
-
-	EventDispatcher<double, double>::RegisterEvent(RX_EVENT_SCROLL_CALLBACK,
-		[&](double, double yoffset)
-		{
-			if (!IsCameraInUserControl())
-				return;
-
-			float moveSpeed = m_ZoomSpeed;
-			if (Input::IsKeyDown(RX_KEY_LEFT_CONTROL))
-				moveSpeed *= 2.f;
-
-			//m_Position += ((float)yoffset * moveSpeed) * m_Front;
-		});
 }
 
 void Camera::UpdateCameraVectors()
@@ -105,13 +92,14 @@ void Camera::Inputs(float dt)
 	if (Input::IsKeyDown(RX_KEY_LEFT_SHIFT))
 		position += moveSpeed * -g_WorldUp;
 	
-	// Scroll controls, see ctor. Registered to scroll event.
-	
+	if (Input::IsMouseScrolled())
+		position += ((float)Input::GetMouseScrollOffset() * m_ZoomSpeed) * m_Front;
+
 	glm::vec2 cursorPos  = (glm::vec2)GLFWWindow::GetCursorPos();
 	glm::vec2 windowDims = (glm::vec2)GLFWWindow::GetWindowDims();
 	
-	float pitch = windowDims.y ? m_YawSpeed   * ((windowDims.y * 0.5f - cursorPos.y) / windowDims.y) : 0.f;
-	float yaw	= windowDims.x ? m_PitchSpeed * ((cursorPos.x - windowDims.x * 0.5f) / windowDims.x) : 0.f;
+	float pitch = windowDims.y ? m_PitchSpeed * ((windowDims.y * 0.5f - cursorPos.y) / windowDims.y) : 0.f;
+	float yaw	= windowDims.x ? m_YawSpeed	  * ((cursorPos.x - windowDims.x * 0.5f) / windowDims.x) : 0.f;
 	
 	eulerOrientation.x = glm::clamp(eulerOrientation.x + pitch, -glm::pi<float>(), glm::pi<float>());
 	eulerOrientation.y += yaw;

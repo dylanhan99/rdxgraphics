@@ -196,10 +196,8 @@ void GLFWWindow::RegisterCallbacks()
 		{
 			if (!GLFWWindow::IsFocused())
 				return;
-
-			EventDispatcher<double, double>::FireEvent(
-				RX_EVENT_SCROLL_CALLBACK,
-				xoffset, yoffset);
+			
+			Input::ScrollCallback(xoffset, yoffset);
 		});
 }
 
