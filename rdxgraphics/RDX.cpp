@@ -52,14 +52,17 @@ void RDX::Run()
 		handle = EntityManager::CreateEntity();
 		EntityManager::AddComponent<Camera>(handle,
 			Camera::Mode::Orthorgonal,
-			glm::vec3{ 0.f, 6.f, 0.f },
-			glm::vec3{ -glm::pi<float>(), 0.f, 0.f},
+			glm::vec3{ 1.f, 3.f, 0.f },
+			glm::vec3{ -glm::half_pi<float>() + glm::epsilon<float>(), 0.f, 0.f},
 			glm::vec2{ 16.f, 9.f }, 90.f);
 	}
 	RenderSystem::SetMinimapCamera(minimapCameraHandle);
 
 	Camera& mainCamera = EntityManager::GetComponent<Camera>(mainCameraHandle);
 	Camera& mainmapCamera = EntityManager::GetComponent<Camera>(minimapCameraHandle);
+
+	// This is what is camera view.
+	Camera& activeCamera = EntityManager::GetComponent<Camera>(minimapCameraHandle);
 
 	while (!GLFWWindow::IsWindowShouldClose())
 	{
@@ -79,14 +82,14 @@ void RDX::Run()
 
 				if (Input::IsKeyTriggered(RX_KEY_TAB))
 				{
-					bool& b = mainCamera.IsCameraInUserControl();
+					bool& b = activeCamera.IsCameraInUserControl();
 					b = !b;
 
-					EventDispatcher<Camera&>::FireEvent(RX_EVENT_CAMERA_USER_TOGGLED, mainCamera);
+					EventDispatcher<Camera&>::FireEvent(RX_EVENT_CAMERA_USER_TOGGLED, activeCamera);
 				}
 
-				if (mainCamera.IsCameraInUserControl())
-					mainCamera.Inputs(dt);
+				if (activeCamera.IsCameraInUserControl())
+					activeCamera.Inputs(dt);
 
 				mainCamera.UpdateCameraVectors();
 				mainmapCamera.UpdateCameraVectors();

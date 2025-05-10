@@ -60,8 +60,7 @@ void Camera::UpdateCameraVectors()
 	else
 	{
 		// This represents "zoom". But since this is a 3d camera, we can use Z axis instead.
-		//float m_OrthoSize = 1.f; 
-		float m_OrthoSize = position.z; // ehhhh i think this is wrong. If you look from a different direction, it's not Z liao.
+		//float m_OrthoSize = position.z; // ehhhh i think this is wrong. If you look from a different direction, it's not Z liao.
 		float halfWidth = m_OrthoSize * m_AspectRatio * 0.5f;
 		float halfHeight = m_OrthoSize * 0.5f;
 
@@ -99,7 +98,12 @@ void Camera::Inputs(float dt)
 		position += moveSpeed * -g_WorldUp;
 	
 	if (Input::IsMouseScrolled())
-		position += ((float)Input::GetMouseScrollOffset() * m_ZoomSpeed) * m_Front;
+	{
+		if (m_CameraMode == Mode::Perspective)
+			position += ((float)Input::GetMouseScrollOffset() * m_ZoomSpeed) * m_Front;
+		else
+			m_OrthoSize += (float)Input::GetMouseScrollNormalized() * m_ZoomSpeed;
+	}
 
 	glm::vec2 cursorPos  = (glm::vec2)GLFWWindow::GetCursorPos();
 	glm::vec2 windowDims = (glm::vec2)GLFWWindow::GetWindowDims();
@@ -107,7 +111,7 @@ void Camera::Inputs(float dt)
 	float pitch = windowDims.y ? m_PitchSpeed * ((windowDims.y * 0.5f - cursorPos.y) / windowDims.y) : 0.f;
 	float yaw	= windowDims.x ? m_YawSpeed	  * ((cursorPos.x - windowDims.x * 0.5f) / windowDims.x) : 0.f;
 	
-	eulerOrientation.x = glm::clamp(eulerOrientation.x + pitch, -glm::pi<float>(), glm::pi<float>());
+	eulerOrientation.x = glm::clamp(eulerOrientation.x + pitch, -glm::half_pi<float>() + glm::epsilon<float>(), glm::half_pi<float>() - glm::epsilon<float>());
 	eulerOrientation.y += yaw;
 
 	GLFWWindow::CenterCursor();

@@ -152,6 +152,9 @@ void RenderSystem::Draw()
 		{
 			// Effectively same as base pass
 
+			if (renderOption == 1)
+				return;
+
 			auto view = EntityManager::GetInstance().m_Registry.view<Xform, Model>();
 			for (auto [handle, xform, model] : view.each())
 			{
@@ -163,7 +166,7 @@ void RenderSystem::Draw()
 				o.Submit<VertexBasic::Xform>(xform.GetXform());
 			}
 
-			glClearColor(1.f - g.m_BackColor.x, 1.f - g.m_BackColor.y, 1.f - g.m_BackColor.z, 0.f);
+			glClearColor(g.m_BackColor.x, g.m_BackColor.y, g.m_BackColor.z, 0.f);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 			g.m_Shader.Bind();

@@ -169,6 +169,7 @@ public:
 
 	inline static bool IsMouseScrolled() { return static_cast<bool>(g.m_ScrollOffset); }
 	inline static double GetMouseScrollOffset() { return g.m_ScrollOffset; }
+	inline static double GetMouseScrollNormalized() { return g.m_ScrollOffset < 0.0 ? -1.0 : 1.0; }
 
 private:
 	std::array<bool, RX_KEY_LAST + 1>			 m_Keys{ false };

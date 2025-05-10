@@ -123,26 +123,37 @@ void GUI::Update(double dt)
 
 		ImGui::SeparatorText("Camera Settings");
 		{
-			Xform& xform = EntityManager::GetComponent<Xform>(RenderSystem::GetActiveCamera());
-			Camera& cam = EntityManager::GetComponent<Camera>(RenderSystem::GetActiveCamera());
-			glm::vec3 camPos = xform.GetTranslate();
-			glm::vec3 camFace = xform.GetEulerOrientation();
+			auto camcam = [](entt::entity camHandle, std::string label)
+				{
+					if (ImGui::TreeNode(label.c_str()))
+					{
+						Xform& xform = EntityManager::GetComponent<Xform>(camHandle);
+						Camera& cam = EntityManager::GetComponent<Camera>(camHandle);
+						glm::vec3 camPos = xform.GetTranslate();
+						glm::vec3 camFace = xform.GetEulerOrientation();
 
-			ImGui::Text("Cam [Pos]|X:% -4.1f |Y:% -4.1f |Z:% -4.1f", camPos.x, camPos.y, camPos.z);
-			ImGui::Text("    [Dir]|X:% -4.1f |Y:% -4.1f |Z:% -4.1f", camFace.x, camFace.y, camFace.z);
-			if (ImGui::Checkbox("CameraToggled", &cam.IsCameraInUserControl()))
-				EventDispatcher<Camera&>::FireEvent(RX_EVENT_CAMERA_USER_TOGGLED, cam);
+						ImGui::Text("Cam [Pos]|X:% -4.1f |Y:% -4.1f |Z:% -4.1f", camPos.x, camPos.y, camPos.z);
+						ImGui::Text("    [Dir]|X:% -4.1f |Y:% -4.1f |Z:% -4.1f", camFace.x, camFace.y, camFace.z);
+						if (ImGui::Checkbox("CameraToggled", &cam.IsCameraInUserControl()))
+							EventDispatcher<Camera&>::FireEvent(RX_EVENT_CAMERA_USER_TOGGLED, cam);
 
-			if (ImGui::TreeNode("Advanced"))
-			{
-				ImGui::DragFloat("FOV", &cam.GetFOV(), 1.f, 0.f, 105.f, "%.0f");
-				ImGui::DragFloat2("Near/Far", glm::value_ptr(cam.GetClipPlanes()), 1.f, 0.f, std::numeric_limits<float>::max(), "%.0f");
-				ImGui::DragFloat("Camera Speed", &cam.GetMovementSpeed(), 0.1f, 0.f, std::numeric_limits<float>::max(), "%.1f");
-				ImGui::DragFloat("Pitch Speed", &cam.GetPitchSpeed(), 0.1f, 0.f, std::numeric_limits<float>::max(), "%.1f");
-				ImGui::DragFloat("Yaw Speed", &cam.GetYawSpeed(), 0.1f, 0.f, std::numeric_limits<float>::max(), "%.1f");
+						if (ImGui::TreeNode("Advanced"))
+						{
+							ImGui::DragFloat("FOV", &cam.GetFOV(), 1.f, 0.f, 105.f, "%.0f");
+							ImGui::DragFloat2("Near/Far", glm::value_ptr(cam.GetClipPlanes()), 1.f, 0.f, std::numeric_limits<float>::max(), "%.0f");
+							ImGui::DragFloat("Camera Speed", &cam.GetMovementSpeed(), 0.1f, 0.f, std::numeric_limits<float>::max(), "%.1f");
+							ImGui::DragFloat("Pitch Speed", &cam.GetPitchSpeed(), 0.1f, 0.f, std::numeric_limits<float>::max(), "%.1f");
+							ImGui::DragFloat("Yaw Speed", &cam.GetYawSpeed(), 0.1f, 0.f, std::numeric_limits<float>::max(), "%.1f");
 
-				ImGui::TreePop();
-			}
+							ImGui::TreePop();
+						}
+
+						ImGui::TreePop();
+					}
+				};
+
+			camcam(RenderSystem::GetActiveCamera(), "Main cam");
+			camcam(RenderSystem::GetMinimapCamera(), "Minimap cam");
 		}
 	}
 	ImGui::End();

@@ -31,7 +31,7 @@ void main()
     // Minimap
     //finalColor = mix(finalColor, miniColor, miniColor.a);
     //finalColor = vec4(miniColor.a, miniColor.a, miniColor.a, miniColor.a);
-
+    finalColor = miniColor;
     // out
     oFragColor = vec4(finalColor.rgb, 1.0);
 }
