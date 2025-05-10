@@ -1,5 +1,6 @@
 #version 450 core
 
+in vec2 oTexCoords;
 flat in float oIsCollide;
 out vec4 oFragColor;
 

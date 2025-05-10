@@ -26,7 +26,7 @@ void RDX::Run()
 
 	{
 		auto handle = EntityManager::CreateEntity<Xform>();
-		EntityManager::AddComponent<Model>(handle, Shape::Cube);
+		EntityManager::AddComponent<Model>(handle, Shape::Point);
 		EntityManager::AddComponent<Collider>(handle, BV::AABB);
 	}
 	{

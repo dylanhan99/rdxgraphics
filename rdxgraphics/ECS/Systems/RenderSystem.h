@@ -8,6 +8,14 @@
 class RenderSystem : public BaseSingleton<RenderSystem>
 {
 	RX_SINGLETON_DECLARATION(RenderSystem);
+private:
+#define _RX_X(Klass, ...) typename Klass::container_type,
+	using ObjectParams = std::tuple<Shape, GLenum, std::vector<GLuint>, 
+		RX_VERTEX_BASIC_ATTRIBS_M_NOINSTANCED(_RX_X)
+		void* // Hack to overcome the trailing comma
+	>;
+#undef _RX_X
+
 public:
 	static bool Init();
 	static void Terminate();
@@ -33,6 +41,14 @@ public:
 
 private:
 	static void CreateShapes();
+
+	static void CreateObjekt(ObjectParams const& objParams);
+	static ObjectParams CreatePoint();
+	static ObjectParams CreateLine();
+	static ObjectParams CreateQuad();
+	static ObjectParams CreatePlane();
+	static ObjectParams CreateCube();
+	static ObjectParams CreateSphere();
 
 private:
 	glm::vec3 m_BackColor{ 0.2f, 0.3f, 0.3f };
