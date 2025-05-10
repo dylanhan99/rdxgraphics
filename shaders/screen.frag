@@ -20,16 +20,17 @@ void main()
 
     // You can do additive, overlay, or conditional merge here
     if (uHasBaseTex && uHasWireframeTex)
-        finalColor = max(baseColor, wireColor); // simple blend
+        finalColor = mix(baseColor, wireColor, wireColor.a); // simple blend
     else if (uHasBaseTex && !uHasWireframeTex)
         finalColor = baseColor;
     else if (!uHasBaseTex && uHasWireframeTex)
         finalColor = wireColor;
     else
-        finalColor = vec4(0.0, 1.0, 0.0, 1.0);
+        finalColor = vec4(1.0, 1.0, 0.0, 1.0);
 
     // Minimap
-    finalColor = mix(finalColor, miniColor, miniColor.a);
+    //finalColor = mix(finalColor, miniColor, miniColor.a);
+    //finalColor = vec4(miniColor.a, miniColor.a, miniColor.a, miniColor.a);
 
     // out
     oFragColor = vec4(finalColor.rgb, 1.0);

@@ -26,8 +26,14 @@ bool RenderPass::Init(int x, int y, int width, int height)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glBindTexture(GL_TEXTURE_2D, 0);
-
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_TextureBuffer, 0);
+
+	// Create a depth buffer (needed for depth testing)
+	GLuint depthBuffer;
+	glGenRenderbuffers(1, &depthBuffer);
+	glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height); // 24-bit depth buffer
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBuffer);
 
 	return true;
 }
@@ -35,18 +41,14 @@ bool RenderPass::Init(int x, int y, int width, int height)
 void RenderPass::Terminate()
 {
 	glDeleteFramebuffers(1, &m_FBO);
-}
-
-void RenderPass::BindFBO()
-{
-	glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
+	m_FBO = 0;
 }
 
 void RenderPass::DrawThis(std::function<void()> drawStuff)
 {
-	BindFBO();
+	glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);	
 	glBindTexture(GL_TEXTURE_2D, m_TextureBuffer);
-	//glViewport(m_WindowPos.x, m_WindowPos.y, m_BufferDims.x, m_BufferDims.y);
+	glViewport(m_WindowPos.x, m_WindowPos.y, m_BufferDims.x, m_BufferDims.y);
 	drawStuff();
 	glBindFramebuffer(GL_FRAMEBUFFER, 0); // back to default
 }
