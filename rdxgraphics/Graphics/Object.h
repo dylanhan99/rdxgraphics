@@ -64,23 +64,31 @@ public:																						\
 	}; private: Klass _rx_hack_##Klass{}; public:
 //////////////////////////////////////////////////
 
+//////////////////////////////////////////////////
 // RXVertex refers to the standard vertex being used by ALL objects in this engine.
 class VertexBasic 
 {
 	_RX_SHARED_VERTEX_KLASS(VertexBasic);
 	
 	_RX_ADD_VERTEX(Position,  glm::vec3, glm::vec3, false, false);
+	_RX_ADD_VERTEX(TexCoords, glm::vec2, glm::vec2, false, false);
 	_RX_ADD_VERTEX(Xform,	  glm::mat4, glm::vec4, true,  false);
 	_RX_ADD_VERTEX(IsCollide, float,	 float,		true,  false);
 }; 
 // This macro helps to automatically call another macro dubbed "_RX_X". 
 // It must meet the usecase
-#define RX_VERTEX_BASIC_ATTRIBS		\
-	_RX_X(VertexBasic::Position);	\
-	_RX_X(VertexBasic::Xform);		\
-	_RX_X(VertexBasic::IsCollide);
+#define RX_VERTEX_BASIC_ATTRIBS_M_NOINSTANCED(F_O_O, ...)\
+	F_O_O(VertexBasic::Position, ##__VA_ARGS__)			 \
+	F_O_O(VertexBasic::TexCoords, ##__VA_ARGS__)
+#define RX_VERTEX_BASIC_ATTRIBS_M_INSTANCED(F_O_O, ...)	\
+	F_O_O(VertexBasic::Xform, ##__VA_ARGS__)			\
+	F_O_O(VertexBasic::IsCollide, ##__VA_ARGS__)
+#define RX_VERTEX_BASIC_ATTRIBS					\
+	RX_VERTEX_BASIC_ATTRIBS_M_NOINSTANCED(_RX_X)\
+	RX_VERTEX_BASIC_ATTRIBS_M_INSTANCED(_RX_X)
+//////////////////////////////////////////////////
 
-
+//////////////////////////////////////////////////
 // As the name states, the vertex used by vertex buffer output.
 class VertexFBO
 {
@@ -91,11 +99,16 @@ class VertexFBO
 };
 // This macro helps to automatically call another macro dubbed "_RX_X". 
 // It must meet the usecase
-#define RX_VERTEX_FBO_ATTRIBS		\
-	_RX_X(VertexFBO::Position);		\
-	_RX_X(VertexFBO::TexCoords);
+#define RX_VERTEX_FBO_ATTRIBS_M_NOINSTANCED(F_O_O, ...)	\
+	F_O_O(VertexFBO::Position, ##__VA_ARGS__)			\
+	F_O_O(VertexFBO::TexCoords, ##__VA_ARGS__)
+#define RX_VERTEX_FBO_ATTRIBS_M_INSTANCED(F_O_O, ...)
+#define RX_VERTEX_FBO_ATTRIBS					\
+	RX_VERTEX_FBO_ATTRIBS_M_NOINSTANCED(_RX_X)	\
+	RX_VERTEX_FBO_ATTRIBS_M_INSTANCED(_RX_X)
+//////////////////////////////////////////////////
 
-
+//////////////////////////////////////////////////
 // Representation of a model
 template <typename T>
 class Object
@@ -146,3 +159,4 @@ private:
 	std::vector<GLuint> m_Indices{};
 	std::vector<std::shared_ptr<typename vertex_type::BaseAttribute>> m_VBData{};
 };
+//////////////////////////////////////////////////
