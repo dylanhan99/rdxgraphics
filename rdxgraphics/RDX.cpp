@@ -27,13 +27,13 @@ void RDX::Run()
 	{
 		auto handle = EntityManager::CreateEntity<Xform>();
 		EntityManager::AddComponent<Model>(handle, Shape::Point);
-		EntityManager::AddComponent<Collider>(handle, BV::AABB);
+		EntityManager::AddComponent<Collider>(handle, BV::Plane);
 	}
 	{
 		auto handle = EntityManager::CreateEntity();
 		EntityManager::AddComponent<Xform>(handle, glm::vec3{1.f, 1.f, 1.f});
-		EntityManager::AddComponent<Model>(handle, Shape::Cube);
-		EntityManager::AddComponent<Collider>(handle, BV::Sphere);
+		EntityManager::AddComponent<Model>(handle, Shape::Point);
+		EntityManager::AddComponent<Collider>(handle, BV::Ray);
 	}
 	entt::entity mainCameraHandle{};
 	{

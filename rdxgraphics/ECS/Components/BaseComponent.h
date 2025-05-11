@@ -170,15 +170,21 @@ public:
 
 	inline glm::vec3 const& GetOrientation() const { return m_EulerOrientation; }
 	inline glm::vec3& GetOrientation() { return m_EulerOrientation; }
-	inline glm::vec3 GetNormal() const
-	{
-		glm::vec3 norm{
-			glm::cos(m_EulerOrientation.y) * glm::cos(m_EulerOrientation.x),
-			glm::sin(m_EulerOrientation.x),
-			glm::sin(m_EulerOrientation.y) * glm::cos(m_EulerOrientation.x)
-		};
-		return glm::normalize(norm);
-	}
+	//inline glm::vec3 GetNormal() const
+	//{
+	//	glm::vec3 norm{
+	//		glm::cos(m_EulerOrientation.y) * glm::cos(m_EulerOrientation.x),
+	//		glm::sin(m_EulerOrientation.x),
+	//		glm::sin(m_EulerOrientation.y) * glm::cos(m_EulerOrientation.x)
+	//	};
+	//	return glm::normalize(norm);
+	//}
+	// outward facing is the agreed upon standard for ray
+	inline glm::vec3 GetNormal() const { return GetNormal(glm::quat{ m_EulerOrientation }); }
+	inline float GetD() const { return glm::dot(GetNormal(), GetPosition()); }
+
+public:
+	inline static glm::vec3 GetNormal(glm::quat const& quat) { return quat * glm::vec3{ 0.f,0.f,1.f }; }
 
 private:
 	// Orientation of the normal

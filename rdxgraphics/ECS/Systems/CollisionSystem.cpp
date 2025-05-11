@@ -109,30 +109,76 @@ bool CollisionSystem::CheckCollision(RayBV const& lhs, TriangleBV const& rhs)
 }
 
 bool CollisionSystem::CheckCollision(RayBV const& lhs, PlaneBV const& rhs)
-{
-	return false;
+{ // Orange book page 176 (215 in the pdf)
+	glm::vec3 d = lhs.GetDirection();
+	glm::vec3 n = rhs.GetNormal();
+	float dA = glm::dot(d, n);
+	if (glm::abs(dA) < glm::epsilon<float>()) // Parallel
+		return false;
+
+	float t = (rhs.GetD() - glm::dot(n, lhs.GetPosition())) / dA;
+	return t >= 0.f;
 }
 
 bool CollisionSystem::CheckCollision(RayBV const& lhs, AABBBV const& rhs)
-{
-	return false;
+{ // Orange book page 179 (218 in the pdf)
+	glm::vec3 p = lhs.GetPosition();
+	glm::vec3 d = lhs.GetDirection();
+	glm::vec3 amin = rhs.GetMinPoint();
+	glm::vec3 amax = rhs.GetMaxPoint();
+	float tmin = 0.f; // set to -FLT_MAX to get first hit on line
+	float tmax = FLT_MAX; // set to max distance ray can travel (for segment)
+
+	// For all three slabs
+	for (int i = 0; i < 3; i++) 
+	{
+		if (glm::abs(d[i]) < glm::epsilon<float>()) 
+		{
+			// Ray is parallel to slab. No hit if origin not within slab
+			if (p[i] < amin[i] || p[i] > amax[i]) 
+				return false;
+		}
+		else 
+		{
+			// Compute intersection t value of ray with near and far plane of slab
+			float ood = 1.f / d[i];
+			float t1 = (amin[i] - p[i]) * ood;
+			float t2 = (amax[i] - p[i]) * ood;
+			// Make t1 be intersection with near plane, t2 with far plane
+			if (t1 > t2) std::swap(t1, t2);
+			// Compute the intersection of slab intersection intervals
+			if (t1 > tmin) tmin = t1;
+			if (t2 > tmax) tmax = t2;
+			// Exit with no collision as soon as slab intersection becomes empty
+			if (tmin > tmax) 
+				return false;
+		}
+	}
+	// Ray intersects all 3 slabs. Return point (q) and intersection t value (tmin)
+	//q = p + d * tmin;
+	return true;
 }
 
-// NOT CORRECT
-// This works for infinite line. 
-// But we are doing a directional ray, WITH an point of origin.
-// i.e. for a sphere behind point of origin, it should not pass.
 bool CollisionSystem::CheckCollision(RayBV const& lhs, SphereBV const& rhs)
-{
-	glm::vec3 lDir = lhs.GetDirection();
-	glm::vec3 L = rhs.GetPosition() - lhs.GetPosition();
-	float a = glm::dot(lDir, lDir);
-	float b = 2.f * glm::dot(L, lhs.GetDirection());
-	float c = glm::dot(L, L) - rhs.GetRadius() * rhs.GetRadius();
+{ // Orange book page 178 (217 in the pdf)
+	glm::vec3 m = lhs.GetPosition() - rhs.GetPosition();
+	float c = glm::dot(m, m) - glm::pow(rhs.GetRadius(), 2.f);
+	// If there is definitely at least one real root, there must be an intersection
+	if (c <= 0.f) 
+		return true;
 
-	float disc = b * b - 4.f * a * c;
+	float b = glm::dot(m, lhs.GetDirection());
+	// Early exit if ray origin outside sphere and ray pointing away from sphere
+	if (b > 0.f) 
+		return false;
 
-	return disc >= 0.f; // FOr now, we do not care about how many or where the intersections are.
+	float disc = b * b - c;
+	// A negative discriminant corresponds to ray missing sphere
+	if (disc < 0.f) 
+		return false;
+
+	// Now ray must hit sphere
+	return true;
 }
 
 bool CollisionSystem::CheckCollision(TriangleBV const& lhs, PointBV const& rhs) { return CheckCollision(rhs, lhs); }
@@ -144,13 +190,18 @@ bool CollisionSystem::CheckCollision(PlaneBV const& lhs, PointBV const& rhs) { r
 bool CollisionSystem::CheckCollision(PlaneBV const& lhs, RayBV const& rhs) { return CheckCollision(rhs, lhs); }
 
 bool CollisionSystem::CheckCollision(PlaneBV const& lhs, AABBBV const& rhs)
-{
-	return false;
+{ // Orange book page 164 (203 in the pdf)
+	glm::vec3 const& e = rhs.GetHalfExtents();
+	glm::vec3 const& n = lhs.GetNormal();
+	float r = glm::dot(e, glm::abs(n));
+	float s = glm::dot(n, rhs.GetPosition()) - lhs.GetD();
+	return glm::abs(s) <= r;
 }
 
 bool CollisionSystem::CheckCollision(PlaneBV const& lhs, SphereBV const& rhs)
-{
-	return false;
+{ // Orange book page 161 (200 in the pdf)
+	float dist = glm::dot(rhs.GetPosition(), lhs.GetNormal()) - lhs.GetD();
+	return glm::abs(dist) <= rhs.GetRadius();
 }
 
 bool CollisionSystem::CheckCollision(AABBBV const& lhs, PointBV const& rhs) { return CheckCollision(rhs, lhs); }
@@ -174,9 +225,8 @@ bool CollisionSystem::CheckCollision(AABBBV const& lhs, AABBBV const& rhs)
 }
 
 bool CollisionSystem::CheckCollision(AABBBV const& lhs, SphereBV const& rhs)
-{
+{ // Orange book page 165 (204 in the pdf)
 	// https://developer.mozilla.org/en-US/docs/Games/Techniques/3D_collision_detection
-
 	// Get the closest point on the sphere to the AABB by clamping
 	glm::vec3 boxMin = lhs.GetMinPoint();
 	glm::vec3 boxMax = lhs.GetMaxPoint();
