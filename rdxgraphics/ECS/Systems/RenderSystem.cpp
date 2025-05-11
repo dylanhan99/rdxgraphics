@@ -566,44 +566,49 @@ RenderSystem::ObjectParams RenderSystem::CreateCube()
 	};
 }
 
+// This sphere is bad becasue there are holes, and ALOT of duplicates vertices.
+// Too lazy to fix it rn
 RenderSystem::ObjectParams RenderSystem::CreateSphere(int refinement)
 { // https://blog.lslabs.dev/posts/generating_icosphere_with_code
-	// Vertices stolen from https://github.com/lazysquirrellabs/sphere_generator/blob/361e4e64cc1b3ecd00db495181b4ec8adabcf37c/Assets/Libraries/SphereGenerator/Runtime/Generators/IcosphereGenerator.cs#L35
-	// https://schneide.blog/2016/07/15/generating-an-icosphere-in-c/
+	// Vertices stolen from https://schneide.blog/2016/07/15/generating-an-icosphere-in-c/
 	std::vector<GLuint> indices{
-		  0,4,1,0,9,4,9,5,4,4,5,8,4,8,1,
-		  8,10,1,8,3,10,5,3,8,5,2,3,2,7,3,
-		  7,10,3,7,6,10,7,11,6,11,0,6,0,1,6,
-		  6,1,10,9,0,11,9,11,2,9,2,5,7,2,11
+		0, 1, 4,
+		0, 4, 9,
+		9, 4, 5,
+		4, 8, 5,
+		4, 1, 8,
+		8, 1,10,
+		8,10, 3,
+		5, 8, 3,
+		5, 3, 2,
+		2, 3, 7,
+		7, 3,10,
+		7,10, 6,
+		7, 6,11,
+		11, 6, 0,
+		0, 6, 1,
+		6,10, 1,
+		9,11, 0,
+		9, 2,11,
+		9, 5, 2,
+		7,11, 2 
 	};
 
 	const float X = 0.525731112119133606f;
 	const float Z = 0.850650808352039932f;
 	const float N = 0.f;
 	std::vector<glm::vec3> positions{
-		  {-X,N,Z}, {X,N,Z}, {-X,N,-Z}, {X,N,-Z},
-		  {N,Z,X}, {N,Z,-X}, {N,-Z,X}, {N,-Z,-X},
-		  {Z,X,N}, {-Z,X, N}, {Z,-X,N}, {-Z,-X, N}
+		{-X, N,  Z}, { X, N,  Z}, {-X, N, -Z}, { X, N, -Z},
+		{ N, Z,  X}, { N, Z, -X}, { N,-Z,  X}, { N,-Z, -X},
+		{ Z, X,  N}, {-Z, X,  N}, { Z,-X,  N}, {-Z,-X,  N}
 	};
 	VertexBasic::TexCoords::container_type texCoords{};
 	texCoords.resize(positions.size());
 
-	// Icosphering the icosahedron
-	//int segments = 3;
-	//{
-	// https://github.com/egeozgul/3D-Icosphere-Generator-Library
-	//	std::vector<GLuint> newIndices{};
-	//	std::vector<glm::vec3> newPositions{};
-	//}
-
-	// slerp between the two points
 	static auto MidPoint =
 		[](glm::vec3 v0, glm::vec3 v1) -> glm::vec3
 		{
-			glm::quat q0{ glm::rotation(glm::normalize(v0), glm::normalize(glm::vec3{ 1.f })) };
-			glm::quat q1{ glm::rotation(glm::normalize(v1), glm::normalize(glm::vec3{ 1.f })) };
-
-			return glm::slerp<float>(q0, q1, 0.5f) * glm::vec3{ 0.5f };
+			return glm::normalize(glm::normalize(v0) + glm::normalize(v1));
 		};
 
 	for (int r = 0; r < refinement; ++r)
