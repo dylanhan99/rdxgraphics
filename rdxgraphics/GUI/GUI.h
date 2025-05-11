@@ -1,4 +1,5 @@
 #pragma once
+#include "BaseGUIWindow.h"
 
 class GUI : public BaseSingleton<GUI>
 {
@@ -10,5 +11,5 @@ public:
 	static void Draw();
 
 private:
-
+	std::vector<std::unique_ptr<BaseGUIWindow>> m_GUIWindows{};
 };

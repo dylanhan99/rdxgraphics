@@ -19,6 +19,13 @@ RX_SINGLETON_EXPLICIT(GUI);
 extern float move;
 extern int renderOption;
 
+void BaseGUIWindow::Update(float dt)
+{
+	if (ImGui::Begin(m_Name.c_str(), nullptr, m_Flags))
+		Update(dt);
+	ImGui::End();
+}
+
 bool GUI::Init()
 {
 	// Initialize ImGui context
