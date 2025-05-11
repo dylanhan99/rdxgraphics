@@ -569,6 +569,7 @@ RenderSystem::ObjectParams RenderSystem::CreateCube()
 RenderSystem::ObjectParams RenderSystem::CreateSphere(int refinement)
 { // https://blog.lslabs.dev/posts/generating_icosphere_with_code
 	// Vertices stolen from https://github.com/lazysquirrellabs/sphere_generator/blob/361e4e64cc1b3ecd00db495181b4ec8adabcf37c/Assets/Libraries/SphereGenerator/Runtime/Generators/IcosphereGenerator.cs#L35
+	// https://schneide.blog/2016/07/15/generating-an-icosphere-in-c/
 	std::vector<GLuint> indices{
 		  0,4,1,0,9,4,9,5,4,4,5,8,4,8,1,
 		  8,10,1,8,3,10,5,3,8,5,2,3,2,7,3,
