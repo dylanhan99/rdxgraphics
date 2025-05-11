@@ -48,7 +48,7 @@ private:
 	static ObjectParams CreateQuad();
 	static ObjectParams CreatePlane();
 	static ObjectParams CreateCube();
-	static ObjectParams CreateSphere();
+	static ObjectParams CreateSphere(int refinement = 3);
 
 private:
 	glm::vec3 m_BackColor{ 0.2f, 0.3f, 0.3f };

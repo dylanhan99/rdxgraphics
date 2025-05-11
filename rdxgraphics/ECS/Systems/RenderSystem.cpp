@@ -566,7 +566,7 @@ RenderSystem::ObjectParams RenderSystem::CreateCube()
 	};
 }
 
-RenderSystem::ObjectParams RenderSystem::CreateSphere()
+RenderSystem::ObjectParams RenderSystem::CreateSphere(int refinement)
 { // https://blog.lslabs.dev/posts/generating_icosphere_with_code
 	// There were some explannations on how the icosphere is formed, but the basis of it
 	// is working off the 3 planes the regular icosahedron is based on.
@@ -668,6 +668,58 @@ RenderSystem::ObjectParams RenderSystem::CreateSphere()
 	//	std::vector<GLuint> newIndices{};
 	//	std::vector<glm::vec3> newPositions{};
 	//}
+
+	// slerp between the two points
+	static auto MidPoint =
+		[](glm::vec3 v0, glm::vec3 v1) -> glm::vec3
+		{
+			return 0.5f * (v0 + v1);
+		};
+
+	for (int r = 0; r < refinement; ++r)
+	{
+		decltype(positions) tempPositions{};
+		decltype(indices) tempIndices{};
+
+		for (int i = 0; (i+3) < indices.size(); i += 3)
+		{
+			GLuint index0 = indices[i];
+			GLuint index1 = indices[i + 1];
+			GLuint index2 = indices[i + 2];
+
+			glm::vec3 const& v0 = positions[index0];
+			glm::vec3 const& v1 = positions[index1];
+			glm::vec3 const& v2 = positions[index2];
+
+			GLuint currIndex = tempPositions.size();
+			tempPositions.push_back(v0);
+			tempPositions.push_back(v1);
+			tempPositions.push_back(v2);
+			tempPositions.push_back(MidPoint(v0, v1));
+			tempPositions.push_back(MidPoint(v1, v2));
+			tempPositions.push_back(MidPoint(v2, v0));
+
+			tempIndices.push_back(currIndex);
+			tempIndices.push_back(currIndex + 3);
+			tempIndices.push_back(currIndex + 5);
+
+			tempIndices.push_back(currIndex + 3);
+			tempIndices.push_back(currIndex + 1);
+			tempIndices.push_back(currIndex + 4);
+
+			tempIndices.push_back(currIndex + 5);
+			tempIndices.push_back(currIndex + 4);
+			tempIndices.push_back(currIndex + 2);
+
+			tempIndices.push_back(currIndex + 3);
+			tempIndices.push_back(currIndex + 4);
+			tempIndices.push_back(currIndex + 5);
+		}
+
+		positions = tempPositions;
+		indices = tempIndices;
+	}
+	texCoords.resize(positions.size());
 
 	return ObjectParams{
 		Shape::Sphere, GL_TRIANGLES,

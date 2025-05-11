@@ -62,7 +62,7 @@ void RDX::Run()
 	Camera& mainmapCamera = EntityManager::GetComponent<Camera>(minimapCameraHandle);
 
 	// This is what is camera view.
-	Camera& activeCamera = EntityManager::GetComponent<Camera>(minimapCameraHandle);
+	Camera& activeCamera = EntityManager::GetComponent<Camera>(mainCameraHandle);
 
 	while (!GLFWWindow::IsWindowShouldClose())
 	{
