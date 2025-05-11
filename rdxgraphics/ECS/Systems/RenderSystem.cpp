@@ -568,95 +568,21 @@ RenderSystem::ObjectParams RenderSystem::CreateCube()
 
 RenderSystem::ObjectParams RenderSystem::CreateSphere(int refinement)
 { // https://blog.lslabs.dev/posts/generating_icosphere_with_code
-	// There were some explannations on how the icosphere is formed, but the basis of it
-	// is working off the 3 planes the regular icosahedron is based on.
-	// Tldr, center to a plane's point is 1 unit, while the ratio of width/height = goldenratio.
-	// Using that understanding, we come to the following (half-height = a, half-width = c)
-	// (assume width (c) is the longer edge of the plane)
-	// v0-----v3	v0 - [-c,  a]
-	// |     / |	v1 - [-c, -a]
-	// |   m   |	v2 - [ c, -a]
-	// | /     |	v3 - [ c,  a]
-	// v1-----v2
-
-	//float a = 0.525731112119134f;
-	//float c = 0.85065080835157f;
-
-	//std::vector<GLuint> indices{
-	//	6, 0, 7,	// Upper 5
-	//	6, 7, 3,
-	//	6, 3, 10,
-	//	6, 10, 9,
-	//	6, 9, 0,
-	//
-	//	0, 8, 7,	// Middle 10
-	//	7, 8, 11,
-	//	7, 11, 3,
-	//	3, 11, 2,
-	//	3, 2, 10,
-	//	10, 2, 5,
-	//	10, 5, 9,
-	//	9, 5, 1,
-	//	9, 1, 0,
-	//	0, 1, 8,
-	//
-	//	4, 2, 11,	// Lower 5
-	//	4, 5, 2,
-	//	4, 1, 5,
-	//	4, 8, 1,
-	//	4, 11, 8
-	//};
-	//std::vector<glm::vec3> positions{
-	//	{ -c,  a, 0.f }, // XY plane
-	//	{ -c, -a, 0.f },
-	//	{  c, -a, 0.f },
-	//	{  c,  a, 0.f },
-	//	{ 0.f, -c,  a }, // YZ plane
-	//	{ 0.f, -c, -a },
-	//	{ 0.f,  c, -a },
-	//	{ 0.f,  c,  a },
-	//	{ -c, 0.f,  a }, // XZ plane
-	//	{ -c, 0.f, -a },
-	//	{  c, 0.f, -a },
-	//	{  c, 0.f,  a }
-	//};
-
 	// Vertices stolen from https://github.com/lazysquirrellabs/sphere_generator/blob/361e4e64cc1b3ecd00db495181b4ec8adabcf37c/Assets/Libraries/SphereGenerator/Runtime/Generators/IcosphereGenerator.cs#L35
 	std::vector<GLuint> indices{
-		0,  1,  2,
-		 0,  3,  1,
-		 0,  2,  4,
-		 3,  0,  5,
-		 0,  4,  5,
-		 1,  3,  6,
-		 1,  7,  2,
-		 7,  1,  6,
-		 4,  2,  8,
-		 7,  8,  2,
-		 9,  3,  5,
-		 6,  3,  9,
-		 5,  4, 10,
-		 4,  8, 10,
-		 9,  5, 10,
-		 7,  6, 11,
-		 7, 11,  8,
-		11,  6,  9,
-		 8, 11, 10,
-		10, 11,  9
+		  0,4,1,0,9,4,9,5,4,4,5,8,4,8,1,
+		  8,10,1,8,3,10,5,3,8,5,2,3,2,7,3,
+		  7,10,3,7,6,10,7,11,6,11,0,6,0,1,6,
+		  6,1,10,9,0,11,9,11,2,9,2,5,7,2,11
 	};
+
+	const float X = 0.525731112119133606f;
+	const float Z = 0.850650808352039932f;
+	const float N = 0.f;
 	std::vector<glm::vec3> positions{
-		{0.8506508f,           0.5257311f,         0.f},
-		{0.000000101405476f,   0.8506507f,        -0.525731f},
-		{0.000000101405476f,   0.8506506f,         0.525731f},
-		{0.5257309f,          -0.00000006267203f, -0.85065067f},
-		{0.52573115f,         -0.00000006267203f,  0.85065067f},
-		{0.8506508f,          -0.5257311f,         0.f},
-		{-0.52573115f,         0.00000006267203f, -0.85065067f},
-		{-0.8506508f,          0.5257311f,         0.f},
-		{-0.5257309f,          0.00000006267203f,  0.85065067f},
-		{-0.000000101405476f, -0.8506506f,        -0.525731f},
-		{-0.000000101405476f, -0.8506507f,         0.525731f},
-		{-0.8506508f,         -0.5257311f,         0.f}
+		  {-X,N,Z}, {X,N,Z}, {-X,N,-Z}, {X,N,-Z},
+		  {N,Z,X}, {N,Z,-X}, {N,-Z,X}, {N,-Z,-X},
+		  {Z,X,N}, {-Z,X, N}, {Z,-X,N}, {-Z,-X, N}
 	};
 	VertexBasic::TexCoords::container_type texCoords{};
 	texCoords.resize(positions.size());
@@ -673,7 +599,10 @@ RenderSystem::ObjectParams RenderSystem::CreateSphere(int refinement)
 	static auto MidPoint =
 		[](glm::vec3 v0, glm::vec3 v1) -> glm::vec3
 		{
-			return 0.5f * (v0 + v1);
+			glm::quat q0{ glm::rotation(glm::normalize(v0), glm::normalize(glm::vec3{ 1.f })) };
+			glm::quat q1{ glm::rotation(glm::normalize(v1), glm::normalize(glm::vec3{ 1.f })) };
+
+			return glm::slerp<float>(q0, q1, 0.5f) * glm::vec3{ 0.5f };
 		};
 
 	for (int r = 0; r < refinement; ++r)
