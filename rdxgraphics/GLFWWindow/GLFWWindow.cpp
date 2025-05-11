@@ -219,8 +219,11 @@ void GLFWWindow::Update(std::function<void(double)> fnUpdate)
 		g.m_IntervalTimer += GetDT();
 		if (g.m_IntervalTimer >= 1.0)
 		{
+			static float alpha = 0.3f; // smoothing factor
+			g.m_IntervalFPS = (1.f - alpha) * g.m_IntervalFPS + alpha * g.m_FPS;
+
 			g.m_IntervalTimer = 0.0;
-			g.m_IntervalFPS = g.m_FPS;
+			//g.m_IntervalFPS = g.m_FPS;
 		}
 	}
 

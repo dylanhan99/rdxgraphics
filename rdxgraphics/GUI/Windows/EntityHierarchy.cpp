@@ -1,7 +1,7 @@
 #include <pch.h>
 #include "EntityHierarchy.h"
 
-void EntityHierarchy::Update(float dt)
+void EntityHierarchy::UpdateImpl(float dt)
 {
 
 }

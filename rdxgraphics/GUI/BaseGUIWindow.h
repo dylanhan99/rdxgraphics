@@ -6,13 +6,13 @@ public:
 	BaseGUIWindow() = delete;
 	~BaseGUIWindow() = default;
 
-	inline BaseGUIWindow(std::string name, ImGuiWindowFlags flags)
+	inline BaseGUIWindow(std::string name, int flags)
 		: m_Name(name), m_Flags(flags) {}
 
 	void Update(float dt);
-	virtual void Update(float dt) = 0;
+	virtual void UpdateImpl(float dt) = 0;
 
 private:
 	std::string m_Name{};
-	ImGuiWindowFlags m_Flags{};
+	int m_Flags{};
 };
