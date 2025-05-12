@@ -32,7 +32,7 @@ int renderOption = 2;
 RenderPass basePass{};
 RenderPass minimapPass{};
 RenderPass wireframePass{};
-RenderPass finalPass{};
+//RenderPass finalPass{};
 
 bool RenderSystem::Init()
 {
@@ -79,7 +79,8 @@ bool RenderSystem::Init()
 	basePass.Init(0, 0, dims.x, dims.y);
 	minimapPass.Init(dims.x - 400, dims.y - 400, 400, 400);
 	wireframePass.Init(0, 0, dims.x, dims.y);
-	finalPass.Init(nullptr);
+	//g.m_ScreenPass.Init(nullptr);
+	g.m_ScreenPass.Init(0, 0, dims.x, dims.y);
 
 	return true;
 }
@@ -276,7 +277,7 @@ void RenderSystem::Draw()
 		}
 	);
 
-	finalPass.DrawThis(
+	g.m_ScreenPass.DrawThis(
 		[&]()
 		{
 			glClearColor(g.m_BackColor.x, g.m_BackColor.y, g.m_BackColor.z, 0.f);

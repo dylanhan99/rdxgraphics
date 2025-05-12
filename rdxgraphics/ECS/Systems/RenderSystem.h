@@ -39,6 +39,8 @@ public:
 	inline static entt::entity GetMinimapCamera() { return g.m_MinimapCamera; }
 	inline static void SetMinimapCamera(entt::entity handle) { g.m_MinimapCamera = handle; }
 
+	inline static RenderPass& GetScreenPass() { return g.m_ScreenPass; }
+
 private:
 	static void CreateShapes();
 
@@ -61,4 +63,6 @@ private:
 
 	entt::entity m_ActiveCamera{};
 	entt::entity m_MinimapCamera{};
+
+	RenderPass m_ScreenPass{};
 };

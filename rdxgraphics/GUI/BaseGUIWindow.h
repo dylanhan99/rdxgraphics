@@ -5,6 +5,12 @@
 #include <imgui_impl_glfw.h>
 #include "ECS/EntityManager.h"
 
+#define RX_GUIWINDOW_DEC(Foo)															\
+public:																					\
+	inline Foo(std::string name, ImGuiWindowFlags flags) : BaseGUIWindow(name, flags) {}\
+	void UpdateImpl(float dt) override;													\
+private:
+
 class BaseGUIWindow
 {
 public:

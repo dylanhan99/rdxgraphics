@@ -11,6 +11,7 @@
 
 #include "Windows/EntityHierarchy.h"
 #include "Windows/Inspector.h"
+#include "Windows/Viewport.h"
 
 RX_SINGLETON_EXPLICIT(GUI);
 extern float move;
@@ -42,6 +43,7 @@ bool GUI::Init()
 
 	g.m_GUIWindows.emplace_back(std::make_unique<EntityHierarchy>("Entity Hierarchy", 0));
 	g.m_GUIWindows.emplace_back(std::make_unique<Inspector>("Inspector", 0));
+	g.m_GUIWindows.emplace_back(std::make_unique<Viewport>("Viewport", 0));
 
 	return true;
 }
@@ -58,7 +60,7 @@ void GUI::Update(double dt)
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
-	//ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport());
+	ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport());
 
 	for (auto& pGUIWin : g.m_GUIWindows)
 		pGUIWin->Update(dt);
@@ -167,17 +169,16 @@ void GUI::Update(double dt)
 	//	}
 	//}
 	//ImGui::End();
-	ImGui::Render();
 }
 
 void GUI::Draw()
 {
 	glDisable(GL_DEPTH_TEST);
+	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) 
 	{
 		ImGui::UpdatePlatformWindows();
 		ImGui::RenderPlatformWindowsDefault();
-		GLFWWindow::MakeContextCurrent();
 	}
 }

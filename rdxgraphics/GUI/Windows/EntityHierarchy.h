@@ -3,10 +3,5 @@
 
 class EntityHierarchy : public BaseGUIWindow
 {
-public:
-	inline EntityHierarchy(std::string name, ImGuiWindowFlags flags) : BaseGUIWindow(name, flags) {}
-	void UpdateImpl(float dt) override;
-
-private:
-
+	RX_GUIWINDOW_DEC(EntityHierarchy);
 };

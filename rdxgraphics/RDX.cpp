@@ -102,6 +102,7 @@ void RDX::Run()
 				{
 					RenderSystem::Draw();
 					GUI::Draw();
+					GLFWWindow::MakeContextCurrent(); // Must do this cus of multiviewports
 				}
 			}
 		));
