@@ -393,7 +393,8 @@ void RenderSystem::CreateObjekt(ObjectParams const& objParams)
 	objekt.BeginObject(_RX_TUP(1))
 		.PushIndices(_RX_TUP(2))
 		.Push<VertexBasic::Position>(_RX_TUP(3))
-		.Push<VertexBasic::TexCoords>(_RX_TUP(4))
+		.Push<VertexBasic::TexCoord>(_RX_TUP(4))
+		.Push<VertexBasic::Normal>(_RX_TUP(5))
 		RX_VERTEX_BASIC_ATTRIBS_M_INSTANCED(_RX_X)
 		.EndObject();
 #undef _RX_X
@@ -422,14 +423,17 @@ RenderSystem::ObjectParams RenderSystem::CreatePoint()
 		{  0.0f, -0.2f,  0.0f },  { 0.0f, 0.2f, 0.0f },
 		{  0.0f,  0.0f, -0.2f },  { 0.0f, 0.0f, 0.2f },
 	};
-	VertexBasic::TexCoords::container_type texCoords{};
+	VertexBasic::TexCoord::container_type texCoords{};
 	texCoords.resize(positions.size());
+	VertexBasic::Normal::container_type normals{};
+	normals.resize(positions.size());
 
 	return ObjectParams{
 		Shape::Point, GL_LINES,
 		indices,
 		positions,
 		texCoords,
+		normals,
 		nullptr
 	};
 }
@@ -443,14 +447,17 @@ RenderSystem::ObjectParams RenderSystem::CreateLine()
 	VertexBasic::Position::container_type positions{
 		{0.f,0.f,0.f}, {0.f,0.f,-1.f},
 	};
-	VertexBasic::TexCoords::container_type texCoords{};
+	VertexBasic::TexCoord::container_type texCoords{};
 	texCoords.resize(positions.size());
+	VertexBasic::Normal::container_type normals{};
+	normals.resize(positions.size());
 
 	return ObjectParams{
 		Shape::Line, GL_LINES,
 		indices,
 		positions,
 		texCoords,
+		normals,
 		nullptr
 	};
 }
@@ -467,18 +474,21 @@ RenderSystem::ObjectParams RenderSystem::CreateQuad()
 		{  0.5f, -0.5f,  0.f },
 		{  0.5f,  0.5f,  0.f },
 	};
-	VertexBasic::TexCoords::container_type texCoords{
+	VertexBasic::TexCoord::container_type texCoords{
 		{ 0.f, 1.f },
 		{ 0.f, 0.f },
 		{ 1.f, 0.f },
 		{ 1.f, 1.f },
 	};
+	VertexBasic::Normal::container_type normals{};
+	normals.resize(positions.size());
 
 	return ObjectParams{
 		Shape::Quad, GL_TRIANGLES,
 		indices,
 		positions,
 		texCoords,
+		normals,
 		nullptr
 	};
 }
@@ -523,14 +533,17 @@ RenderSystem::ObjectParams RenderSystem::CreatePlane()
 			indices.push_back(a);
 		}
 	}
-	VertexBasic::TexCoords::container_type texCoords{};
+	VertexBasic::TexCoord::container_type texCoords{};
 	texCoords.resize(positions.size());
+	VertexBasic::Normal::container_type normals{};
+	normals.resize(positions.size());
 
 	return ObjectParams{
 		Shape::Plane, GL_TRIANGLES,
 		indices,
 		positions,
 		texCoords,
+		normals,
 		nullptr
 	};
 }
@@ -555,14 +568,17 @@ RenderSystem::ObjectParams RenderSystem::CreateCube()
 		{ -0.5f, -0.5f, -0.5f },
 		{ -0.5f,  0.5f, -0.5f }
 	};
-	VertexBasic::TexCoords::container_type texCoords{};
+	VertexBasic::TexCoord::container_type texCoords{};
 	texCoords.resize(positions.size());
+	VertexBasic::Normal::container_type normals{};
+	normals.resize(positions.size());
 
 	return ObjectParams{
 		Shape::Cube, GL_TRIANGLES,
 		indices,
 		positions,
 		texCoords,
+		normals,
 		nullptr
 	};
 }
@@ -573,26 +589,26 @@ RenderSystem::ObjectParams RenderSystem::CreateSphere(int refinement)
 { // https://blog.lslabs.dev/posts/generating_icosphere_with_code
 	// Vertices stolen from https://schneide.blog/2016/07/15/generating-an-icosphere-in-c/
 	std::vector<GLuint> indices{
-		0, 1, 4,
-		0, 4, 9,
-		9, 4, 5,
-		4, 8, 5,
-		4, 1, 8,
-		8, 1,10,
-		8,10, 3,
-		5, 8, 3,
-		5, 3, 2,
-		2, 3, 7,
-		7, 3,10,
-		7,10, 6,
-		7, 6,11,
-		11, 6, 0,
-		0, 6, 1,
-		6,10, 1,
-		9,11, 0,
-		9, 2,11,
-		9, 5, 2,
-		7,11, 2 
+		0,  1,  4,
+		0,  4,  9,
+		9,  4,  5,
+		4,  8,  5,
+		4,  1,  8,
+		8,  1,  10,
+		8,  10, 3,
+		5,  8,  3,
+		5,  3,  2,
+		2,  3,  7,
+		7,  3,  10,
+		7,  10, 6,
+		7,  6,  11,
+		11, 6,  0,
+		0,  6,  1,
+		6,  10, 1,
+		9,  11, 0,
+		9,  2,  11,
+		9,  5,  2,
+		7,  11, 2 
 	};
 
 	const float X = 0.525731112119133606f;
@@ -603,8 +619,10 @@ RenderSystem::ObjectParams RenderSystem::CreateSphere(int refinement)
 		{ N, Z,  X}, { N, Z, -X}, { N,-Z,  X}, { N,-Z, -X},
 		{ Z, X,  N}, {-Z, X,  N}, { Z,-X,  N}, {-Z,-X,  N}
 	};
-	VertexBasic::TexCoords::container_type texCoords{};
+	VertexBasic::TexCoord::container_type texCoords{};
 	texCoords.resize(positions.size());
+	VertexBasic::Normal::container_type normals{};
+	normals.resize(positions.size());
 
 	static auto MidPoint =
 		[](glm::vec3 v0, glm::vec3 v1) -> glm::vec3
@@ -656,12 +674,14 @@ RenderSystem::ObjectParams RenderSystem::CreateSphere(int refinement)
 		indices = tempIndices;
 	}
 	texCoords.resize(positions.size());
+	normals.resize(positions.size());
 
 	return ObjectParams{
 		Shape::Sphere, GL_TRIANGLES,
 		indices,
 		positions,
 		texCoords,
+		normals,
 		nullptr
 	};
 }
