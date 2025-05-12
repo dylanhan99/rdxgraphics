@@ -4,7 +4,7 @@
 
 void EntityHierarchy::UpdateImpl(float dt)
 {
-	auto view = EntityManager::GetInstance().m_Registry.view<entt::entity>();
+	auto view = EntityManager::View<entt::entity>();
 
 	std::string name = "Ent #";
 	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_Leaf;

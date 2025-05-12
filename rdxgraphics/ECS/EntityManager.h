@@ -69,14 +69,14 @@ public:
 		return g.m_Registry.get<T>(handle);
 	}
 
-	//template <typename ...Args>
-	//static auto View()
-	//{
-	//	return m_Registry.view<Args...>();
-	//}
+	template <typename ...Args>
+	static auto View()
+	{
+		return g.m_Registry.view<Args...>();
+	}
 
 	static bool HasEntity(entt::entity handle);
 
-public:
+private:
 	entt::registry m_Registry{};
 };

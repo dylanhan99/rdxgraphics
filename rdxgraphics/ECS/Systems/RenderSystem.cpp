@@ -107,7 +107,7 @@ void RenderSystem::Draw()
 			if (renderOption == 1)
 				return;
 
-			auto view = EntityManager::GetInstance().m_Registry.view<Xform, Model>();
+			auto view = EntityManager::View<Xform, Model>();
 			for (auto [handle, xform, model] : view.each())
 			{
 				Rxuid meshID = model.GetMesh();
@@ -156,7 +156,7 @@ void RenderSystem::Draw()
 			if (renderOption == 1)
 				return;
 
-			auto view = EntityManager::GetInstance().m_Registry.view<Xform, Model>();
+			auto view = EntityManager::View<Xform, Model>();
 			for (auto [handle, xform, model] : view.each())
 			{
 				Rxuid meshID = model.GetMesh();
@@ -214,7 +214,7 @@ void RenderSystem::Draw()
 			//	o.Submit<VertexBasic::IsCollide>(
 			//		(typename VertexBasic::IsCollide::value_type)colDetails.pBV->IsCollide());
 			//}
-			auto view = EntityManager::GetInstance().m_Registry.view<Collider>();
+			auto view = EntityManager::View<Collider>();
 			for (auto [handle, collider] : view.each())
 			{
 				BV bvType = collider.GetBVType();
@@ -225,7 +225,7 @@ void RenderSystem::Draw()
 				if (bvType == BV::Klass)														   \
 				{																				   \
 					/*Should check ensure that get<BV> exists*/									   \
-					Klass##BV& bv = EntityManager::GetInstance().m_Registry.get<Klass##BV>(handle);\
+					Klass##BV& bv = EntityManager::GetComponent<Klass##BV>(handle);\
 					Object<VertexBasic>& o = GetObjekt(bvType);									   \
 					o.Submit<VertexBasic::Xform>(bv.GetXform());								   \
 					o.Submit<VertexBasic::IsCollide>(bv.IsCollide());							   \

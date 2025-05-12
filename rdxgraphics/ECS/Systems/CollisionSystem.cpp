@@ -8,14 +8,14 @@ void CollisionSystem::Update(float dt)
 	// Hardcoding here to un-set it for the next frame for now
 	// Maybe do some colliding pairs system in the future for efficiency if needed
 #define _RX_X(Klass){														\
-	auto bvView = EntityManager::GetInstance().m_Registry.view<Klass##BV>();\
+	auto bvView = EntityManager::View<Klass##BV>();\
 		for (auto [handle, bv] : bvView.each()) { bv.IsCollide() = false; } \
 	}
 
 	RX_DO_ALL_BV_ENUM;
 #undef _RX_X
 
-	auto colView = EntityManager::GetInstance().m_Registry.view<Collider>();
+	auto colView = EntityManager::View<Collider>();
 	for (auto [lhandle, lcol] : colView.each())
 	{
 		BV lBVType = lcol.GetBVType();
@@ -29,16 +29,16 @@ void CollisionSystem::Update(float dt)
 			if (rBVType == BV::NIL)
 				continue;
 
-#define _RX_C_C(RKlass, LKlass)																\
-	case BV::RKlass:																		\
-	{																						\
-		LKlass##BV& lbv = EntityManager::GetInstance().m_Registry.get<LKlass##BV>(lhandle); \
-		RKlass##BV& rbv = EntityManager::GetInstance().m_Registry.get<RKlass##BV>(rhandle); \
-		if (CheckCollision(lbv, rbv))														\
-		{																					\
-			lbv.IsCollide() |= true;														\
-			rbv.IsCollide() |= true;														\
-		}																					\
+#define _RX_C_C(RKlass, LKlass)												\
+	case BV::RKlass:														\
+	{																		\
+		LKlass##BV& lbv = EntityManager::GetComponent<LKlass##BV>(lhandle);	\
+		RKlass##BV& rbv = EntityManager::GetComponent<RKlass##BV>(rhandle);	\
+		if (CheckCollision(lbv, rbv))										\
+		{																	\
+			lbv.IsCollide() |= true;										\
+			rbv.IsCollide() |= true;										\
+		}																	\
 	} break;
 #define _RX_C_X(LKlass)							 \
 	case BV::LKlass:							 \

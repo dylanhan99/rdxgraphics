@@ -6,13 +6,13 @@ RX_SINGLETON_EXPLICIT(TransformSystem);
 
 void TransformSystem::Update(float dt)
 {
-	auto xformView = EntityManager::GetInstance().m_Registry.view<Xform>();
+	auto xformView = EntityManager::View<Xform>();
 	for (auto [handle, xform] : xformView.each())
 	{
 		xform.UpdateXform();
 	}
 
-	auto colView = EntityManager::GetInstance().m_Registry.view<const Collider>();
+	auto colView = EntityManager::View<const Collider>();
 	for (auto [handle, col] : colView.each())
 	{
 		if (col.GetBVType() == BV::NIL)
@@ -20,11 +20,11 @@ void TransformSystem::Update(float dt)
 
 		// Hardcode to follow xform for now?
 		{
-			Xform& xform = EntityManager::GetInstance().m_Registry.get<Xform>(handle);
+			Xform& xform = EntityManager::GetComponent<Xform>(handle);
 #define _RX_X(Klass)																		\
 		case BV::Klass:																		\
 		{																					\
-			Klass##BV& bv = EntityManager::GetInstance().m_Registry.get<Klass##BV>(handle); \
+			Klass##BV& bv = EntityManager::GetComponent<Klass##BV>(handle); \
 			bv.GetPosition() = xform.GetTranslate();										\
 	} break;
 
@@ -41,7 +41,7 @@ void TransformSystem::Update(float dt)
 	case BV::Klass:																		\
 	{																					\
 		/*Should check ensure that get<BV> exists*/										\
-		Klass##BV& bv = EntityManager::GetInstance().m_Registry.get<Klass##BV>(handle); \
+		Klass##BV& bv = EntityManager::GetComponent<Klass##BV>(handle); \
 		bv.UpdateXform();																\
 	} break;
 
