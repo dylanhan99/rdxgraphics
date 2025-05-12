@@ -116,3 +116,28 @@ void Camera::Inputs(float dt)
 
 	GLFWWindow::CenterCursor();
 }
+
+glm::vec3 Camera::GetPosition() const
+{
+	RX_ASSERT(EntityManager::HasEntity(GetEntityHandle()));
+
+	Xform& xform = EntityManager::GetComponent<Xform>(GetEntityHandle());
+	return xform.GetTranslate();
+}
+
+glm::vec3 Camera::GetEulerOrientation() const
+{
+	RX_ASSERT(EntityManager::HasEntity(GetEntityHandle()));
+
+	Xform& xform = EntityManager::GetComponent<Xform>(GetEntityHandle());
+	return xform.GetEulerOrientation();
+}
+
+glm::vec3 Camera::GetDirection() const
+{
+	RX_ASSERT(EntityManager::HasEntity(GetEntityHandle()));
+
+	Xform& xform = EntityManager::GetComponent<Xform>(GetEntityHandle());
+	return glm::quat{ xform.GetEulerOrientation() } * glm::vec3{ 1.f,0.f,0.f };
+}
+

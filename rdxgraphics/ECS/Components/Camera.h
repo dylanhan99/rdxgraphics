@@ -38,6 +38,10 @@ public:
 	inline bool IsCameraInUserControl() const { return m_CameraInUserControl; }
 	inline bool& IsCameraInUserControl() { return m_CameraInUserControl; }
 
+	glm::vec3 GetPosition() const;
+	glm::vec3 GetEulerOrientation() const;
+	glm::vec3 GetDirection() const;
+
 private:
 	glm::mat4 m_ViewMatrix{ glm::mat4(1.f) };
 	glm::mat4 m_ProjectionMatrix{ glm::mat4(1.f) };

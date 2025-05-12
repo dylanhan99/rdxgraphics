@@ -75,6 +75,8 @@ public:
 	//	return m_Registry.view<Args...>();
 	//}
 
+	static bool HasEntity(entt::entity handle);
+
 public:
 	entt::registry m_Registry{};
 };

@@ -10,6 +10,10 @@ public:
 	static void Update(double dt);
 	static void Draw();
 
+	inline static entt::entity GetSelectedEntity() { return g.m_SelectedEntity; }
+	inline static void SetSelectedEntity(entt::entity handle) { g.m_SelectedEntity = handle; }
+
 private:
 	std::vector<std::unique_ptr<BaseGUIWindow>> m_GUIWindows{};
+	entt::entity m_SelectedEntity{};
 };

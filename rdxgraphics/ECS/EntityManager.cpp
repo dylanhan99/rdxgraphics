@@ -12,3 +12,8 @@ void EntityManager::Terminate()
 {
 	g.m_Registry.clear();
 }
+
+bool EntityManager::HasEntity(entt::entity handle)
+{
+	return g.m_Registry.valid(handle);
+}
