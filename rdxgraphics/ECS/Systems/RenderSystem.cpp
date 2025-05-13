@@ -101,21 +101,46 @@ void RenderSystem::Draw()
 	Camera& activeCamera = EntityManager::GetComponent<Camera>(camEnt);
 	Camera& minimapCamera = EntityManager::GetComponent<Camera>(miniEnt);
 
+	// Inefficient preprocessing of all materials.
+	// A necessity dynamicism only in editor because of need for live view of changes made.
+	// In game, it's totally fine (probably) to be statically loaded.
+	//std::vector<glm::mat4> materials{};
+	//{
+	//	auto view = EntityManager::View<const Material>();
+	//	for (auto [handle, mat] : view.each())
+	//	{
+	//
+	//	}
+	//}
+
 	basePass.DrawThis(
 		[&]()
 		{
 			if (renderOption == 1)
 				return;
 
-			auto view = EntityManager::View<Xform, Model>();
+			auto view = EntityManager::View<const Xform, const Model>();
 			for (auto [handle, xform, model] : view.each())
 			{
 				Rxuid meshID = model.GetMesh();
 				if (meshID == RX_INVALID_ID)
 					continue;
-
+			
 				Object<VertexBasic>& o = GetObjekt(meshID);
 				o.Submit<VertexBasic::Xform>(xform.GetXform());
+
+				// Temporary preprocessing to submit
+				if (EntityManager::HasComponent<const Material>(handle))
+				{
+					Material const& mat = EntityManager::GetComponent<const Material>(handle);
+					o.Submit<VertexBasic::MatID>(1.f);
+					o.Submit<VertexBasic::Material>(static_cast<glm::mat4>(mat));
+				}
+				else
+				{
+					o.Submit<VertexBasic::MatID>(false);
+					o.Submit<VertexBasic::Material>(glm::mat4{});
+				}
 			}
 
 			glClearColor(g.m_BackColor.x, g.m_BackColor.y, g.m_BackColor.z, 0.f);
@@ -139,6 +164,9 @@ void RenderSystem::Draw()
 				{
 					count = glm::min<size_t>(maxVal - offset, RX_MAX_INSTANCES);
 					object.BindInstancedData<VertexBasic::Xform>(offset, count);
+					object.BindInstancedData<VertexBasic::IsCollide>(offset, count);
+					object.BindInstancedData<VertexBasic::MatID>(offset, count);
+					object.BindInstancedData<VertexBasic::Material>(offset, count);
 					// more binds...
 					object.Draw(count);
 				}
@@ -450,7 +478,7 @@ RenderSystem::ObjectParams RenderSystem::CreateLine()
 	VertexBasic::TexCoord::container_type texCoords{};
 	texCoords.resize(positions.size());
 	VertexBasic::Normal::container_type normals{};
-	normals.resize(positions.size());
+	normals.resize(positions.size(), RayBV::DefaultDirection);
 
 	return ObjectParams{
 		Shape::Line, GL_LINES,
@@ -481,7 +509,7 @@ RenderSystem::ObjectParams RenderSystem::CreateQuad()
 		{ 1.f, 1.f },
 	};
 	VertexBasic::Normal::container_type normals{};
-	normals.resize(positions.size());
+	normals.resize(positions.size(), PlaneBV::DefaultNormal);
 
 	return ObjectParams{
 		Shape::Quad, GL_TRIANGLES,
@@ -536,7 +564,7 @@ RenderSystem::ObjectParams RenderSystem::CreatePlane()
 	VertexBasic::TexCoord::container_type texCoords{};
 	texCoords.resize(positions.size());
 	VertexBasic::Normal::container_type normals{};
-	normals.resize(positions.size());
+	normals.resize(positions.size(), PlaneBV::DefaultNormal);
 
 	return ObjectParams{
 		Shape::Plane, GL_TRIANGLES,

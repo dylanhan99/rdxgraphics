@@ -62,11 +62,26 @@ public:
 	}
 
 	template <typename T>
-	static std::enable_if_t<std::is_base_of_v<BaseComponent, T>,
-		T&> GetComponent(entt::entity handle)
+	static auto& GetComponent(entt::entity handle)
 	{
+		// Need to static assert instead of sfinae cus i can't enable_if_t and use auto as return
+		static_assert(std::is_base_of_v<BaseComponent, T>);
 		RX_ASSERT(HasComponent<T>(handle), R"(Check HasComponent<T> before GetComponent.)");
+
 		return g.m_Registry.get<T>(handle);
+	}
+
+	template <typename T1, typename T2, typename ...Args>
+	static auto GetComponent(entt::entity handle)
+	{
+		// Need to static assert instead of sfinae cus i can't enable_if_t and use auto as return
+		static_assert(std::conjunction_v<
+			std::is_base_of<BaseComponent, T1>, 
+			std::is_base_of<BaseComponent, T2>, 
+			std::is_base_of<BaseComponent, Args>...>);
+		RX_ASSERT((HasComponent<T1, T2, Args...>(handle)), R"(Check HasComponent<T> before GetComponent.)");
+
+		return g.m_Registry.get<T1, T2, Args...>(handle);
 	}
 
 	template <typename ...Args>
@@ -77,6 +92,6 @@ public:
 
 	static bool HasEntity(entt::entity handle);
 
-private:
-	entt::registry m_Registry{};
+public:
+	inline static entt::registry m_Registry{};
 };

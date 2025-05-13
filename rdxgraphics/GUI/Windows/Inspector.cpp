@@ -16,7 +16,7 @@ void Inspector::UpdateImpl(float dt)
 	{ 																			\
 		ImGui::Separator(); 													\
 		Klass& comp = EntityManager::GetComponent<Klass>(selectedEntityHandle);	\
-		if (ImGui::TreeNodeEx((#Klass"##" + strHandle).c_str(), flags))	\
+		if (ImGui::TreeNodeEx((#Klass"##" + strHandle).c_str(), flags))			\
 		{																		\
 			UpdateComp##Klass(strHandle, comp);									\
 			ImGui::TreePop();													\
@@ -51,6 +51,16 @@ void Inspector::UpdateCompCamera(std::string const& strHandle, Camera& comp)
 void Inspector::UpdateCompModel(std::string const& strHandle, Model& comp)
 {
 	ImGui::Text("Hewwo");
+}
+
+void Inspector::UpdateCompDirectionalLight(std::string const& strHandle, DirectionalLight& comp)
+{
+
+}
+
+void Inspector::UpdateCompMaterial(std::string const& strHandle, Material& comp)
+{
+	ImGui::ColorPicker3(("Ambient##" + strHandle).c_str(), glm::value_ptr(comp.GetAmbientColor()));
 }
 
 void Inspector::UpdateCompCollider(std::string const& strHandle, Collider& comp)

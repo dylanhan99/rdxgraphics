@@ -32,8 +32,9 @@ void RDX::Run()
 	{
 		auto handle = EntityManager::CreateEntity();
 		EntityManager::AddComponent<Xform>(handle, glm::vec3{1.f, 1.f, 1.f});
-		EntityManager::AddComponent<Model>(handle, Shape::Point);
+		EntityManager::AddComponent<Model>(handle, Shape::Cube);
 		EntityManager::AddComponent<Collider>(handle, BV::Ray);
+		EntityManager::AddComponent<Material>(handle, glm::vec3{ 0.f,0.f,1.f });
 	}
 	entt::entity mainCameraHandle{};
 	{
@@ -99,11 +100,9 @@ void RDX::Run()
 				GUI::Update(dt);
 
 				// Render
-				{
-					RenderSystem::Draw();
-					GUI::Draw();
-					GLFWWindow::MakeContextCurrent(); // Must do this cus of multiviewports
-				}
+				RenderSystem::Draw();
+				GUI::Draw();
+				GLFWWindow::MakeContextCurrent(); // Must do this cus of multiviewports
 			}
 		));
 	}
