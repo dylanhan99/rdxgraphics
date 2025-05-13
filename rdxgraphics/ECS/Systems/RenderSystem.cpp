@@ -643,7 +643,7 @@ RenderSystem::ObjectParams RenderSystem::CreateCube()
 			glm::vec3 const& p0 = positions[i0];
 			glm::vec3 const& p1 = positions[i1];
 			glm::vec3 const& p2 = positions[i2];
-			glm::vec3 norm = glm::cross(p0-p1, p2-p1);
+			glm::vec3 norm = glm::cross(p1-p0, p2-p1);
 
 			tempPositions.push_back(p0);
 			tempPositions.push_back(p1);

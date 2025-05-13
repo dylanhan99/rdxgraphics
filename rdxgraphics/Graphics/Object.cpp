@@ -115,15 +115,15 @@ void Object<T>::EndObject()
 		m_PrimCount = m_Indices.size();
 	}
 
-	switch (m_Primitive)
-	{
-	case GL_POINTS: break;
-	case GL_LINES: m_PrimCount /= 2; break;
-	case GL_TRIANGLES: m_PrimCount /= 3; break;
-	default:
-		RX_ASSERT(false, "wut??");
-		break;
-	}
+	//switch (m_Primitive)
+	//{
+	//case GL_POINTS: break;
+	//case GL_LINES: m_PrimCount /= 2; break;
+	//case GL_TRIANGLES: m_PrimCount /= 3; break;
+	//default:
+	//	RX_ASSERT(false, "wut??");
+	//	break;
+	//}
 	glBindVertexArray(0);
 }
 
