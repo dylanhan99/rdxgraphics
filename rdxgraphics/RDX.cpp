@@ -26,8 +26,9 @@ void RDX::Run()
 
 	{
 		auto handle = EntityManager::CreateEntity<Xform>();
-		EntityManager::AddComponent<Model>(handle, Shape::Point);
+		EntityManager::AddComponent<Model>(handle, Shape::Cube);
 		EntityManager::AddComponent<Collider>(handle, BV::Plane);
+		EntityManager::AddComponent<Material>(handle, glm::vec3{ 0.f,1.f,0.f });
 	}
 	{
 		auto handle = EntityManager::CreateEntity();

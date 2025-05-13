@@ -75,23 +75,25 @@ class VertexBasic
 	_RX_ADD_VERTEX(Normal,    glm::vec3, glm::vec3, false, false);
 	_RX_ADD_VERTEX(Xform,	  glm::mat4, glm::vec4, true,  false);
 	_RX_ADD_VERTEX(IsCollide, float,	 float,		true,  false);
-	_RX_ADD_VERTEX(MatID,	  float,  float,   true, false);
+	_RX_ADD_VERTEX(MatID,	  float,     float,     true,  false);
 	_RX_ADD_VERTEX(Material,  glm::mat4, glm::vec4, true,  false);
 }; 
 // This macro helps to automatically call another macro dubbed "_RX_X". 
 // It must meet the usecase
 #define RX_VERTEX_BASIC_ATTRIBS_M_NOINSTANCED(F_O_O, ...) \
 	F_O_O(VertexBasic::Position,  ##__VA_ARGS__)		  \
-	F_O_O(VertexBasic::TexCoord,  ##__VA_ARGS__)			  \
+	F_O_O(VertexBasic::TexCoord,  ##__VA_ARGS__)		  \
 	F_O_O(VertexBasic::Normal,    ##__VA_ARGS__)
 #define RX_VERTEX_BASIC_ATTRIBS_M_INSTANCED(F_O_O, ...) \
 	F_O_O(VertexBasic::Xform,     ##__VA_ARGS__)	    \
 	F_O_O(VertexBasic::IsCollide, ##__VA_ARGS__)		\
 	F_O_O(VertexBasic::MatID,	  ##__VA_ARGS__)		\
 	F_O_O(VertexBasic::Material,  ##__VA_ARGS__)
+#define RX_VERTEX_BASIC_ATTRIBS_M(F_O_O)		 \
+	RX_VERTEX_BASIC_ATTRIBS_M_NOINSTANCED(F_O_O) \
+	RX_VERTEX_BASIC_ATTRIBS_M_INSTANCED(F_O_O)
 #define RX_VERTEX_BASIC_ATTRIBS					 \
-	RX_VERTEX_BASIC_ATTRIBS_M_NOINSTANCED(_RX_X) \
-	RX_VERTEX_BASIC_ATTRIBS_M_INSTANCED(_RX_X)
+	RX_VERTEX_BASIC_ATTRIBS_M(_RX_X)
 //////////////////////////////////////////////////
 
 //////////////////////////////////////////////////
@@ -109,9 +111,11 @@ class VertexFBO
 	F_O_O(VertexFBO::Position, ##__VA_ARGS__)			\
 	F_O_O(VertexFBO::TexCoords, ##__VA_ARGS__)
 #define RX_VERTEX_FBO_ATTRIBS_M_INSTANCED(F_O_O, ...)
-#define RX_VERTEX_FBO_ATTRIBS					\
-	RX_VERTEX_FBO_ATTRIBS_M_NOINSTANCED(_RX_X)	\
-	RX_VERTEX_FBO_ATTRIBS_M_INSTANCED(_RX_X)
+#define RX_VERTEX_FBO_ATTRIBS_M(F_O_O)		 \
+	RX_VERTEX_FBO_ATTRIBS_M_NOINSTANCED(F_O_O) \
+	RX_VERTEX_FBO_ATTRIBS_M_INSTANCED(F_O_O)
+#define RX_VERTEX_FBO_ATTRIBS					 \
+	RX_VERTEX_FBO_ATTRIBS_M(_RX_X)
 //////////////////////////////////////////////////
 
 //////////////////////////////////////////////////
@@ -154,6 +158,8 @@ public:
 	void Flush();
 
 	inline GLenum GetPrimitive() const { return m_Primitive; }
+	inline GLsizei GetPrimCount() const { return m_PrimCount; }
+	inline bool IsIndexedMesh() const { return !m_Indices.empty(); }
 
 private:
 	GLuint m_VAO{};
@@ -162,6 +168,7 @@ private:
 	GLuint m_Index{}; // Attibute index used in the build pattern
 
 	GLenum m_Primitive{};
+	GLsizei m_PrimCount{ 0 };
 	std::vector<GLuint> m_Indices{};
 	std::vector<std::shared_ptr<typename vertex_type::BaseAttribute>> m_VBData{};
 };

@@ -1,17 +1,17 @@
 #include <pch.h>
 #include "Object.h"
-template class Object<VertexBasic>;
-template class Object<VertexFBO>;
 
 // Macro to explicitly init functions. Cus i'd rather have all defines in one place, than in both hpp and cpp.
-#define _RX_X(Klass) \
-	template Object<VertexBasic>& Object<VertexBasic>::Push<Klass>(typename Klass::container_type const &); \
-	template void Object<VertexBasic>::BindInstancedData<Klass>(GLsizeiptr offset, GLsizeiptr count);
+#define _RX_XX(Klass, VKlass) \
+	template class Object<Klass>;																 \
+	template Object<Klass>& Object<Klass>::Push<VKlass>(typename VKlass::container_type const &); \
+	template void Object<Klass>::BindInstancedData<VKlass>(GLsizeiptr offset, GLsizeiptr count); \
+	template void Object<Klass>::EndObject();
+
+#define _RX_X(Klass) _RX_XX(VertexBasic, Klass)
 RX_VERTEX_BASIC_ATTRIBS;
 #undef _RX_X
-#define _RX_X(Klass) \
-	template Object<VertexFBO>& Object<VertexFBO>::Push<Klass>(typename Klass::container_type const &); \
-	template void Object<VertexFBO>::BindInstancedData<Klass>(GLsizeiptr offset, GLsizeiptr count);
+#define _RX_X(Klass) _RX_XX(VertexFBO, Klass)
 RX_VERTEX_FBO_ATTRIBS;
 #undef _RX_X
 
@@ -88,6 +88,42 @@ Object<T>& Object<T>::BeginObject(GLenum primitive)
 template<typename T>
 void Object<T>::EndObject()
 {
+	// It's not instanced, we need PrimCount variable for draw call
+	if (m_Indices.empty())
+	{
+		// Should be able to simply take the first object in m_VBData, ensure it's non-instanced attribute
+#define _RX_X(Klass) { typename Klass::container_type& pData = GetVBData<Klass>(); m_PrimCount = pData.size(); break; }
+		for (;;)
+		{
+			if constexpr (std::is_same_v<T, VertexBasic>)
+			{
+				RX_VERTEX_BASIC_ATTRIBS;
+			}
+			else if constexpr (std::is_same_v<T, VertexFBO>)
+			{
+				RX_VERTEX_FBO_ATTRIBS;
+			}
+			else
+			{
+				static_assert(false);
+			}
+		}
+#undef _RX_X
+	}
+	else
+	{
+		m_PrimCount = m_Indices.size();
+	}
+
+	switch (m_Primitive)
+	{
+	case GL_POINTS: break;
+	case GL_LINES: m_PrimCount /= 2; break;
+	case GL_TRIANGLES: m_PrimCount /= 3; break;
+	default:
+		RX_ASSERT(false, "wut??");
+		break;
+	}
 	glBindVertexArray(0);
 }
 
@@ -168,13 +204,25 @@ std::enable_if_t<std::is_base_of_v<typename T::BaseAttribute, U>,
 template <typename T>
 void Object<T>::Draw(size_t count)
 {
-	glDrawElementsInstanced(
-		m_Primitive,
-		m_Indices.size(),
-		GL_UNSIGNED_INT,
-		nullptr,
-		count
-	);
+	if (IsIndexedMesh())
+	{
+		glDrawElementsInstanced(
+			m_Primitive,
+			m_Indices.size(),
+			GL_UNSIGNED_INT,
+			nullptr,
+			count
+		);
+	}
+	else
+	{
+		glDrawArraysInstanced(
+			m_Primitive,
+			0,
+			GetPrimCount(),
+			count
+		);
+	}
 }
 
 template<typename T>

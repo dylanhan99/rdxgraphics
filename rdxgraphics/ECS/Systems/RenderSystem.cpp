@@ -430,8 +430,14 @@ void RenderSystem::CreateObjekt(ObjectParams const& objParams)
 #define _RX_TUP(i) std::get<i>(objParams)
 #define _RX_X(Klass) .Push<Klass>(typename Klass::container_type{})
 	auto& objekt = GetObjekt(_RX_TUP(0));
-	objekt.BeginObject(_RX_TUP(1))
-		.PushIndices(_RX_TUP(2))
+	objekt.BeginObject(_RX_TUP(1));
+
+	auto& indices = _RX_TUP(2);
+	if (indices.size()) 
+		objekt.PushIndices(indices);
+
+	objekt
+		//.PushIndices(_RX_TUP(2))
 		.Push<VertexBasic::Position>(_RX_TUP(3))
 		.Push<VertexBasic::TexCoord>(_RX_TUP(4))
 		.Push<VertexBasic::Normal>(_RX_TUP(5))
@@ -598,7 +604,7 @@ RenderSystem::ObjectParams RenderSystem::CreateCube()
 		7, 6, 1, 1, 0, 7, // Left face
 		3, 2, 5, 5, 4, 3  // Right face
 	};
-	std::vector<glm::vec3> positions{
+	VertexBasic::Position::container_type positions{
 		{ -0.5f,  0.5f,  0.5f },
 		{ -0.5f, -0.5f,  0.5f },
 		{  0.5f, -0.5f,  0.5f },
@@ -608,10 +614,58 @@ RenderSystem::ObjectParams RenderSystem::CreateCube()
 		{ -0.5f, -0.5f, -0.5f },
 		{ -0.5f,  0.5f, -0.5f }
 	};
-	VertexBasic::TexCoord::container_type texCoords{};
-	texCoords.resize(positions.size());
+	VertexBasic::TexCoord::container_type texCoords{
+		{ 0.f, 1.f },
+		{ 0.f, 0.f },
+		{ 1.f, 0.f },
+		{ 1.f, 1.f },
+		{ 0.f, 1.f },
+		{ 0.f, 0.f },
+		{ 1.f, 0.f },
+		{ 1.f, 1.f }
+	};
+
 	VertexBasic::Normal::container_type normals{};
-	normals.resize(positions.size());
+	// Generate normals.
+	// Since we want normals, screw indexing and just duplicate all the vertices.
+	// Kinda yucks but wtv man
+	{
+		VertexBasic::Position::container_type tempPositions{};
+		VertexBasic::TexCoord::container_type tempTexCoords{};
+		VertexBasic::Normal::container_type   tempNormals{};
+
+		for (size_t i = 0; i < indices.size(); i += 3)
+		{
+			GLuint i0 = indices[i];
+			GLuint i1 = indices[i + 1];
+			GLuint i2 = indices[i + 2];
+
+			glm::vec3 const& p0 = positions[i0];
+			glm::vec3 const& p1 = positions[i1];
+			glm::vec3 const& p2 = positions[i2];
+			glm::vec3 norm = glm::cross(p0-p1, p2-p1);
+
+			tempPositions.push_back(p0);
+			tempPositions.push_back(p1);
+			tempPositions.push_back(p2);
+
+			tempTexCoords.push_back(texCoords[i0]);
+			tempTexCoords.push_back(texCoords[i1]);
+			tempTexCoords.push_back(texCoords[i2]);
+
+			tempNormals.push_back(norm);
+			tempNormals.push_back(norm);
+			tempNormals.push_back(norm);
+		}
+
+		std::swap(positions, tempPositions);
+		std::swap(texCoords, tempTexCoords);
+		std::swap(normals, tempNormals);
+		indices.clear(); // 
+	}
+
+	//texCoords.resize(positions.size());
+	//normals.resize(positions.size());
 
 	return ObjectParams{
 		Shape::Cube, GL_TRIANGLES,
