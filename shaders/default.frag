@@ -15,7 +15,9 @@ struct Material
 	// vec3 padding; on shader end (std140)
 };
 
+in vec3 oVtxPos;
 in vec2 oTexCoords;
+in vec3 oNormal;
 flat in float oIsCollide;
 flat in float oMatID;
 flat in Material oMat;
@@ -23,14 +25,41 @@ out vec4 oFragColor;
 
 uniform int uIsWireframe;
 uniform vec3 uWireframeColor;
+uniform vec3 uDirectionalLight;
+uniform vec3 uViewPos;
 
 void main()
 {
 	if (uIsWireframe == 0)
 	{
 		if (oMatID >= 1.0)
-			oFragColor = vec4(oMat.AmbientColor, 1.0);
-		else
+		{
+			// Normal = mat3(transpose(inverse(model))) * aNormal;  
+			vec3 fragPos = oVtxPos;
+			vec3 norm = oNormal;
+			vec3 lightColor = vec3(1.0);
+			vec3 lightDir = uDirectionalLight;
+
+			// Ambient
+			vec3 ambient = oMat.AmbientIntensity * lightColor;
+			//result = result *  oMat.AmbientColor;
+
+			// Diffuse
+			// vec3 lightDir = normalize(lightPos - FragPos);  
+			float diff = max(dot(norm, lightDir), 0.0);
+			vec3 diffuse = diff * vec3(1.0); // * lightColor
+
+			// Specular (Needs camera pos)
+			vec3 viewDir = normalize(uViewPos - fragPos);
+			vec3 reflectDir = reflect(-lightDir, norm);
+			float spec = pow(max(dot(viewDir, reflectDir), 0.0), oMat.Shininess);
+			vec3 specular = oMat.SpecularIntensity * spec * lightColor;  
+
+			// Out
+			vec3 result = (ambient + diffuse + specular) * oMat.AmbientColor;
+			oFragColor = vec4(result, 1.0);
+		}
+		else // No material
 			oFragColor = vec4(1.0, 0.075, 0.941, 1.0);
 	}
 	else

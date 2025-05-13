@@ -150,6 +150,18 @@ void RenderSystem::Draw()
 			g.m_Shader.SetUniformMatrix4f("uProjViewMatrix", activeCamera.GetProjMatrix() * activeCamera.GetViewMatrix());
 			g.m_Shader.SetUniform1i("uIsWireframe", 0);
 
+			{ // directional light hardcode
+				auto view = EntityManager::View<const Camera, DirectionalLight>();
+				for (auto [handle, cam, light] : view.each()) // asummed to be 1. it's hardcode so wtv
+				{
+					light.GetDirection() = cam.GetDirection();
+					g.m_Shader.SetUniform3f("uDirectionalLight", light.GetDirection());
+				}
+			}
+			{ // main camera pos hardcode
+				g.m_Shader.SetUniform3f("uViewPos", activeCamera.GetPosition());
+			}
+
 			glEnable(GL_CULL_FACE);
 			glCullFace(GL_BACK);
 

@@ -71,6 +71,11 @@ private:
 class DirectionalLight : public BaseComponent
 {
 public:
+	DirectionalLight() = default;
+	inline DirectionalLight(glm::vec3 direction) : m_Direction(direction) {}
+
+	inline glm::vec3 const& GetDirection() const { return m_Direction; }
+	inline glm::vec3& GetDirection() { return m_Direction; }
 
 private:
 	glm::vec3 m_Direction{}; // Normalized directional vector
@@ -83,6 +88,7 @@ public:
 	//inline static const uint32_t MaxMaterials{ 100 }; // Default value for uniform size. Must align with expected size in shader.
 
 public:
+	Material() = default;
 	inline Material(glm::vec3 ambientColor) : m_AmbientColor(ambientColor) {}
 
 	inline glm::vec3 const& GetAmbientColor() const { return m_AmbientColor; }
@@ -116,13 +122,10 @@ public:
 private:
 	glm::vec3 m_AmbientColor{ 0.f };
 	float m_AmbientIntensity{ 0.f };
-
 	glm::vec3 m_DiffuseColor{ 0.f };
 	float m_DiffuseIntensity{ 0.f };
-
 	glm::vec3 m_SpecularColor{ 0.f };
 	float m_SpecularIntensity{ 0.f };
-
 	float m_Shininess{ 0.f };
 	// glm::vec3 padding{}; on shader end (std140)
 };

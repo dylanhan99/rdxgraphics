@@ -1,7 +1,7 @@
 #version 450 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec2 aTexCoords;
-layout (location = 2) in vec2 aNormal;
+layout (location = 2) in vec3 aNormal;
 layout (location = 3) in mat4 aXform;
 layout (location = 7) in float aIsCollide;
 layout (location = 8) in float aMatID;
@@ -23,7 +23,9 @@ struct Material
 };
 
 uniform mat4 uProjViewMatrix;
+out vec3 oVtxPos;
 out vec2 oTexCoords;
+out vec3 oNormal;
 flat out float oIsCollide;
 flat out float oMatID;
 flat out Material oMat;
@@ -62,7 +64,11 @@ void main()
 		oMat = DefaultMaterial();
 	oMatID = aMatID;
 
+	vec4 model = aXform * vec4(aPos, 1.0);
+
+	oVtxPos = model.xyz;
 	oTexCoords = aTexCoords;
+	oNormal = aNormal;
 	oIsCollide = aIsCollide;
-	gl_Position = uProjViewMatrix * aXform * vec4(aPos, 1.f);
+	gl_Position = uProjViewMatrix * model;
 }
