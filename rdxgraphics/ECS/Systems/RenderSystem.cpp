@@ -151,10 +151,9 @@ void RenderSystem::Draw()
 			g.m_Shader.SetUniform1i("uIsWireframe", 0);
 
 			{ // directional light hardcode
-				auto view = EntityManager::View<const Camera, DirectionalLight>();
-				for (auto [handle, cam, light] : view.each()) // asummed to be 1. it's hardcode so wtv
+				auto view = EntityManager::View<DirectionalLight>();
+				for (auto [handle, light] : view.each()) // asummed to be 1. it's hardcode so wtv
 				{
-					light.GetDirection() = cam.GetDirection();
 					g.m_Shader.SetUniform3f("uDirectionalLight", light.GetDirection());
 				}
 			}
@@ -714,9 +713,7 @@ RenderSystem::ObjectParams RenderSystem::CreateSphere(int refinement)
 		{ Z, X,  N}, {-Z, X,  N}, { Z,-X,  N}, {-Z,-X,  N}
 	};
 	VertexBasic::TexCoord::container_type texCoords{};
-	texCoords.resize(positions.size());
 	VertexBasic::Normal::container_type normals{};
-	normals.resize(positions.size());
 
 	static auto MidPoint =
 		[](glm::vec3 v0, glm::vec3 v1) -> glm::vec3
@@ -727,6 +724,7 @@ RenderSystem::ObjectParams RenderSystem::CreateSphere(int refinement)
 	for (int r = 0; r < refinement; ++r)
 	{
 		decltype(positions) tempPositions{};
+		decltype(normals) tempNormals{};
 		decltype(indices) tempIndices{};
 
 		for (int i = 0; (i+3) < indices.size(); i += 3)
@@ -738,14 +736,24 @@ RenderSystem::ObjectParams RenderSystem::CreateSphere(int refinement)
 			glm::vec3 const& v0 = positions[index0];
 			glm::vec3 const& v1 = positions[index1];
 			glm::vec3 const& v2 = positions[index2];
+			glm::vec3 const& v3 = MidPoint(v0, v1);
+			glm::vec3 const& v4 = MidPoint(v1, v2);
+			glm::vec3 const& v5 = MidPoint(v2, v0);
 
 			GLuint currIndex = tempPositions.size();
 			tempPositions.push_back(v0);
 			tempPositions.push_back(v1);
 			tempPositions.push_back(v2);
-			tempPositions.push_back(MidPoint(v0, v1));
-			tempPositions.push_back(MidPoint(v1, v2));
-			tempPositions.push_back(MidPoint(v2, v0));
+			tempPositions.push_back(v3);
+			tempPositions.push_back(v4);
+			tempPositions.push_back(v5);
+
+			tempNormals.push_back(glm::normalize(v0));
+			tempNormals.push_back(glm::normalize(v1));
+			tempNormals.push_back(glm::normalize(v2));
+			tempNormals.push_back(glm::normalize(v3));
+			tempNormals.push_back(glm::normalize(v4));
+			tempNormals.push_back(glm::normalize(v5));
 
 			tempIndices.push_back(currIndex);
 			tempIndices.push_back(currIndex + 3);
@@ -766,9 +774,9 @@ RenderSystem::ObjectParams RenderSystem::CreateSphere(int refinement)
 
 		positions = tempPositions;
 		indices = tempIndices;
+		normals = tempNormals;
 	}
 	texCoords.resize(positions.size());
-	normals.resize(positions.size());
 
 	return ObjectParams{
 		Shape::Sphere, GL_TRIANGLES,

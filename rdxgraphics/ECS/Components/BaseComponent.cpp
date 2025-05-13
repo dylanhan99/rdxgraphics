@@ -4,7 +4,7 @@
 
 void Xform::UpdateXform()
 {
-	m_Xform = glm::translate(m_Translate) * glm::scale(m_Scale);// *glm::rotate(glm::quat(m_Rotate));
+	m_Xform = glm::translate(m_Translate) * glm::scale(m_Scale) * static_cast<glm::mat4>(glm::quat(m_Rotate));
 }
 
 void Collider::SetBV(BV bvType)

@@ -34,11 +34,10 @@ void main()
 	{
 		if (oMatID >= 1.0)
 		{
-			// Normal = mat3(transpose(inverse(model))) * aNormal;  
 			vec3 fragPos = oVtxPos;
-			vec3 norm = oNormal;
+			vec3 norm = normalize(oNormal);
 			vec3 lightColor = vec3(1.0);
-			vec3 lightDir = uDirectionalLight;
+			vec3 lightDir = normalize(-uDirectionalLight);
 
 			// Ambient
 			vec3 ambient = oMat.AmbientIntensity * lightColor;

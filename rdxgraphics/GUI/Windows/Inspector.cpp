@@ -55,7 +55,7 @@ void Inspector::UpdateCompModel(std::string const& strHandle, Model& comp)
 
 void Inspector::UpdateCompDirectionalLight(std::string const& strHandle, DirectionalLight& comp)
 {
-
+	ImGui::InputFloat3(("Direction##" + strHandle).c_str(), glm::value_ptr(comp.GetDirection()));
 }
 
 void Inspector::UpdateCompMaterial(std::string const& strHandle, Material& comp)

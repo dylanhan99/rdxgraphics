@@ -25,17 +25,24 @@ void RDX::Run()
 		throw RX_EXCEPTION("System initialization failed");
 
 	{
-		auto handle = EntityManager::CreateEntity<Xform>();
-		EntityManager::AddComponent<Model>(handle, Shape::Cube);
-		EntityManager::AddComponent<Collider>(handle, BV::Plane);
+		auto handle = EntityManager::CreateEntity();
+		EntityManager::AddComponent<Xform>(handle, glm::vec3{ 1.f, 1.f, 1.f }, glm::vec3{ 1.f }, glm::vec3{ glm::quarter_pi<float>() });
+		EntityManager::AddComponent<Model>(handle, Shape::Sphere);
+		EntityManager::AddComponent<Collider>(handle, BV::Ray);
 		EntityManager::AddComponent<Material>(handle, glm::vec3{ 0.f,1.f,0.f });
 	}
 	{
 		auto handle = EntityManager::CreateEntity();
-		EntityManager::AddComponent<Xform>(handle, glm::vec3{1.f, 1.f, 1.f});
-		EntityManager::AddComponent<Model>(handle, Shape::Plane);
+		EntityManager::AddComponent<Xform>(handle, glm::vec3{ 0.f, 0.f, 0.f }, glm::vec3{ 1.f }, glm::vec3{ glm::quarter_pi<float>() });
+		EntityManager::AddComponent<Model>(handle, Shape::Cube);
 		EntityManager::AddComponent<Collider>(handle, BV::Ray);
 		EntityManager::AddComponent<Material>(handle, glm::vec3{ 0.f,0.f,1.f });
+	}
+	{
+		auto handle = EntityManager::CreateEntity();
+		EntityManager::AddComponent<Xform>(handle, glm::vec3{ 0.f, 5.f, 0.f }, glm::vec3{ 0.3f });
+		EntityManager::AddComponent<Model>(handle, Shape::Cube);
+		EntityManager::AddComponent<DirectionalLight>(handle);
 	}
 	entt::entity mainCameraHandle{};
 	{
@@ -46,7 +53,6 @@ void RDX::Run()
 			glm::vec3{ -3.f, 3.f, 3.f }, 
 			glm::vec3{ -0.7f, -0.7f, 0.f }, 
 			glm::vec2{ 16.f, 9.f }, 90.f);
-		EntityManager::AddComponent<DirectionalLight>(handle);
 	}
 	RenderSystem::SetActiveCamera(mainCameraHandle);
 	entt::entity minimapCameraHandle{};
@@ -96,6 +102,32 @@ void RDX::Run()
 
 				mainCamera.UpdateCameraVectors();
 				mainmapCamera.UpdateCameraVectors();
+
+				// Hardcode logic
+				{
+					{
+						auto view = EntityManager::View<Xform>(entt::exclude<Camera, DirectionalLight>);
+						for (auto [handle, xform] : view.each())
+							xform.GetEulerOrientation().y += glm::quarter_pi<float>() * dt;
+					}
+					{
+						static float angle = 0.f;
+						auto view = EntityManager::View<Xform, DirectionalLight>();
+						for (auto [handle, xform, light] : view.each())
+						{
+							float rate = 0.25f;
+							float radius = 5.f;
+							angle += glm::two_pi<float>() * rate * dt;
+							if (angle > glm::two_pi<float>()) angle = 0.f;
+
+							xform.GetTranslate().x = glm::cos(angle) * radius;
+							xform.GetTranslate().y = 5.f;
+							xform.GetTranslate().z = glm::sin(angle) * radius;
+
+							light.GetDirection() = glm::normalize(-xform.GetTranslate()); // Look at origin
+						}
+					}
+				}
 
 				TransformSystem::Update(dt);
 				CollisionSystem::Update(dt);

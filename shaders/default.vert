@@ -68,7 +68,7 @@ void main()
 
 	oVtxPos = model.xyz;
 	oTexCoords = aTexCoords;
-	oNormal = aNormal;
+	oNormal = mat3(transpose(inverse(aXform))) * aNormal;
 	oIsCollide = aIsCollide;
 	gl_Position = uProjViewMatrix * model;
 }

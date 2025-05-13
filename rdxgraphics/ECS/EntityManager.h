@@ -84,10 +84,10 @@ public:
 		return g.m_Registry.get<T1, T2, Args...>(handle);
 	}
 
-	template <typename ...Args>
-	static auto View()
+	template <typename T, typename ...Other, typename ...Exclude>
+	static auto View(entt::exclude_t<Exclude...> exc = entt::exclude_t{})
 	{
-		return g.m_Registry.view<Args...>();
+		return g.m_Registry.view<T, Other...>(exc);
 	}
 
 	static bool HasEntity(entt::entity handle);
