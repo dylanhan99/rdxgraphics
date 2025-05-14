@@ -94,7 +94,7 @@ bool RenderSystem::Init()
 	g.m_ScreenPass.Init(0, 0, dims.x, dims.y);
 
 	{
-		testUBO.Init(1);
+		testUBO.Init(2);
 		testUBO.BindBuffer(2);
 	}
 
@@ -118,14 +118,23 @@ void RenderSystem::Draw()
 	Camera& minimapCamera = EntityManager::GetComponent<Camera>(miniEnt);
 
 	{
-		CameraUniform u{
-			.ViewMatrix	= activeCamera.GetViewMatrix(),
-			.ProjMatrix	= activeCamera.GetProjMatrix(),
-			.Position	= { activeCamera.GetPosition(), 0.f},
-			.Direction	= { activeCamera.GetDirection(), 1.f},
-			.Clip		= activeCamera.GetClipPlanes(),
+		CameraUniform u[2]{
+			{
+				.ViewMatrix	= activeCamera.GetViewMatrix(),
+				.ProjMatrix	= activeCamera.GetProjMatrix(),
+				.Position	= { activeCamera.GetPosition(), 0.f},
+				.Direction	= { activeCamera.GetDirection(), 1.f},
+				.Clip		= activeCamera.GetClipPlanes(),
+			},
+			{
+				.ViewMatrix	= minimapCamera.GetViewMatrix(),
+				.ProjMatrix	= minimapCamera.GetProjMatrix(),
+				.Position	= { minimapCamera.GetPosition(), 0.f},
+				.Direction	= { minimapCamera.GetDirection(), 1.f},
+				.Clip		= minimapCamera.GetClipPlanes(),
+			} 
 		};
-		testUBO.Submit(1, &u);
+		testUBO.Submit(2, u);
 	}
 
 	// Inefficient preprocessing of all materials.
@@ -175,6 +184,7 @@ void RenderSystem::Draw()
 
 			g.m_Shader.Bind();
 			g.m_Shader.SetUniform1i("uIsWireframe", 0);
+			g.m_Shader.SetUniform1i("uCam", 0);
 
 			{ // directional light hardcode
 				auto view = EntityManager::View<DirectionalLight>();
@@ -182,9 +192,6 @@ void RenderSystem::Draw()
 				{
 					g.m_Shader.SetUniform3f("uDirectionalLight", light.GetDirection());
 				}
-			}
-			{ // main camera pos hardcode
-				g.m_Shader.SetUniform3f("uViewPos", activeCamera.GetPosition());
 			}
 
 			glEnable(GL_CULL_FACE);
@@ -237,6 +244,7 @@ void RenderSystem::Draw()
 
 			g.m_Shader.Bind();
 			g.m_Shader.SetUniform1i("uIsWireframe", 0);
+			g.m_Shader.SetUniform1i("uCam", 1);
 
 			glEnable(GL_CULL_FACE);
 			glCullFace(GL_BACK);
@@ -360,7 +368,7 @@ void RenderSystem::Draw()
 			g.m_FBOShader.SetUniform1i("uWireframeTex", 1);
 			g.m_FBOShader.SetUniform1i("uHasWireframeTex", renderOption != 0);
 
-			glActiveTexture(GL_TEXTURE3);
+			glActiveTexture(GL_TEXTURE2);
 			glBindTexture(GL_TEXTURE_2D, minimapPass.m_TextureBuffer);
 			g.m_FBOShader.SetUniform1i("uMinimapTex", 2);
 			//g.m_FBOShader.SetUniform1i("uHasWireframeTex", renderOption != 0);

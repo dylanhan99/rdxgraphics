@@ -7,7 +7,7 @@ layout (location = 7) in float aIsCollide;
 layout (location = 8) in float aMatID;
 layout (location = 9) in mat4 aMaterial;
 
-layout (std140, binding=2) uniform MainCamera 
+struct Camera
 {
 	mat4 ViewMatrix;
 	mat4 ProjMatrix;
@@ -16,6 +16,13 @@ layout (std140, binding=2) uniform MainCamera
 	vec2 Clip;
 	vec2 ClipPadding;
 };
+
+layout (std140, binding=2) uniform MainCamera 
+{
+	Camera Cameras[2];
+};
+
+uniform int uCam;
 
 struct Material
 {
@@ -62,6 +69,8 @@ Material DefaultMaterial()
 
 void main()
 {
+	Camera cam = Cameras[uCam];
+
 	if (aMatID >= 1.0) // Has material
 		vs_out.Mat = MakeMat(aMaterial);
 	else
@@ -75,5 +84,5 @@ void main()
 	vs_out.Normal	 = mat3(transpose(inverse(aXform))) * aNormal;
 	vs_out.IsCollide = aIsCollide;
 
-	gl_Position = ProjMatrix * ViewMatrix * model;
+	gl_Position = cam.ProjMatrix * cam.ViewMatrix * model;
 }

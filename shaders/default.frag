@@ -1,6 +1,5 @@
 #version 450 core
-
-layout (std140, binding=2) uniform MainCamera 
+struct Camera
 {
 	mat4 ViewMatrix;
 	mat4 ProjMatrix;
@@ -9,6 +8,13 @@ layout (std140, binding=2) uniform MainCamera
 	vec2 Clip;
 	vec2 ClipPadding;
 };
+
+layout (std140, binding=2) uniform MainCamera 
+{
+	Camera Cameras[2];
+};
+
+uniform int uCam;
 
 struct Material
 {
@@ -40,12 +46,11 @@ out vec4 oFragColor;
 uniform int uIsWireframe;
 uniform vec3 uWireframeColor;
 uniform vec3 uDirectionalLight;
-uniform vec3 uViewPos;
 
-float LinearizeDepth(float depth) 
+float LinearizeDepth(float depth, float near, float far) 
 {
     float z = depth * 2.0 - 1.0; // back to NDC 
-    return (2.0 * Clip.x * Clip.y) / (Clip.y + Clip.x - z * (Clip.y - Clip.x));	
+    return (2.0 * near * far) / (far + near - z * (far - near));	
 }
 
 //void main()
@@ -56,6 +61,8 @@ float LinearizeDepth(float depth)
 
 void main()
 {
+	Camera cam = Cameras[uCam];
+
 	if (uIsWireframe == 0)
 	{
 		if (fs_in.MatID >= 1.0)
@@ -75,7 +82,7 @@ void main()
 			vec3 diffuse = diff * vec3(1.0); // * lightColor
 
 			// Specular (Needs camera pos)
-			vec3 viewDir = normalize(uViewPos - fragPos);
+			vec3 viewDir = normalize(vec3(cam.Position) - fragPos);
 			vec3 reflectDir = reflect(-lightDir, norm);
 			float spec = pow(max(dot(viewDir, reflectDir), 0.0), fs_in.Mat.Shininess);
 			vec3 specular = fs_in.Mat.SpecularIntensity * spec * lightColor;  
