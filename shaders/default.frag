@@ -1,5 +1,15 @@
 #version 450 core
 
+layout (std140, binding=2) uniform MainCamera 
+{
+	mat4 ViewMatrix;
+	mat4 ProjMatrix;
+	vec4 Position;
+	vec4 Direction; // Normalized
+	vec2 Clip;
+	vec2 ClipPadding;
+};
+
 struct Material
 {
 	vec3 AmbientColor;
@@ -15,12 +25,16 @@ struct Material
 	// vec3 padding; on shader end (std140)
 };
 
-in vec3 oVtxPos;
-in vec2 oTexCoords;
-in vec3 oNormal;
-flat in float oIsCollide;
-flat in float oMatID;
-flat in Material oMat;
+in VS_OUT
+{
+	vec3 Position;
+	vec2 TexCoords;
+	vec3 Normal;
+	flat float IsCollide;
+	flat float MatID;
+	flat Material Mat;
+} fs_in;
+
 out vec4 oFragColor;
 
 uniform int uIsWireframe;
@@ -28,13 +42,10 @@ uniform vec3 uWireframeColor;
 uniform vec3 uDirectionalLight;
 uniform vec3 uViewPos;
 
-float near = 0.1; 
-float far  = 100.0; 
-  
 float LinearizeDepth(float depth) 
 {
     float z = depth * 2.0 - 1.0; // back to NDC 
-    return (2.0 * near * far) / (far + near - z * (far - near));	
+    return (2.0 * Clip.x * Clip.y) / (Clip.y + Clip.x - z * (Clip.y - Clip.x));	
 }
 
 //void main()
@@ -47,15 +58,15 @@ void main()
 {
 	if (uIsWireframe == 0)
 	{
-		if (oMatID >= 1.0)
+		if (fs_in.MatID >= 1.0)
 		{
-			vec3 fragPos = oVtxPos;
-			vec3 norm = normalize(oNormal);
+			vec3 fragPos	= fs_in.Position;
+			vec3 norm		= normalize(fs_in.Normal);
 			vec3 lightColor = vec3(1.0);
-			vec3 lightDir = normalize(-uDirectionalLight);
+			vec3 lightDir	= normalize(-uDirectionalLight);
 
 			// Ambient
-			vec3 ambient = oMat.AmbientIntensity * lightColor;
+			vec3 ambient = fs_in.Mat.AmbientIntensity * lightColor;
 			//result = result *  oMat.AmbientColor;
 
 			// Diffuse
@@ -66,11 +77,11 @@ void main()
 			// Specular (Needs camera pos)
 			vec3 viewDir = normalize(uViewPos - fragPos);
 			vec3 reflectDir = reflect(-lightDir, norm);
-			float spec = pow(max(dot(viewDir, reflectDir), 0.0), oMat.Shininess);
-			vec3 specular = oMat.SpecularIntensity * spec * lightColor;  
+			float spec = pow(max(dot(viewDir, reflectDir), 0.0), fs_in.Mat.Shininess);
+			vec3 specular = fs_in.Mat.SpecularIntensity * spec * lightColor;  
 
 			// Out
-			vec3 result = (ambient + diffuse + specular) * oMat.AmbientColor;
+			vec3 result = (ambient + diffuse + specular) * fs_in.Mat.AmbientColor;
 			oFragColor = vec4(result, 1.0);
 		}
 		else // No material
@@ -80,7 +91,7 @@ void main()
 	{
 		//oFragColor = vec4(1.0, 0.0,0.0,1.0);
 		//oFragColor = vec4(float(oIsCollide), float(oIsCollide), float(oIsCollide), 1.0f);
-		if (oIsCollide < 0.5)
+		if (fs_in.IsCollide < 0.5)
 			oFragColor = vec4(uWireframeColor, 1.0f);
 		else
 			oFragColor = vec4(1.0, 0.0, 0.0, 1.0);

@@ -108,7 +108,7 @@ void RDX::Run()
 					{
 						auto view = EntityManager::View<Xform>(entt::exclude<Camera, DirectionalLight>);
 						for (auto [handle, xform] : view.each())
-							xform.GetEulerOrientation().y += glm::quarter_pi<float>() * dt;
+							xform.GetEulerOrientation() = glm::vec3{0.f};//xform.GetEulerOrientation().y += glm::quarter_pi<float>() * dt;
 					}
 					{
 						static float angle = 0.f;
@@ -121,7 +121,7 @@ void RDX::Run()
 							if (angle > glm::two_pi<float>()) angle = 0.f;
 
 							xform.GetTranslate().x = glm::cos(angle) * radius;
-							xform.GetTranslate().y = 5.f;
+							xform.GetTranslate().y = 0.f;
 							xform.GetTranslate().z = glm::sin(angle) * radius;
 
 							light.GetDirection() = glm::normalize(-xform.GetTranslate()); // Look at origin

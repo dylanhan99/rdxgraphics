@@ -13,6 +13,8 @@ layout (std140, binding=2) uniform MainCamera
 	mat4 ProjMatrix;
 	vec4 Position;
 	vec4 Direction; // Normalized
+	vec2 Clip;
+	vec2 ClipPadding;
 };
 
 struct Material
@@ -30,13 +32,15 @@ struct Material
 	// vec3 padding; on shader end (std140)
 };
 
-uniform mat4 uProjViewMatrix;
-out vec3 oVtxPos;
-out vec2 oTexCoords;
-out vec3 oNormal;
-flat out float oIsCollide;
-flat out float oMatID;
-flat out Material oMat;
+out VS_OUT
+{
+	vec3 Position;
+	vec2 TexCoords;
+	vec3 Normal;
+	flat float IsCollide;
+	flat float MatID;
+	flat Material Mat;
+} vs_out;
 
 Material MakeMat(mat4 m)
 {
@@ -53,31 +57,23 @@ Material MakeMat(mat4 m)
 
 Material DefaultMaterial()
 {
-	Material mat;
-	mat.AmbientColor		= vec3(0.0);
-	mat.AmbientIntensity	= 0.0;
-	mat.DiffuseColor		= vec3(0.0);
-	mat.DiffuseIntensity	= 0.0;
-	mat.SpecularColor		= vec3(0.0);
-	mat.SpecularIntensity	= 0.0;
-	mat.Shininess			= 0.0;
-	return mat;
+	return MakeMat(mat4(0.0));
 }
 
 void main()
 {
 	if (aMatID >= 1.0) // Has material
-		oMat = MakeMat(aMaterial);
+		vs_out.Mat = MakeMat(aMaterial);
 	else
-		oMat = DefaultMaterial();
-	oMatID = aMatID;
+		vs_out.Mat = DefaultMaterial();
+	vs_out.MatID = aMatID;
 
 	vec4 model = aXform * vec4(aPos, 1.0);
 
-	oVtxPos = model.xyz;
-	oTexCoords = aTexCoords;
-	oNormal = mat3(transpose(inverse(aXform))) * aNormal;
-	oIsCollide = aIsCollide;
-	//gl_Position = uProjViewMatrix * model;
+	vs_out.Position	 = model.xyz;
+	vs_out.TexCoords = aTexCoords;
+	vs_out.Normal	 = mat3(transpose(inverse(aXform))) * aNormal;
+	vs_out.IsCollide = aIsCollide;
+
 	gl_Position = ProjMatrix * ViewMatrix * model;
 }

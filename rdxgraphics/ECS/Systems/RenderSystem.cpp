@@ -38,6 +38,8 @@ struct CameraUniform {
 	glm::mat4 ProjMatrix{};
 	glm::vec4 Position{};
 	glm::vec4 Direction{}; // Normalized
+	glm::vec2 Clip{};
+	glm::vec2 ClipPadding{};
 };
 UniformBuffer<CameraUniform> testUBO{};
 
@@ -117,10 +119,11 @@ void RenderSystem::Draw()
 
 	{
 		CameraUniform u{
-			.ViewMatrix = activeCamera.GetViewMatrix(),
-			.ProjMatrix = activeCamera.GetProjMatrix(),
-			.Position = { activeCamera.GetPosition(), 0.f},
-			.Direction = { activeCamera.GetDirection(), 1.f}
+			.ViewMatrix	= activeCamera.GetViewMatrix(),
+			.ProjMatrix	= activeCamera.GetProjMatrix(),
+			.Position	= { activeCamera.GetPosition(), 0.f},
+			.Direction	= { activeCamera.GetDirection(), 1.f},
+			.Clip		= activeCamera.GetClipPlanes(),
 		};
 		testUBO.Submit(1, &u);
 	}
@@ -171,7 +174,6 @@ void RenderSystem::Draw()
 			//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 			g.m_Shader.Bind();
-			g.m_Shader.SetUniformMatrix4f("uProjViewMatrix", activeCamera.GetProjMatrix() * activeCamera.GetViewMatrix());
 			g.m_Shader.SetUniform1i("uIsWireframe", 0);
 
 			{ // directional light hardcode
@@ -234,7 +236,6 @@ void RenderSystem::Draw()
 			//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 			g.m_Shader.Bind();
-			g.m_Shader.SetUniformMatrix4f("uProjViewMatrix", minimapCamera.GetProjMatrix() * minimapCamera.GetViewMatrix());
 			g.m_Shader.SetUniform1i("uIsWireframe", 0);
 
 			glEnable(GL_CULL_FACE);
@@ -306,7 +307,6 @@ void RenderSystem::Draw()
 			//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 			g.m_Shader.Bind();
-			g.m_Shader.SetUniformMatrix4f("uProjViewMatrix", activeCamera.GetProjMatrix() * activeCamera.GetViewMatrix());
 			g.m_Shader.SetUniform1i("uIsWireframe", 1);
 			g.m_Shader.SetUniform3f("uWireframeColor", glm::vec3{ 0.f,1.f,0.f });
 
