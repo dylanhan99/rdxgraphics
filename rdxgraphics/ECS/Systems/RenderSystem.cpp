@@ -33,13 +33,13 @@ RenderPass basePass{};
 RenderPass minimapPass{};
 RenderPass wireframePass{};
 //RenderPass finalPass{};
-GLuint testUBO{};
 struct CameraUniform {
 	glm::mat4 ViewMatrix{};
 	glm::mat4 ProjMatrix{};
 	glm::vec4 Position{};
 	glm::vec4 Direction{}; // Normalized
 };
+UniformBuffer<CameraUniform> testUBO{};
 
 bool RenderSystem::Init()
 {
@@ -52,6 +52,8 @@ bool RenderSystem::Init()
 	//}
 
 	RX_INFO("GL Version: {}", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+	GLint maxUBOBindings{}; glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &maxUBOBindings);
+	RX_INFO("GL max UBO bindings: {}", maxUBOBindings);
 
 	glFrontFace(GL_CCW);
 
@@ -90,16 +92,8 @@ bool RenderSystem::Init()
 	g.m_ScreenPass.Init(0, 0, dims.x, dims.y);
 
 	{
-		glGenBuffers(1, &testUBO);
-		glBindBuffer(GL_UNIFORM_BUFFER, testUBO);
-		glBufferData(GL_UNIFORM_BUFFER, sizeof(CameraUniform), nullptr, GL_STATIC_DRAW);
-		glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-		//GLuint mainCameraBufferIndex = 
-		//	glGetUniformBlockIndex(g.m_Shader.m_ShaderProgramID, "MainCamera");
-		//glUniformBlockBinding(g.m_Shader.m_ShaderProgramID, mainCameraBufferIndex, 1);
-
-		glBindBufferBase(GL_UNIFORM_BUFFER, 2, testUBO);
+		testUBO.Init(1);
+		testUBO.BindBuffer(2);
 	}
 
 	return true;
@@ -122,16 +116,13 @@ void RenderSystem::Draw()
 	Camera& minimapCamera = EntityManager::GetComponent<Camera>(miniEnt);
 
 	{
-		glBindBuffer(GL_UNIFORM_BUFFER, testUBO);
-		//int b = true; // bools in GLSL are represented as 4 bytes, so we store it in an integer
 		CameraUniform u{
 			.ViewMatrix = activeCamera.GetViewMatrix(),
 			.ProjMatrix = activeCamera.GetProjMatrix(),
 			.Position = { activeCamera.GetPosition(), 0.f},
 			.Direction = { activeCamera.GetDirection(), 1.f}
 		};
-		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(CameraUniform), &u);
-		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+		testUBO.Submit(1, &u);
 	}
 
 	// Inefficient preprocessing of all materials.
