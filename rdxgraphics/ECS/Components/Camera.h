@@ -14,7 +14,6 @@ public:
 public:
 	Camera(
 		entt::entity handle, Mode camMode,
-		glm::vec3 const& position = { 0.f, 0.f, 0.f },
 		glm::vec3 const& orientation = DefaultFront,
 		glm::vec2 aspect = { 4.f, 3.f },
 		float fov = 90
@@ -42,6 +41,12 @@ public:
 	glm::vec3 GetPosition() const;
 	glm::vec3 GetEulerOrientation() const;
 	glm::vec3 GetDirection() const;
+
+	inline float const& GetOrthoSize() const { return m_OrthoSize; }
+	inline float& GetOrthoSize() { return m_OrthoSize; }
+
+	inline bool IsPerspective() const { return m_CameraMode == Mode::Perspective; }
+	inline bool IsOrtho() const { return m_CameraMode == Mode::Orthorgonal; }
 
 private:
 	glm::mat4 m_ViewMatrix{ glm::mat4(1.f) };

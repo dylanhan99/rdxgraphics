@@ -42,6 +42,9 @@ void Inspector::UpdateCompCamera(std::string const& strHandle, Camera& comp)
 	ImGui::InputFloat3(("Direction Faced" + strHandle).c_str(), glm::value_ptr(camDir));
 	ImGui::EndDisabled();
 
+	if (comp.IsOrtho())
+		ImGui::DragFloat("Ortho Zoom", &comp.GetOrthoSize(), 0.01f, 0.f, 10.f);
+
 	//ImGui::Text("Cam [Pos]|X:% -4.1f |Y:% -4.1f |Z:% -4.1f", camPos.x, camPos.y, camPos.z);
 	//ImGui::Text("    [Dir]|X:% -4.1f |Y:% -4.1f |Z:% -4.1f", camFace.x, camFace.y, camFace.z);
 	if (ImGui::Checkbox("CameraToggled", &comp.IsCameraInUserControl()))

@@ -7,7 +7,6 @@
 
 Camera::Camera(
 	entt::entity handle, Mode camMode,
-	glm::vec3 const& position,
 	glm::vec3 const& orientation,
 	glm::vec2 aspect, float fov)
 	: Camera(handle)
@@ -18,7 +17,7 @@ Camera::Camera(
 
 	if (!EntityManager::HasComponent<Xform>(handle))
 	{ // Add an xform if not found
-		EntityManager::AddComponent<Xform>(handle, position, glm::vec3{ 1.f }, orientation);
+		EntityManager::AddComponent<Xform>(handle, glm::vec3{}, glm::vec3{ 1.f }, orientation);
 	}
 
 	UpdateCameraVectors();
@@ -53,8 +52,6 @@ void Camera::UpdateCameraVectors()
 	}
 	else
 	{
-		// This represents "zoom". But since this is a 3d camera, we can use Z axis instead.
-		//float m_OrthoSize = position.z; // ehhhh i think this is wrong. If you look from a different direction, it's not Z liao.
 		float halfWidth = m_OrthoSize * m_AspectRatio * 0.5f;
 		float halfHeight = m_OrthoSize * 0.5f;
 
