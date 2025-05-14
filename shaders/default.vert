@@ -7,6 +7,14 @@ layout (location = 7) in float aIsCollide;
 layout (location = 8) in float aMatID;
 layout (location = 9) in mat4 aMaterial;
 
+layout (std140, binding=2) uniform MainCamera 
+{
+	mat4 ViewMatrix;
+	mat4 ProjMatrix;
+	vec4 Position;
+	vec4 Direction; // Normalized
+};
+
 struct Material
 {
 	vec3 AmbientColor;
@@ -70,5 +78,6 @@ void main()
 	oTexCoords = aTexCoords;
 	oNormal = mat3(transpose(inverse(aXform))) * aNormal;
 	oIsCollide = aIsCollide;
-	gl_Position = uProjViewMatrix * model;
+	//gl_Position = uProjViewMatrix * model;
+	gl_Position = ProjMatrix * ViewMatrix * model;
 }

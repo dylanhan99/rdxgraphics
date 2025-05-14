@@ -53,7 +53,7 @@ void RenderPass::Terminate()
 	m_FBO = m_TextureBuffer = m_DepthBuffer = 0;
 }
 
-void RenderPass::DrawThis(std::function<void()> drawStuff)
+void RenderPass::DrawThis(std::function<void()> drawStuff) const
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);	
 	glBindTexture(GL_TEXTURE_2D, m_TextureBuffer);
