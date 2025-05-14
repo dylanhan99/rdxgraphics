@@ -317,6 +317,7 @@ void RenderSystem::Draw()
 			g.m_Shader.Bind();
 			g.m_Shader.SetUniform1i("uIsWireframe", 1);
 			g.m_Shader.SetUniform3f("uWireframeColor", glm::vec3{ 0.f,1.f,0.f });
+			g.m_Shader.SetUniform1i("uCam", 0);
 
 			// First pass: Draw actual filled mesh
 			glDisable(GL_CULL_FACE);
