@@ -3,6 +3,7 @@
 #include "Graphics/Object.h"
 #include "Graphics/Shader.h"
 #include "Graphics/RenderPass.h"
+#include "Graphics/UniformBuffer.h"
 #include "ECS/EntityManager.h"
 
 class RenderSystem : public BaseSingleton<RenderSystem>

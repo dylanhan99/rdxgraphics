@@ -9,7 +9,7 @@ public:
 	void Terminate();
 
 	// maybe something like this will be how drawing could take place (flow-wise)
-	void DrawThis(std::function<void()> drawStuff);
+	void DrawThis(std::function<void()> drawStuff) const;
 
 public:
 	GLuint m_FBO{};

@@ -33,6 +33,15 @@ RenderPass basePass{};
 RenderPass minimapPass{};
 RenderPass wireframePass{};
 //RenderPass finalPass{};
+struct CameraUniform {
+	glm::mat4 ViewMatrix{};
+	glm::mat4 ProjMatrix{};
+	glm::vec4 Position{};
+	glm::vec4 Direction{}; // Normalized
+	glm::vec2 Clip{};
+	glm::vec2 ClipPadding{};
+};
+UniformBuffer<CameraUniform> testUBO{};
 
 bool RenderSystem::Init()
 {
@@ -45,6 +54,8 @@ bool RenderSystem::Init()
 	//}
 
 	RX_INFO("GL Version: {}", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+	GLint maxUBOBindings{}; glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &maxUBOBindings);
+	RX_INFO("GL max UBO bindings: {}", maxUBOBindings);
 
 	glFrontFace(GL_CCW);
 
@@ -82,6 +93,11 @@ bool RenderSystem::Init()
 	//g.m_ScreenPass.Init(nullptr);
 	g.m_ScreenPass.Init(0, 0, dims.x, dims.y);
 
+	{
+		testUBO.Init(2);
+		testUBO.BindBuffer(2);
+	}
+
 	return true;
 }
 
@@ -100,6 +116,26 @@ void RenderSystem::Draw()
 	RX_ASSERT(EntityManager::HasComponent<Camera>(camEnt), "Active camera entity is missing Camera component");
 	Camera& activeCamera = EntityManager::GetComponent<Camera>(camEnt);
 	Camera& minimapCamera = EntityManager::GetComponent<Camera>(miniEnt);
+
+	{
+		CameraUniform u[2]{
+			{
+				.ViewMatrix	= activeCamera.GetViewMatrix(),
+				.ProjMatrix	= activeCamera.GetProjMatrix(),
+				.Position	= { activeCamera.GetPosition(), 0.f},
+				.Direction	= { activeCamera.GetDirection(), 1.f},
+				.Clip		= activeCamera.GetClipPlanes(),
+			},
+			{
+				.ViewMatrix	= minimapCamera.GetViewMatrix(),
+				.ProjMatrix	= minimapCamera.GetProjMatrix(),
+				.Position	= { minimapCamera.GetPosition(), 0.f},
+				.Direction	= { minimapCamera.GetDirection(), 1.f},
+				.Clip		= minimapCamera.GetClipPlanes(),
+			} 
+		};
+		testUBO.Submit(2, u);
+	}
 
 	// Inefficient preprocessing of all materials.
 	// A necessity dynamicism only in editor because of need for live view of changes made.
@@ -147,8 +183,8 @@ void RenderSystem::Draw()
 			//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 			g.m_Shader.Bind();
-			g.m_Shader.SetUniformMatrix4f("uProjViewMatrix", activeCamera.GetProjMatrix() * activeCamera.GetViewMatrix());
 			g.m_Shader.SetUniform1i("uIsWireframe", 0);
+			g.m_Shader.SetUniform1i("uCam", 0);
 
 			{ // directional light hardcode
 				auto view = EntityManager::View<DirectionalLight>();
@@ -156,9 +192,6 @@ void RenderSystem::Draw()
 				{
 					g.m_Shader.SetUniform3f("uDirectionalLight", light.GetDirection());
 				}
-			}
-			{ // main camera pos hardcode
-				g.m_Shader.SetUniform3f("uViewPos", activeCamera.GetPosition());
 			}
 
 			glEnable(GL_CULL_FACE);
@@ -210,8 +243,8 @@ void RenderSystem::Draw()
 			//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 			g.m_Shader.Bind();
-			g.m_Shader.SetUniformMatrix4f("uProjViewMatrix", minimapCamera.GetProjMatrix() * minimapCamera.GetViewMatrix());
 			g.m_Shader.SetUniform1i("uIsWireframe", 0);
+			g.m_Shader.SetUniform1i("uCam", 1);
 
 			glEnable(GL_CULL_FACE);
 			glCullFace(GL_BACK);
@@ -282,9 +315,9 @@ void RenderSystem::Draw()
 			//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 			g.m_Shader.Bind();
-			g.m_Shader.SetUniformMatrix4f("uProjViewMatrix", activeCamera.GetProjMatrix() * activeCamera.GetViewMatrix());
 			g.m_Shader.SetUniform1i("uIsWireframe", 1);
 			g.m_Shader.SetUniform3f("uWireframeColor", glm::vec3{ 0.f,1.f,0.f });
+			g.m_Shader.SetUniform1i("uCam", 0);
 
 			// First pass: Draw actual filled mesh
 			glDisable(GL_CULL_FACE);
@@ -336,7 +369,7 @@ void RenderSystem::Draw()
 			g.m_FBOShader.SetUniform1i("uWireframeTex", 1);
 			g.m_FBOShader.SetUniform1i("uHasWireframeTex", renderOption != 0);
 
-			glActiveTexture(GL_TEXTURE3);
+			glActiveTexture(GL_TEXTURE2);
 			glBindTexture(GL_TEXTURE_2D, minimapPass.m_TextureBuffer);
 			g.m_FBOShader.SetUniform1i("uMinimapTex", 2);
 			//g.m_FBOShader.SetUniform1i("uHasWireframeTex", renderOption != 0);

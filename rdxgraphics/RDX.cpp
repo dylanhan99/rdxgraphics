@@ -48,22 +48,32 @@ void RDX::Run()
 	{
 		auto& handle = mainCameraHandle;
 		handle = EntityManager::CreateEntity();
+		EntityManager::AddComponent<Model>(handle, Shape::Cube);
+		EntityManager::AddComponent<Material>(handle, glm::vec3{ 1.f,1.f,0.f });
 		EntityManager::AddComponent<Camera>(handle,
 			Camera::Mode::Perspective,
-			glm::vec3{ -3.f, 3.f, 3.f }, 
-			glm::vec3{ -0.7f, -0.7f, 0.f }, 
+			glm::vec3{}, 
 			glm::vec2{ 16.f, 9.f }, 90.f);
+		EntityManager::AddComponent<Xform>(handle, 
+			glm::vec3{ -3.f, 3.f, 3.f }, 
+			glm::vec3{ 0.2f }, 
+			glm::vec3{ -0.7f, -0.7f, 0.f });
 	}
 	RenderSystem::SetActiveCamera(mainCameraHandle);
 	entt::entity minimapCameraHandle{};
 	{
 		auto& handle = minimapCameraHandle;
 		handle = EntityManager::CreateEntity();
+		EntityManager::AddComponent<Model>(handle, Shape::Cube);
+		EntityManager::AddComponent<Material>(handle, glm::vec3{ 1.f,1.f,0.f });
 		EntityManager::AddComponent<Camera>(handle,
 			Camera::Mode::Orthorgonal,
-			glm::vec3{ 1.f, 3.f, 0.f },
-			glm::vec3{ -glm::half_pi<float>() + glm::epsilon<float>(), 0.f, 0.f},
+			glm::vec3{},
 			glm::vec2{ 16.f, 9.f }, 90.f);
+		EntityManager::AddComponent<Xform>(handle, 
+			glm::vec3{ 0.f, 5.f, 0.f }, 
+			glm::vec3{ 0.2f }, 
+			glm::vec3{ -glm::half_pi<float>() + glm::epsilon<float>(), 0.f, 0.f });
 	}
 	RenderSystem::SetMinimapCamera(minimapCameraHandle);
 
@@ -108,7 +118,7 @@ void RDX::Run()
 					{
 						auto view = EntityManager::View<Xform>(entt::exclude<Camera, DirectionalLight>);
 						for (auto [handle, xform] : view.each())
-							xform.GetEulerOrientation().y += glm::quarter_pi<float>() * dt;
+							xform.GetEulerOrientation() = glm::vec3{0.f};//xform.GetEulerOrientation().y += glm::quarter_pi<float>() * dt;
 					}
 					{
 						static float angle = 0.f;
@@ -121,7 +131,7 @@ void RDX::Run()
 							if (angle > glm::two_pi<float>()) angle = 0.f;
 
 							xform.GetTranslate().x = glm::cos(angle) * radius;
-							xform.GetTranslate().y = 5.f;
+							xform.GetTranslate().y = 0.f;
 							xform.GetTranslate().z = glm::sin(angle) * radius;
 
 							light.GetDirection() = glm::normalize(-xform.GetTranslate()); // Look at origin
