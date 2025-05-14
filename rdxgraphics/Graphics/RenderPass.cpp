@@ -59,9 +59,10 @@ void RenderPass::DrawThis(std::function<void()> drawStuff)
 	glBindTexture(GL_TEXTURE_2D, m_TextureBuffer);
 	glViewport(m_ViewportPos.x, m_ViewportPos.y, m_ViewportDims.x, m_ViewportDims.y);
 
-	//glEnable(GL_DEPTH_TEST);
-	//glDepthFunc(GL_LESS);
-	//glDepthMask(GL_TRUE);
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
+	glDepthMask(GL_TRUE);
+	glClearColor(0.2f, 0.3f, 0.3f, 0.f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	drawStuff();
