@@ -143,8 +143,8 @@ void RenderSystem::Draw()
 				}
 			}
 
-			glClearColor(g.m_BackColor.x, g.m_BackColor.y, g.m_BackColor.z, 0.f);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			////glClearColor(g.m_BackColor.x, g.m_BackColor.y, g.m_BackColor.z, 0.f);
+			//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 			g.m_Shader.Bind();
 			g.m_Shader.SetUniformMatrix4f("uProjViewMatrix", activeCamera.GetProjMatrix() * activeCamera.GetViewMatrix());
@@ -206,8 +206,8 @@ void RenderSystem::Draw()
 				o.Submit<VertexBasic::Xform>(xform.GetXform());
 			}
 
-			glClearColor(g.m_BackColor.x, g.m_BackColor.y, g.m_BackColor.z, 0.f);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			//glClearColor(g.m_BackColor.x, g.m_BackColor.y, g.m_BackColor.z, 0.f);
+			//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 			g.m_Shader.Bind();
 			g.m_Shader.SetUniformMatrix4f("uProjViewMatrix", minimapCamera.GetProjMatrix() * minimapCamera.GetViewMatrix());
@@ -278,8 +278,8 @@ void RenderSystem::Draw()
 			//glDisable(GL_DEPTH_TEST); // (optional, just for debugging visibility)
 			//glDisable(GL_BLEND);
 
-			glClearColor(g.m_BackColor.x, g.m_BackColor.y, g.m_BackColor.z, 0.f);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			//glClearColor(g.m_BackColor.x, g.m_BackColor.y, g.m_BackColor.z, 0.f);
+			//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 			g.m_Shader.Bind();
 			g.m_Shader.SetUniformMatrix4f("uProjViewMatrix", activeCamera.GetProjMatrix() * activeCamera.GetViewMatrix());

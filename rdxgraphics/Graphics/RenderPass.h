@@ -14,6 +14,7 @@ public:
 public:
 	GLuint m_FBO{};
 	GLuint m_TextureBuffer{};
+	GLuint m_DepthBuffer{};
 
 	glm::ivec2 m_ViewportPos{}, m_ViewportDims{};
 	glm::ivec2 m_BufferPos{}, m_BufferDims{};

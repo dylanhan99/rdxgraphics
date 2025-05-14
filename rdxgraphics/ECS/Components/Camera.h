@@ -5,6 +5,7 @@ class Camera : public BaseComponent
 {
 RX_COMPONENT_HAS_HANDLE(Camera);
 public:
+	inline static const glm::vec3 DefaultFront{ 0.f,0.f,-1.f };
 	enum class Mode {
 		Perspective,
 		Orthorgonal
@@ -14,7 +15,7 @@ public:
 	Camera(
 		entt::entity handle, Mode camMode,
 		glm::vec3 const& position = { 0.f, 0.f, 0.f },
-		glm::vec3 const& orientation = { 0.f,0.f,-1.f },
+		glm::vec3 const& orientation = DefaultFront,
 		glm::vec2 aspect = { 4.f, 3.f },
 		float fov = 90
 	);
@@ -46,7 +47,7 @@ private:
 	glm::mat4 m_ViewMatrix{ glm::mat4(1.f) };
 	glm::mat4 m_ProjectionMatrix{ glm::mat4(1.f) };
 
-	glm::vec2 m_Clip{ 0.f, 100.f };
+	glm::vec2 m_Clip{ 0.1f, 100.f };
 	glm::vec3 m_Front{};
 	float m_AspectRatio{};
 	float m_FOV{};

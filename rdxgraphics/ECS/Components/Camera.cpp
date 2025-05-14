@@ -36,16 +36,10 @@ void Camera::UpdateCameraVectors()
 	glm::vec3 const& position = xform.GetTranslate();
 	glm::vec3& eulerOrientation = xform.GetEulerOrientation();
 
-	m_Front = glm::vec3{
-		glm::cos(eulerOrientation.y) * glm::cos(eulerOrientation.x),
-		glm::sin(eulerOrientation.x),
-		glm::sin(eulerOrientation.y) * glm::cos(eulerOrientation.x)
-	};
-
 	glm::vec3 m_Up = g_WorldUp;
 	glm::vec3 m_Right{};
 
-	m_Front = glm::normalize(m_Front);
+	m_Front = glm::normalize(glm::quat{ eulerOrientation } * DefaultFront);
 	m_Right = glm::normalize(glm::cross(m_Front, g_WorldUp)); // Using world-up here, assuming we are NOT allowing cam to roll
 	m_Up	= glm::normalize(glm::cross(m_Right, m_Front));
 
@@ -109,7 +103,7 @@ void Camera::Inputs(float dt)
 	glm::vec2 windowDims = (glm::vec2)GLFWWindow::GetWindowDims();
 	
 	float pitch = windowDims.y ? m_PitchSpeed * ((windowDims.y * 0.5f - cursorPos.y) / windowDims.y) : 0.f;
-	float yaw	= windowDims.x ? m_YawSpeed	  * ((cursorPos.x - windowDims.x * 0.5f) / windowDims.x) : 0.f;
+	float yaw	= windowDims.x ? m_YawSpeed	  * ((windowDims.x * 0.5f - cursorPos.x) / windowDims.x) : 0.f;
 	
 	eulerOrientation.x = glm::clamp(eulerOrientation.x + pitch, -glm::half_pi<float>() + glm::epsilon<float>(), glm::half_pi<float>() - glm::epsilon<float>());
 	eulerOrientation.y += yaw;

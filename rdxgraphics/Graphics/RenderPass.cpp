@@ -4,6 +4,8 @@
 
 bool RenderPass::Init(void*)
 {
+	Terminate();
+	
 	m_FBO = 0;
 	m_TextureBuffer = 0;
 	m_ViewportPos = m_BufferPos = { 0, 0 };
@@ -14,13 +16,15 @@ bool RenderPass::Init(void*)
 
 bool RenderPass::Init(int x, int y, int width, int height)
 {
+	Terminate();
+
 	m_ViewportPos = { x, y };
 	m_ViewportDims = { width, height };
 
 	m_BufferPos = { 0, 0 };
 	m_BufferDims = GLFWWindow::GetWindowDims();
 
-	glCreateFramebuffers(1, &m_FBO);
+	glGenFramebuffers(1, &m_FBO);
 	glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
 
 	glGenTextures(1, &m_TextureBuffer);
@@ -32,19 +36,21 @@ bool RenderPass::Init(int x, int y, int width, int height)
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_TextureBuffer, 0);
 
 	// Create a depth buffer (needed for depth testing)
-	//GLuint depthBuffer;
-	//glGenRenderbuffers(1, &depthBuffer);
-	//glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
-	//glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, m_BufferDims.x, m_BufferDims.y); // 24-bit depth buffer
-	//glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBuffer);
+	glGenRenderbuffers(1, &m_DepthBuffer);
+	glBindRenderbuffer(GL_RENDERBUFFER, m_DepthBuffer);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, m_BufferDims.x, m_BufferDims.y); // 24-bit depth buffer
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_DepthBuffer);
 
+	RX_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "FBO init failed somewhere");
 	return true;
 }
 
 void RenderPass::Terminate()
 {
 	glDeleteFramebuffers(1, &m_FBO);
-	m_FBO = 0;
+	glDeleteTextures(1, &m_TextureBuffer);
+	glDeleteRenderbuffers(1, &m_DepthBuffer);
+	m_FBO = m_TextureBuffer = m_DepthBuffer = 0;
 }
 
 void RenderPass::DrawThis(std::function<void()> drawStuff)
@@ -52,6 +58,13 @@ void RenderPass::DrawThis(std::function<void()> drawStuff)
 	glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);	
 	glBindTexture(GL_TEXTURE_2D, m_TextureBuffer);
 	glViewport(m_ViewportPos.x, m_ViewportPos.y, m_ViewportDims.x, m_ViewportDims.y);
+
+	//glEnable(GL_DEPTH_TEST);
+	//glDepthFunc(GL_LESS);
+	//glDepthMask(GL_TRUE);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 	drawStuff();
+
 	glBindFramebuffer(GL_FRAMEBUFFER, 0); // back to default
 }
