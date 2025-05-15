@@ -2,43 +2,47 @@
 #include "Object.h"
 
 // Macro to explicitly init functions. Cus i'd rather have all defines in one place, than in both hpp and cpp.
-#define _RX_XX(Klass, VKlass) \
-	template class Object<Klass>;																 \
+#define _RX_XX(VKlass, Klass) \
 	template Object<Klass>& Object<Klass>::Push<VKlass>(typename VKlass::container_type const &); \
-	template void Object<Klass>::BindInstancedData<VKlass>(GLsizeiptr offset, GLsizeiptr count); \
-	template void Object<Klass>::EndObject();
+	template void Object<Klass>::BindInstancedData<VKlass>(GLsizeiptr offset, GLsizeiptr count);
+#define _RX_XXX(Klass) m_VBData.emplace_back(std::make_shared<Klass>());
+#define _RX_XXXX(Klass) { typename Klass::container_type& pData = GetVBData<Klass>(); m_PrimCount = pData.size(); break; }
+#define _RX_XXXXX(Klass) if (Klass::IsInstanced) GetVBData<Klass>().clear();
 
-#define _RX_X(Klass) _RX_XX(VertexBasic, Klass)
-RX_VERTEX_BASIC_ATTRIBS;
-#undef _RX_X
-#define _RX_X(Klass) _RX_XX(VertexFBO, Klass)
-RX_VERTEX_FBO_ATTRIBS;
-#undef _RX_X
+#define _RX_X(Klass, _RX_FOR_EACH)				\
+	template class Object<Klass>;				\
+	Klass _rx_hack_##Klass{};					\
+	template void Object<Klass>::EndObject();	\
+	template<> Object<Klass>::Object()			\
+	{											\
+		m_VBOs.resize(Klass::Max());			\
+		m_VBData.clear();						\
+		_RX_FOR_EACH(_RX_XXX);					\
+	}											\
+	_RX_FOR_EACH(_RX_XX, Klass)																						\
+	template<> void Object<Klass>::EndObject()																		\
+	{																												\
+		/* It's not instanced, we need PrimCount variable for draw call */											\
+		if (m_Indices.empty())																						\
+		{																											\
+			/* Should be able to simply take the first object in m_VBData, ensure it's non-instanced attribute */	\
+			for (;;) { _RX_FOR_EACH(_RX_XXXX); }																	\
+		}																											\
+		else																										\
+		{																											\
+			m_PrimCount = m_Indices.size();																			\
+		}																											\
+		glBindVertexArray(0);																						\
+	}																												\
+	template<> void Object<Klass>::Flush() { _RX_FOR_EACH(_RX_XXXXX); }
 
-// Some initialization hack to setup vertex attrib IDs
-VertexBasic _rx_hack_VertexBasic{};
-VertexFBO _rx_hack_VertexFBO{};
-
-template <typename T>
-Object<T>::Object()
-{
-	m_VBOs.resize(typename T::Max());
-	m_VBData.clear();
-#define _RX_X(Klass) m_VBData.emplace_back(std::make_shared<Klass>());
-	if constexpr (std::is_same_v<T, VertexBasic>)
-	{
-		RX_VERTEX_BASIC_ATTRIBS;
-	}
-	else if constexpr (std::is_same_v<T, VertexFBO>)
-	{
-		RX_VERTEX_FBO_ATTRIBS;
-	}
-	else
-	{
-		static_assert(false);
-	}
+_RX_X(VertexBasic, RX_VERTEX_BASIC_ATTRIBS_M);
+_RX_X(VertexFBO, RX_VERTEX_FBO_ATTRIBS_M);
+#undef _RX_XXXXX
+#undef _RX_XXXX
+#undef _RX_XXX
+#undef _RX_XX
 #undef _RX_X
-}
 
 template <typename T>
 void Object<T>::Terminate()
@@ -83,48 +87,6 @@ Object<T>& Object<T>::BeginObject(GLenum primitive)
 	glBindVertexArray(m_VAO);
 
 	return *this;
-}
-
-template<typename T>
-void Object<T>::EndObject()
-{
-	// It's not instanced, we need PrimCount variable for draw call
-	if (m_Indices.empty())
-	{
-		// Should be able to simply take the first object in m_VBData, ensure it's non-instanced attribute
-#define _RX_X(Klass) { typename Klass::container_type& pData = GetVBData<Klass>(); m_PrimCount = pData.size(); break; }
-		for (;;)
-		{
-			if constexpr (std::is_same_v<T, VertexBasic>)
-			{
-				RX_VERTEX_BASIC_ATTRIBS;
-			}
-			else if constexpr (std::is_same_v<T, VertexFBO>)
-			{
-				RX_VERTEX_FBO_ATTRIBS;
-			}
-			else
-			{
-				static_assert(false);
-			}
-		}
-#undef _RX_X
-	}
-	else
-	{
-		m_PrimCount = m_Indices.size();
-	}
-
-	//switch (m_Primitive)
-	//{
-	//case GL_POINTS: break;
-	//case GL_LINES: m_PrimCount /= 2; break;
-	//case GL_TRIANGLES: m_PrimCount /= 3; break;
-	//default:
-	//	RX_ASSERT(false, "wut??");
-	//	break;
-	//}
-	glBindVertexArray(0);
 }
 
 template<typename T>
@@ -223,23 +185,4 @@ void Object<T>::Draw(size_t count)
 			count
 		);
 	}
-}
-
-template<typename T>
-void Object<T>::Flush()
-{
-#define _RX_X(Klass) if (Klass::IsInstanced) GetVBData<Klass>().clear();
-	if constexpr (std::is_same_v<T, VertexBasic>)
-	{
-		RX_VERTEX_BASIC_ATTRIBS;
-	}
-	else if constexpr (std::is_same_v<T, VertexFBO>)
-	{
-		RX_VERTEX_FBO_ATTRIBS;
-	}
-	else
-	{
-		static_assert(false);
-	}
-#undef _RX_X
 }

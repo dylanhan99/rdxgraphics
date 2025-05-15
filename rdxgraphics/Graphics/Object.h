@@ -5,7 +5,7 @@
 //////////////////////////////////////////////////
 // How many attrib_type make up value_type?	eg 4*vec4 in a mat4, eg 4*float in a vec4
 template <typename T>
-static uint32_t GetAttribCount() { static_assert(false, "Unsupported T"); return 0; }
+static uint32_t GetAttribCount();
 #define _RX_SETUP_ATTRIB(Klass, count) template<> static uint32_t GetAttribCount<Klass>() { return count; }
 _RX_SETUP_ATTRIB(glm::mat4, 4); // This is 4*vec4, because we have to "wrap" 4*vec4 attribs as one mat4
 _RX_SETUP_ATTRIB(glm::vec4, 1); // These are only 1, beacuse they can be directly declared as ONE attrib.
@@ -17,7 +17,7 @@ _RX_SETUP_ATTRIB(uint8_t, 1);
 #undef _RX_SETUP_ATTRIB
 //////////////////////////////////////////////////
 template <typename T>
-static uint32_t GetFundamentalCount() { static_assert(false, "Unsupported T"); return 0; }
+static uint32_t GetFundamentalCount();
 #define _RX_SETUP_FUNDA(Klass, count) template<> static uint32_t GetFundamentalCount<Klass>() { return count; }
 _RX_SETUP_FUNDA(glm::vec4, 4); // These are only 1, beacuse they can be directly declared as ONE attrib.
 _RX_SETUP_FUNDA(glm::vec3, 3);
@@ -28,7 +28,7 @@ _RX_SETUP_FUNDA(uint8_t, 1);
 #undef _RX_SETUP_FUNDA
 //////////////////////////////////////////////////
 template <typename T>
-static GLenum GetFundamentalType() { static_assert(false, "Unsupported T"); return GL_FALSE; }
+static GLenum GetFundamentalType();
 #define _RX_SETUP_FUNDA_T(Klass, glType) template<> static GLenum GetFundamentalType<Klass>() { return glType; }
 _RX_SETUP_FUNDA_T(glm::vec4, GL_FLOAT);
 _RX_SETUP_FUNDA_T(glm::vec3, GL_FLOAT);
@@ -66,18 +66,18 @@ public:																						\
 
 //////////////////////////////////////////////////
 // RXVertex refers to the standard vertex being used by ALL objects in this engine.
-class VertexBasic 
+class VertexBasic
 {
 	_RX_SHARED_VERTEX_KLASS(VertexBasic);
-	
-	_RX_ADD_VERTEX(Position,  glm::vec3, glm::vec3, false, false);
-	_RX_ADD_VERTEX(TexCoord,  glm::vec2, glm::vec2, false, false);
-	_RX_ADD_VERTEX(Normal,    glm::vec3, glm::vec3, false, false);
-	_RX_ADD_VERTEX(Xform,	  glm::mat4, glm::vec4, true,  false);
-	_RX_ADD_VERTEX(IsCollide, float,	 float,		true,  false);
-	_RX_ADD_VERTEX(MatID,	  float,     float,     true,  false);
-	_RX_ADD_VERTEX(Material,  glm::mat4, glm::vec4, true,  false);
-}; 
+
+	_RX_ADD_VERTEX(Position, glm::vec3, glm::vec3, false, false);
+	_RX_ADD_VERTEX(TexCoord, glm::vec2, glm::vec2, false, false);
+	_RX_ADD_VERTEX(Normal, glm::vec3, glm::vec3, false, false);
+	_RX_ADD_VERTEX(Xform, glm::mat4, glm::vec4, true, false);
+	_RX_ADD_VERTEX(IsCollide, float, float, true, false);
+	_RX_ADD_VERTEX(MatID, float, float, true, false);
+	_RX_ADD_VERTEX(Material, glm::mat4, glm::vec4, true, false);
+};
 // This macro helps to automatically call another macro dubbed "_RX_X". 
 // It must meet the usecase
 #define RX_VERTEX_BASIC_ATTRIBS_M_NOINSTANCED(F_O_O, ...) \
@@ -89,10 +89,10 @@ class VertexBasic
 	F_O_O(VertexBasic::IsCollide, ##__VA_ARGS__)		\
 	F_O_O(VertexBasic::MatID,	  ##__VA_ARGS__)		\
 	F_O_O(VertexBasic::Material,  ##__VA_ARGS__)
-#define RX_VERTEX_BASIC_ATTRIBS_M(F_O_O)		 \
-	RX_VERTEX_BASIC_ATTRIBS_M_NOINSTANCED(F_O_O) \
-	RX_VERTEX_BASIC_ATTRIBS_M_INSTANCED(F_O_O)
-#define RX_VERTEX_BASIC_ATTRIBS					 \
+#define RX_VERTEX_BASIC_ATTRIBS_M(F_O_O, ...) \
+	RX_VERTEX_BASIC_ATTRIBS_M_NOINSTANCED(F_O_O, ##__VA_ARGS__) \
+	RX_VERTEX_BASIC_ATTRIBS_M_INSTANCED(F_O_O, ##__VA_ARGS__)
+#define RX_VERTEX_BASIC_ATTRIBS	\
 	RX_VERTEX_BASIC_ATTRIBS_M(_RX_X)
 //////////////////////////////////////////////////
 
@@ -102,7 +102,7 @@ class VertexFBO
 {
 	_RX_SHARED_VERTEX_KLASS(VertexFBO);
 
-	_RX_ADD_VERTEX(Position,  glm::vec2, glm::vec2, false, false);
+	_RX_ADD_VERTEX(Position, glm::vec2, glm::vec2, false, false);
 	_RX_ADD_VERTEX(TexCoords, glm::vec2, glm::vec2, false, false);
 };
 // This macro helps to automatically call another macro dubbed "_RX_X". 
@@ -111,9 +111,9 @@ class VertexFBO
 	F_O_O(VertexFBO::Position, ##__VA_ARGS__)			\
 	F_O_O(VertexFBO::TexCoords, ##__VA_ARGS__)
 #define RX_VERTEX_FBO_ATTRIBS_M_INSTANCED(F_O_O, ...)
-#define RX_VERTEX_FBO_ATTRIBS_M(F_O_O)		 \
-	RX_VERTEX_FBO_ATTRIBS_M_NOINSTANCED(F_O_O) \
-	RX_VERTEX_FBO_ATTRIBS_M_INSTANCED(F_O_O)
+#define RX_VERTEX_FBO_ATTRIBS_M(F_O_O, ...)		 \
+	RX_VERTEX_FBO_ATTRIBS_M_NOINSTANCED(F_O_O, ##__VA_ARGS__) \
+	RX_VERTEX_FBO_ATTRIBS_M_INSTANCED(F_O_O, ##__VA_ARGS__)
 #define RX_VERTEX_FBO_ATTRIBS					 \
 	RX_VERTEX_FBO_ATTRIBS_M(_RX_X)
 //////////////////////////////////////////////////
@@ -173,3 +173,4 @@ private:
 	std::vector<std::shared_ptr<typename vertex_type::BaseAttribute>> m_VBData{};
 };
 //////////////////////////////////////////////////
+
