@@ -61,7 +61,7 @@ private:
 	float m_YawSpeed{ 1.f };
 	float m_ZoomSpeed{ 0.1f }; // Scrolling scale factor. Meant for finer fwd/bwd movement
 
-	float m_OrthoSize = 1.f;
+	float m_OrthoSize = 10.f;
 
 	Mode m_CameraMode{};
 	bool m_CameraInUserControl{ false };
