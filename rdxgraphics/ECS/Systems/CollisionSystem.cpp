@@ -76,9 +76,31 @@ bool CollisionSystem::CheckCollision(PointBV const& lhs, PointBV const& rhs)
 //	return (t >= 0.f) && isColinear;
 //}
 
-bool CollisionSystem::CheckCollision(PointBV const& lhs, TriangleBV const& rhs)
+float ScalarTriple(glm::vec3 a, glm::vec3 b, glm::vec3 c)
 {
-	return false;
+	return glm::dot(a, glm::cross(b, c));
+}
+
+bool CollisionSystem::CheckCollision(PointBV const& lhs, TriangleBV const& rhs)
+{ // Orange book page 191 (230 in the pdf or is it 225)
+	glm::vec3 pq = rhs.GetPosition() - lhs.GetPosition();
+	glm::vec3 pa = rhs.GetP0() - lhs.GetPosition();
+	glm::vec3 pb = rhs.GetP1() - lhs.GetPosition();
+	glm::vec3 pc = rhs.GetP2() - lhs.GetPosition();
+
+	float u = ScalarTriple(pq, pc, pb);
+	if (u < 0.f) return false;
+	float v = ScalarTriple(pq, pa, pc);
+	if (v < 0.f) return false;
+	float w = ScalarTriple(pq, pb, pa);
+	if (w < 0.f) return false;
+
+	float denom = 1.f / (u + v + w);
+	u *= denom;
+	v *= denom;
+	w *= denom; // Can use these if you want to i suppose
+
+	return true;
 }
 
 bool CollisionSystem::CheckCollision(PointBV const& lhs, PlaneBV const& rhs)
@@ -105,19 +127,19 @@ bool CollisionSystem::CheckCollision(PointBV const& lhs, SphereBV const& rhs)
 
 bool CollisionSystem::CheckCollision(RayBV const& lhs, TriangleBV const& rhs)
 {
+	glm::quat rot = glm::rotation(PlaneBV::DefaultNormal, rhs.GetNormal());
+	glm::vec3 eulerOrientation = glm::eulerAngles(rot);
+	PlaneBV triPlane{ rhs.GetPosition(), eulerOrientation };
+
+	PointBV pointOnTriangle{};
+	if (IntersectSegmentPlane(lhs, triPlane, &pointOnTriangle))
+		return CheckCollision(pointOnTriangle, rhs);
 	return false;
 }
 
 bool CollisionSystem::CheckCollision(RayBV const& lhs, PlaneBV const& rhs)
 { // Orange book page 176 (215 in the pdf)
-	glm::vec3 d = lhs.GetDirection();
-	glm::vec3 n = rhs.GetNormal();
-	float dA = glm::dot(d, n);
-	if (glm::abs(dA) < glm::epsilon<float>()) // Parallel
-		return false;
-
-	float t = (rhs.GetD() - glm::dot(n, lhs.GetPosition())) / dA;
-	return t >= 0.f;
+	return IntersectSegmentPlane(lhs, rhs);
 }
 
 bool CollisionSystem::CheckCollision(RayBV const& lhs, AABBBV const& rhs)
@@ -254,4 +276,21 @@ bool CollisionSystem::CheckCollision(SphereBV const& lhs, SphereBV const& rhs)
 		PointBV{ lhs.GetPosition() },
 		SphereBV{ rhs.GetPosition(), lhs.GetRadius() + rhs.GetRadius() }
 	);
+}
+
+bool CollisionSystem::IntersectSegmentPlane(RayBV const& ray, PlaneBV const& plane, PointBV* oPoint)
+{
+	glm::vec3 d = ray.GetDirection();
+	glm::vec3 n = plane.GetNormal();
+	float dA = glm::dot(d, n);
+	if (glm::abs(dA) < glm::epsilon<float>()) // Parallel
+		return false;
+
+	float t = (plane.GetD() - glm::dot(n, ray.GetPosition())) / dA;
+	if (0.f <= t && t <= 1.f)
+	{
+		if (oPoint) *oPoint = ray.GetPosition() + t * d;
+		return true;
+	}
+	return false;
 }

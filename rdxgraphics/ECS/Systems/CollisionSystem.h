@@ -57,4 +57,7 @@ private:
 	static bool CheckCollision(SphereBV const& lhs, PlaneBV const& rhs);
 	static bool CheckCollision(SphereBV const& lhs, AABBBV const& rhs);
 	static bool CheckCollision(SphereBV const& lhs, SphereBV const& rhs);
+
+public: // Helper functions, most of these are directly from the orange textbook
+	static bool IntersectSegmentPlane(RayBV const& ray, PlaneBV const& plane, PointBV* oPoint = nullptr);
 };

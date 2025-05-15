@@ -221,6 +221,7 @@ private:
 	inline static float s_Scale{ 10.f };
 };
 
+// Must be CCW orientation
 class TriangleBV : public BaseBV
 {
 public:
@@ -230,7 +231,19 @@ public:
 
 	}
 
+	inline glm::vec3 GetNormal() const
+	{
+		return glm::cross(m_P1 - m_P0, m_P2 - m_P0);
+	}
+
+	inline glm::vec3 const& GetP0() const { return m_P0; }
+	inline glm::vec3 const& GetP1() const { return m_P1; }
+	inline glm::vec3 const& GetP2() const { return m_P2; }
+
 private:
+	glm::vec3 m_P0{};
+	glm::vec3 m_P1{};
+	glm::vec3 m_P2{};
 };
 
 class PlaneBV : public BaseBV
@@ -239,6 +252,7 @@ public:
 	inline static const glm::vec3 DefaultNormal{ 0.f,0.f,1.f };
 public:
 	PlaneBV() = default;
+	inline PlaneBV(glm::vec3 p, glm::vec3 const& eulerOrientation) : BaseBV(p), m_EulerOrientation(eulerOrientation) {}
 	inline void UpdateXform() override
 	{
 		m_Xform = glm::translate(m_Position) * glm::scale(s_Scale) *
