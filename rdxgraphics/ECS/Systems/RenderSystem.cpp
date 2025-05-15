@@ -113,6 +113,7 @@ void RenderSystem::Draw()
 {
 	entt::entity const camEnt = GetActiveCamera();
 	entt::entity const miniEnt = GetMinimapCamera();
+	// Could just NOT draw anything i suppose?
 	RX_ASSERT(EntityManager::HasComponent<Camera>(camEnt), "Active camera entity is missing Camera component");
 	Camera& activeCamera = EntityManager::GetComponent<Camera>(camEnt);
 	Camera& minimapCamera = EntityManager::GetComponent<Camera>(miniEnt);
