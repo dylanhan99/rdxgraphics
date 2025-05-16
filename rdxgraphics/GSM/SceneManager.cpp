@@ -1,17 +1,8 @@
 #include <pch.h>
 #include "SceneManager.h"
-#include "Scenes/Sandbox.h"
+#include "ECS/EntityManager.h"
 
 RX_SINGLETON_EXPLICIT(SceneManager);
-
-void SceneManager::Init()
-{
-	RegisterScene<Sandbox>();
-
-	RX_ASSERT(!g.m_Scenes.empty(), "No scenes?");
-
-	GetNextScene() = 0; // Arbitrarily start on the first.
-}
 
 void SceneManager::Terminate()
 {
@@ -32,6 +23,7 @@ bool SceneManager::ResolveScenes()
 	if (IsQuit(curr))
 	{
 		g.m_WorkingScene->Unload();
+		EntityManager::Clear();
 		return false;
 	}
 	else if (IsRestart(curr))
@@ -41,7 +33,10 @@ bool SceneManager::ResolveScenes()
 	else
 	{
 		if (g.m_WorkingScene)
+		{
 			g.m_WorkingScene->Unload();
+			EntityManager::Clear();
+		}
 		g.m_WorkingScene = g.m_Scenes[curr];
 		RX_ASSERT(g.m_WorkingScene);
 		g.m_WorkingScene->Load();

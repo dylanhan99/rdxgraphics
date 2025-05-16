@@ -11,6 +11,7 @@
 
 #include "ECS/Components/Camera.h"
 #include "GSM/SceneManager.h"
+#include "GSM/Scenes/Sandbox.h"
 
 void RDX::Run()
 {
@@ -23,7 +24,9 @@ void RDX::Run()
 	if (!initOK)
 		throw RX_EXCEPTION("System initialization failed");
 
-	SceneManager::Init();
+	SceneManager::Init<
+		Sandbox
+	>();
 
 	while (!GLFWWindow::IsWindowShouldClose())
 	{

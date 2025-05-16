@@ -12,7 +12,13 @@ private:
 	};
 
 public:
-	static void Init();
+	template <typename ...Args>
+	static void Init()
+	{
+		(RegisterScene<Args>(), ...);
+		RX_ASSERT(!g.m_Scenes.empty(), "No scenes?");
+		GetNextScene() = 0; // Arbitrarily start on the first.
+	}
 	static void Terminate();
 	static bool ResolveScenes();
 

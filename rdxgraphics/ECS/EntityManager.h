@@ -90,6 +90,12 @@ public:
 		return g.m_Registry.view<T, Other...>(exc);
 	}
 
+	template <typename ...Args>
+	static void Clear()
+	{
+		g.m_Registry.clear<Args...>();
+	}
+
 	static bool HasEntity(entt::entity handle);
 
 public:
