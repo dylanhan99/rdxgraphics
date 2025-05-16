@@ -3,6 +3,7 @@
 
 class Sandbox : public BaseScene
 {
+	RX_SCENE_DEFAULT(Sandbox);
 public:
 	void Load() override;
 	void Start() override;

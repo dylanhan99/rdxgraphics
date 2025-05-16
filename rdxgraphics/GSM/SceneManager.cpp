@@ -6,8 +6,8 @@ RX_SINGLETON_EXPLICIT(SceneManager);
 
 void SceneManager::Terminate()
 {
-	for (auto& pScene : g.m_Scenes)
-		pScene->Unload();
+	g.m_CommonScene.reset();
+	g.m_WorkingScene.reset();
 	g.m_Scenes.clear();
 }
 
@@ -22,20 +22,23 @@ bool SceneManager::ResolveScenes()
 	size_t const& curr = GetCurrScene();
 	if (IsQuit(curr))
 	{
-		g.m_WorkingScene->Unload();
+		g.m_CommonScene->Unload();
+		if (g.m_WorkingScene)g.m_WorkingScene->Unload();
 		EntityManager::Clear();
 		return false;
 	}
 	else if (IsRestart(curr))
 	{
-		g.m_WorkingScene->Start();
+		g.m_CommonScene->Start();
+		if (g.m_WorkingScene) g.m_WorkingScene->Start();
 	}
 	else
 	{
+		g.m_CommonScene->Start();
 		if (g.m_WorkingScene)
 		{
 			g.m_WorkingScene->Unload();
-			EntityManager::Clear();
+			EntityManager::Destroy(g.m_WorkingScene->GetEntities());
 		}
 		g.m_WorkingScene = g.m_Scenes[curr];
 		RX_ASSERT(g.m_WorkingScene);
@@ -44,4 +47,10 @@ bool SceneManager::ResolveScenes()
 	}
 
 	return true;
+}
+
+void SceneManager::Update(float dt)
+{
+	g.m_CommonScene->Update(dt);
+	if (g.m_WorkingScene) g.m_WorkingScene->Update(dt);
 }

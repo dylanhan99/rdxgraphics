@@ -1,7 +1,7 @@
 #pragma once
 #include <entt/entt.hpp>
 #include "Components/BaseComponent.h"
-	
+
 // Helper to check that component has the HasEnttHandle boolean
 template <typename, typename = void>
 struct has_entt_handle : std::false_type {};
@@ -32,7 +32,7 @@ public:
 		(has_entt_handle_v<T> ? 
 			std::is_constructible_v<T, entt::entity, Args...> :
 			std::is_constructible_v<T, Args...>),
-		T&> AddComponent(entt::entity handle, Args&& ...args)
+		void> AddComponent(entt::entity handle, Args&& ...args)
 	{
 		if constexpr (has_entt_handle<T>::value)
 		{
@@ -43,8 +43,6 @@ public:
 		{
 			g.m_Registry.emplace_or_replace<T, Args...>(handle, std::forward<Args>(args)...);
 		}
-
-		return GetComponent<T>(handle);
 	}
 
 	template <typename T>
@@ -95,6 +93,10 @@ public:
 	{
 		g.m_Registry.clear<Args...>();
 	}
+
+	inline static void Destroy(entt::entity handle) { g.m_Registry.destroy(handle); }
+	inline static void Destroy(std::initializer_list<entt::entity>& handles) { for (auto h : handles) Destroy(h); }
+	inline static void Destroy(std::vector<entt::entity>& handles) { for (auto h : handles) Destroy(h); handles.clear(); }
 
 	static bool HasEntity(entt::entity handle);
 

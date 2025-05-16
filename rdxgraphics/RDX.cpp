@@ -11,6 +11,7 @@
 
 #include "ECS/Components/Camera.h"
 #include "GSM/SceneManager.h"
+#include "GSM/Scenes/CommonLayer.h"
 #include "GSM/Scenes/Sandbox.h"
 
 void RDX::Run()
@@ -24,9 +25,11 @@ void RDX::Run()
 	if (!initOK)
 		throw RX_EXCEPTION("System initialization failed");
 
-	SceneManager::Init<
-		Sandbox
-	>();
+#define _RX_REG_SCN(Klass, ...)\
+	SceneManager::RegisterScene<Klass>(#Klass, ##__VA_ARGS__)
+	_RX_REG_SCN(Sandbox);
+#undef _RX_REG_SCN
+	SceneManager::Init<CommonLayer>();
 
 	while (!GLFWWindow::IsWindowShouldClose())
 	{
@@ -47,11 +50,9 @@ void RDX::Run()
 				if (Input::IsKeyTriggered(RX_KEY_F5))
 					RenderSystem::ReloadShaders();
 
-				if (auto p = SceneManager::GetWorkingScene())
-					p->Update(dt);
-				
 				TransformSystem::Update(dt);
 				CollisionSystem::Update(dt);
+				SceneManager::Update(dt);
 				GUI::Update(dt);
 
 				// Render

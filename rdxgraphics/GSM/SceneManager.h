@@ -12,21 +12,27 @@ private:
 	};
 
 public:
-	template <typename ...Args>
+	// T > The CommonScene
+	template <typename T>
 	static void Init()
 	{
-		(RegisterScene<Args>(), ...);
-		RX_ASSERT(!g.m_Scenes.empty(), "No scenes?");
+		g.m_CommonScene = std::make_shared<T>("Common", 
+				"Engine specific controls to prevent intrusion into engine processes");
 		GetNextScene() = 0; // Arbitrarily start on the first.
+		RX_ASSERT(!g.m_Scenes.empty(), "No scenes?");
+		RX_ASSERT(g.m_CommonScene, "Missing common scene");
+
+		g.m_CommonScene->Load();
 	}
 	static void Terminate();
 	static bool ResolveScenes();
+	static void Update(float dt);
 
-	template <typename T>
-	static std::enable_if_t<std::is_base_of_v<BaseScene, T>,
-		void> RegisterScene()
+	template <typename T, typename ...Args>
+	static std::enable_if_t<std::is_base_of_v<BaseScene, T> && std::is_constructible_v<T, Args...>,
+		void> RegisterScene(Args&& ...args)
 	{
-		g.m_Scenes.emplace_back(std::make_shared<T>());
+		g.m_Scenes.emplace_back(std::make_shared<T>(std::forward<Args>(args)...));
 	}
 
 	inline static size_t& GetPrevScene() { return g.m_PrevScene; }
@@ -39,6 +45,7 @@ public:
 	inline static bool IsRestart(size_t s) { return s == g.m_Scenes.size() + (size_t)State::Restart; }
 	inline static bool IsQuit(size_t s) { return s == g.m_Scenes.size() + (size_t)State::Quit; }
 
+	inline static std::shared_ptr<BaseScene> GetCommonScene() { return g.m_WorkingScene; }
 	inline static std::shared_ptr<BaseScene> GetWorkingScene() { return g.m_WorkingScene; }
 
 private:
@@ -48,5 +55,12 @@ private:
 	size_t m_CurrScene{ std::numeric_limits<size_t>::max() };
 	size_t m_NextScene{ std::numeric_limits<size_t>::max() };
 
+	// This serves as a method of having "scriptable" common logic
+	// Think of this scene as "engine scene" which provides engine
+	// specific logic without being intrusive to actual engine processes,
+	// while WorkingScene is the "game scene" as we understand it.
+	std::shared_ptr<BaseScene> m_CommonScene{ nullptr };
+
+	// Actual scene that will change etc.
 	std::shared_ptr<BaseScene> m_WorkingScene{ nullptr };
 };
