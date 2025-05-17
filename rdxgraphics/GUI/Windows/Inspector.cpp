@@ -77,11 +77,36 @@ void Inspector::UpdateCompCollider(std::string const& strHandle, Collider& comp)
 	ImGui::Text("Choose BV type");
 	entt::entity handle = comp.GetEntityHandle();
 
+#define _RX_X(Klass) #Klass,
+	std::vector<std::string> bvOptions{
+		RX_DO_ALL_BV_ENUM_AND_NIL
+	};
+#undef _RX_X
+
+	size_t currIndex = (size_t)comp.GetBVType();
+	ImGuiComboFlags comboFlags = 0;
+	if (ImGui::BeginCombo("BV Type", bvOptions[currIndex].c_str(), comboFlags))
+	{
+		for (size_t i = 0; i < bvOptions.size(); ++i)
+		{
+			auto const& c = bvOptions[i];
+			bool currSelected = currIndex == i;
+			if (ImGui::Selectable(c.c_str(), &currSelected))
+			{
+
+			}
+		}
+		ImGui::EndCombo();
+	}
+
 #define _RX_X(Klass) case BV::Klass:										\
 	{																		\
 		RX_ASSERT(EntityManager::HasComponent<Klass##BV>(handle));			\
-		Klass##BV& comp = EntityManager::GetComponent<Klass##BV>(handle);	\
-		UpdateComp##Klass##BV(strHandle, comp);								\
+		if (ImGui::TreeNodeEx(#Klass"##BV")) {								\
+			Klass##BV& comp = EntityManager::GetComponent<Klass##BV>(handle);	\
+			UpdateComp##Klass##BV(strHandle, comp);								\
+			ImGui::TreePop();													\
+		}																		\
 	} break;
 	switch (comp.GetBVType())
 	{

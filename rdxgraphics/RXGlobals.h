@@ -59,18 +59,19 @@ enum class BV
 };
 // Duplicated RX_DO_ALL_BV_ENUM_M becasue msvc is screaming at me because of my "deeply nested" macro usage.
 // see CollisionSystem for context
-#define RX_DO_ALL_BV_ENUM_M(F_O_O, ...)\
-	F_O_O(Point, ##__VA_ARGS__);	   \
-	F_O_O(Ray, ##__VA_ARGS__);		   \
-	F_O_O(Triangle, ##__VA_ARGS__);	   \
-	F_O_O(Plane, ##__VA_ARGS__);	   \
-	F_O_O(AABB, ##__VA_ARGS__);		   \
-	F_O_O(Sphere, ##__VA_ARGS__);
+#define RX_DO_ALL_BV_ENUM_M(F_O_O, ...)	\
+	F_O_O(Point, ##__VA_ARGS__)			\
+	F_O_O(Ray, ##__VA_ARGS__)			\
+	F_O_O(Triangle, ##__VA_ARGS__)		\
+	F_O_O(Plane, ##__VA_ARGS__)			\
+	F_O_O(AABB, ##__VA_ARGS__)			\
+	F_O_O(Sphere, ##__VA_ARGS__)
 #define RX_DO_ALL_BV_ENUM_M_(F_O_O, ...)\
-	F_O_O(Point, ##__VA_ARGS__);	   \
-	F_O_O(Ray, ##__VA_ARGS__);		   \
-	F_O_O(Triangle, ##__VA_ARGS__);	   \
-	F_O_O(Plane, ##__VA_ARGS__);	   \
-	F_O_O(AABB, ##__VA_ARGS__);		   \
-	F_O_O(Sphere, ##__VA_ARGS__);
+	F_O_O(Point, ##__VA_ARGS__)			\
+	F_O_O(Ray, ##__VA_ARGS__)			\
+	F_O_O(Triangle, ##__VA_ARGS__)		\
+	F_O_O(Plane, ##__VA_ARGS__)			\
+	F_O_O(AABB, ##__VA_ARGS__)			\
+	F_O_O(Sphere, ##__VA_ARGS__)
 #define RX_DO_ALL_BV_ENUM RX_DO_ALL_BV_ENUM_M(_RX_X)
+#define RX_DO_ALL_BV_ENUM_AND_NIL _RX_X(NIL) RX_DO_ALL_BV_ENUM_M(_RX_X)
