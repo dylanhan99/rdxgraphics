@@ -9,6 +9,9 @@ void Xform::UpdateXform()
 
 void Collider::SetBV(BV bvType)
 {
+	if (m_BVType == bvType)
+		return;
+
 	RemoveBV(); // Remove the existing BV first
 	m_BVType = bvType;
 	

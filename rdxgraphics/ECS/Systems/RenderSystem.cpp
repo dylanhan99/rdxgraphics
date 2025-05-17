@@ -407,6 +407,8 @@ Object<VertexBasic>& RenderSystem::GetObjekt(BV bv)
 			return GetObjekt(Shape::Point);
 		case BV::Ray:
 			return GetObjekt(Shape::Line);
+		case BV::Triangle:
+			return GetObjekt(Shape::Triangle);
 		case BV::Plane:
 			return GetObjekt(Shape::Plane);
 		case BV::AABB:

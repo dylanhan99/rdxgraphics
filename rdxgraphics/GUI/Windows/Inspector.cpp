@@ -93,7 +93,7 @@ void Inspector::UpdateCompCollider(std::string const& strHandle, Collider& comp)
 			bool currSelected = currIndex == i;
 			if (ImGui::Selectable(c.c_str(), &currSelected))
 			{
-
+				comp.SetBV((BV)i);
 			}
 		}
 		ImGui::EndCombo();

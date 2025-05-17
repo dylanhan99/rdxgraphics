@@ -37,6 +37,7 @@ enum class Shape
 	NIL = 0, // Supposed to align with RX_INVALID_ID
 	Point,
 	Line,
+	Triangle,
 	Quad,
 	Plane,
 	Cube,
