@@ -14,6 +14,8 @@ void Collider::SetBV(BV bvType)
 
 	RemoveBV(); // Remove the existing BV first
 	m_BVType = bvType;
+	if (bvType == BV::NIL)
+		return;
 	
 #define _RX_X(Klass)									 \
 	case BV::Klass:										 \

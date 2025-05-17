@@ -117,32 +117,100 @@ void Inspector::UpdateCompCollider(std::string const& strHandle, Collider& comp)
 #undef _RX_X
 }
 
+void Draggy(std::string name, std::string strHandle, float* pp, int size)
+{
+	std::string label = name + "##" + strHandle;
+	float step = 0.001f;
+	switch (size)
+	{
+	case 1:
+		ImGui::DragFloat(label.c_str(), pp, step);
+		break;
+	case 2:
+		ImGui::DragFloat2(label.c_str(), pp, step);
+		break;
+	case 3:
+		ImGui::DragFloat3(label.c_str(), pp, step);
+		break;
+	case 4:
+		ImGui::DragFloat4(label.c_str(), pp, step);
+		break;
+	default:
+		break;
+	}
+}
+
+void PositionDrag(std::string const& strHandle, glm::vec3& pos)
+{
+	Draggy("Position", strHandle, glm::value_ptr(pos), 3);
+}
+
+void EulerOrientationDrag(std::string const& strHandle, glm::vec3& pos)
+{
+	Draggy("Euler", strHandle, glm::value_ptr(pos), 3);
+}
+
 void Inspector::UpdateCompPointBV(std::string const& strHandle, PointBV& comp)
 {
-	ImGui::Text(__FUNCSIG__);
+	PositionDrag(strHandle, comp.GetPosition());
 }
 
 void Inspector::UpdateCompRayBV(std::string const& strHandle, RayBV& comp)
 {
-	ImGui::Text(__FUNCSIG__);
+	PositionDrag(strHandle, comp.GetPosition());
+	EulerOrientationDrag(strHandle, comp.GetOrientation());
+	
+	ImGui::Separator();
+	ImGui::BeginDisabled();
+	glm::vec3 dir = comp.GetDirection();
+	Draggy("Dir", strHandle, glm::value_ptr(dir), 3);
+	ImGui::EndDisabled();
 }
 
 void Inspector::UpdateCompTriangleBV(std::string const& strHandle, TriangleBV& comp)
 {
-	ImGui::Text(__FUNCSIG__);
+	PositionDrag(strHandle, comp.GetPosition());
+	Draggy("P0", strHandle, glm::value_ptr(comp.GetP0()), 3);
+	Draggy("P1", strHandle, glm::value_ptr(comp.GetP1()), 3);
+	Draggy("P2", strHandle, glm::value_ptr(comp.GetP2()), 3);
+
+	ImGui::Separator();
+	ImGui::BeginDisabled();
+	glm::vec3 norm = comp.GetNormal();
+	Draggy("Norm", strHandle, glm::value_ptr(norm), 3);
+	ImGui::EndDisabled();
 }
 
 void Inspector::UpdateCompPlaneBV(std::string const& strHandle, PlaneBV& comp)
 {
-	ImGui::Text(__FUNCSIG__);
+	PositionDrag(strHandle, comp.GetPosition());
+	EulerOrientationDrag(strHandle, comp.GetOrientation());
+
+	ImGui::Separator();
+	ImGui::BeginDisabled();
+	glm::vec3 norm = comp.GetNormal();
+	Draggy("Norm", strHandle, glm::value_ptr(norm), 3);
+	float d = comp.GetD();
+	Draggy("D", strHandle, &d, 1);
+	ImGui::EndDisabled();
 }
 
 void Inspector::UpdateCompAABBBV(std::string const& strHandle, AABBBV& comp)
 {
-	ImGui::Text(__FUNCSIG__);
+	PositionDrag(strHandle, comp.GetPosition());
+	Draggy("Half-Extents", strHandle, glm::value_ptr(comp.GetHalfExtents()), 3);
+
+	ImGui::Separator();
+	ImGui::BeginDisabled();
+	glm::vec3 min = comp.GetMinPoint();
+	glm::vec3 max = comp.GetMaxPoint();
+	Draggy("Min", strHandle, glm::value_ptr(min), 3);
+	Draggy("Max", strHandle, glm::value_ptr(max), 4);
+	ImGui::EndDisabled();
 }
 
 void Inspector::UpdateCompSphereBV(std::string const& strHandle, SphereBV& comp)
 {
-	ImGui::Text(__FUNCSIG__);
+	PositionDrag(strHandle, comp.GetPosition());
+	Draggy("Radius", strHandle, &comp.GetRadius(), 1);
 }
