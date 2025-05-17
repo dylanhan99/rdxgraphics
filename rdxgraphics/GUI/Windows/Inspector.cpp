@@ -117,23 +117,23 @@ void Inspector::UpdateCompCollider(std::string const& strHandle, Collider& comp)
 #undef _RX_X
 }
 
-void Draggy(std::string name, std::string strHandle, float* pp, int size)
+void Draggy(std::string name, std::string strHandle, float* pp, int size, std::function<void()> func = nullptr)
 {
 	std::string label = name + "##" + strHandle;
 	float step = 0.001f;
 	switch (size)
 	{
 	case 1:
-		ImGui::DragFloat(label.c_str(), pp, step);
+		if (ImGui::DragFloat(label.c_str(), pp, step) && func) func();
 		break;
 	case 2:
-		ImGui::DragFloat2(label.c_str(), pp, step);
+		if (ImGui::DragFloat2(label.c_str(), pp, step) && func) func();
 		break;
 	case 3:
-		ImGui::DragFloat3(label.c_str(), pp, step);
+		if (ImGui::DragFloat3(label.c_str(), pp, step) && func) func();
 		break;
 	case 4:
-		ImGui::DragFloat4(label.c_str(), pp, step);
+		if (ImGui::DragFloat4(label.c_str(), pp, step) && func) func();
 		break;
 	default:
 		break;
@@ -170,9 +170,9 @@ void Inspector::UpdateCompRayBV(std::string const& strHandle, RayBV& comp)
 void Inspector::UpdateCompTriangleBV(std::string const& strHandle, TriangleBV& comp)
 {
 	PositionDrag(strHandle, comp.GetPosition());
-	Draggy("P0", strHandle, glm::value_ptr(comp.GetP0()), 3);
-	Draggy("P1", strHandle, glm::value_ptr(comp.GetP1()), 3);
-	Draggy("P2", strHandle, glm::value_ptr(comp.GetP2()), 3);
+	Draggy("P0", strHandle, glm::value_ptr(comp.GetP0()), 3, [&]() { comp.UpdateCentroid(); });
+	Draggy("P1", strHandle, glm::value_ptr(comp.GetP1()), 3, [&]() { comp.UpdateCentroid(); });
+	Draggy("P2", strHandle, glm::value_ptr(comp.GetP2()), 3, [&]() { comp.UpdateCentroid(); });
 
 	ImGui::Separator();
 	ImGui::BeginDisabled();

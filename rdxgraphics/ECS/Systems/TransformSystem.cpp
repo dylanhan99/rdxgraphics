@@ -26,30 +26,30 @@ void TransformSystem::Update(float dt)
 			continue;
 
 		// Hardcode to follow xform for now?
-		{
-			Xform& xform = EntityManager::GetComponent<Xform>(handle);
-#define _RX_X(Klass)																		\
-		case BV::Klass:																		\
-		{																					\
-			Klass##BV& bv = EntityManager::GetComponent<Klass##BV>(handle); \
-			bv.GetPosition() = xform.GetTranslate();										\
-	} break;
+//		{
+//			Xform& xform = EntityManager::GetComponent<Xform>(handle);
+//#define _RX_X(Klass)																		\
+//		case BV::Klass:																		\
+//		{																					\
+//			Klass##BV& bv = EntityManager::GetComponent<Klass##BV>(handle); \
+//			bv.GetPosition() = xform.GetTranslate();										\
+//	} break;
+//
+//			switch (col.GetBVType())
+//			{
+//				RX_DO_ALL_BV_ENUM;
+//			default:
+//				break;
+//			}
+//#undef _RX_X
+//		}
 
-			switch (col.GetBVType())
-			{
-				RX_DO_ALL_BV_ENUM;
-			default:
-				break;
-			}
-#undef _RX_X
-		}
-
-#define _RX_X(Klass)																	\
-	case BV::Klass:																		\
-	{																					\
-		/*Should check ensure that get<BV> exists*/										\
-		Klass##BV& bv = EntityManager::GetComponent<Klass##BV>(handle); \
-		bv.UpdateXform();																\
+#define _RX_X(Klass)													\
+	case BV::Klass:														\
+	{																	\
+		/*Should check ensure that get<BV> exists*/						\
+		Klass##BV& bv = EntityManager::GetComponent<Klass##BV>(handle);	\
+		bv.UpdateXform();												\
 	} break;
 
 		switch (col.GetBVType())

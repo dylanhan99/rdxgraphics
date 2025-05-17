@@ -4,7 +4,7 @@
 #include "Utils/Input.h"
 #include "GLFWWindow/GLFWWindow.h"
 #include "ECS/Systems/RenderSystem.h"
-#include "Transformation/TransformSystem.h"
+#include "ECS/Systems/TransformSystem.h"
 #include "ECS/Systems/CollisionSystem.h"
 #include "ECS/EntityManager.h"
 #include "GUI/GUI.h"
@@ -50,10 +50,11 @@ void RDX::Run()
 				if (Input::IsKeyTriggered(RX_KEY_F5))
 					RenderSystem::ReloadShaders();
 
+				GUI::Update(dt);
+				SceneManager::Update(dt);
+
 				TransformSystem::Update(dt);
 				CollisionSystem::Update(dt);
-				SceneManager::Update(dt);
-				GUI::Update(dt);
 
 				// Render
 				RenderSystem::Draw();

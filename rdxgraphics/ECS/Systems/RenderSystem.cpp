@@ -294,17 +294,70 @@ void RenderSystem::Draw()
 				if (bvType == BV::NIL)
 					continue;
 
-				#define _RX_X(Klass)															   \
-				if (bvType == BV::Klass)														   \
-				{																				   \
-					/*Should check ensure that get<BV> exists*/									   \
-					Klass##BV& bv = EntityManager::GetComponent<Klass##BV>(handle);\
-					Object<VertexBasic>& o = GetObjekt(bvType);									   \
-					o.Submit<VertexBasic::Xform>(bv.GetXform());								   \
-					o.Submit<VertexBasic::IsCollide>(bv.IsCollide());							   \
+				// Some triangle non-conforming hardcode.
+				// Hopefully is temporary. I'd prefer to use the actual
+				// triangle mesh.
+				if (bvType == BV::Triangle)
+				{
+					TriangleBV& bv = EntityManager::GetComponent<TriangleBV>(handle);
+					glm::vec3 from = RayBV::DefaultDirection;
+
+					glm::vec3 p0 = bv.GetP0_W();
+					glm::vec3 p1 = bv.GetP1_W();
+					glm::vec3 p2 = bv.GetP2_W();
+
+					glm::vec3 to0 = p1 - p0;
+					glm::vec3 to1 = p2 - p1;
+					glm::vec3 to2 = p0 - p2;
+
+					Object<VertexBasic>& o = GetObjekt(Shape::Line);
+#define _RX_X(p, t)																	\
+					{																\
+						glm::mat4 translate = glm::translate(p);					\
+						glm::mat4 scale = glm::scale(glm::vec3(glm::length(t)));	\
+						glm::mat4 rotate = glm::mat4_cast(glm::rotation(from, glm::normalize(t)));	\
+						o.Submit<VertexBasic::Xform>(translate * scale * rotate);	\
+						o.Submit<VertexBasic::IsCollide>(bv.IsCollide());			\
+					}
+					_RX_X(p0, to0);
+					_RX_X(p1, to1);
+					_RX_X(p2, to2);
+#undef _RX_X
+					continue;
+				}
+
+#define _RX_X(Klass)																\
+				if (bvType == BV::Klass)											\
+				{																	\
+					/*Should check ensure that get<BV> exists*/						\
+					Klass##BV& bv = EntityManager::GetComponent<Klass##BV>(handle);	\
+					Object<VertexBasic>& o = GetObjekt(bvType);						\
+					o.Submit<VertexBasic::Xform>(bv.GetXform());					\
+					o.Submit<VertexBasic::IsCollide>(bv.IsCollide());				\
 				}
 				RX_DO_ALL_BV_ENUM;
-				#undef _RX_X
+#undef _RX_X
+			}
+
+			// Extra per collider type stuff
+			auto triangleView = EntityManager::View<TriangleBV>();
+			for (auto [handle, bv] : triangleView.each())
+			{
+				{
+					auto& obj = GetObjekt(BV::Point);
+					//obj.Submit<VertexBasic::Xform>(glm::translate(bv.GetP0_W()));
+					//obj.Submit<VertexBasic::Xform>(glm::translate(bv.GetP1_W()));
+					//obj.Submit<VertexBasic::Xform>(glm::translate(bv.GetP2_W()));
+					obj.Submit<VertexBasic::Xform>(glm::translate(bv.GetPosition()));
+				}
+				{
+					auto& obj = GetObjekt(BV::Ray);
+					glm::vec3 from = TriangleBV::DefaultNormal;
+					glm::vec3 to = bv.GetNormal();
+
+					glm::quat quat = glm::rotation(from, to);
+					obj.Submit<VertexBasic::Xform>(glm::translate(bv.GetPosition()) * glm::mat4_cast(quat));
+				}
 			}
 
 			//glClearColor(1.0f, 1.0f, 1.0f, 1.0f);

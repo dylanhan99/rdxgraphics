@@ -24,7 +24,7 @@ void Sandbox::Start()
 		auto handle = BaseScene::CreateEntity();
 		EntityManager::AddComponent<Xform>(handle, glm::vec3{ 0.f, 0.f, 0.f }, glm::vec3{ 1.f }, glm::vec3{ glm::quarter_pi<float>() });
 		EntityManager::AddComponent<Model>(handle, Shape::Cube);
-		EntityManager::AddComponent<Collider>(handle, BV::Ray);
+		EntityManager::AddComponent<Collider>(handle, BV::Triangle);
 		EntityManager::AddComponent<Material>(handle, glm::vec3{ 0.f,0.f,1.f });
 	}
 	{

@@ -225,56 +225,152 @@ private:
 class TriangleBV : public BaseBV
 {
 public:
-	inline static const glm::vec3 DefaultNormal{ 0.f,0.f,1.f };
 	inline static const glm::vec3 DefaultP0{ 0.0f,		 1.0f, 0.f};
 	inline static const glm::vec3 DefaultP1{-0.86603f,	-0.5f, 0.f};
 	inline static const glm::vec3 DefaultP2{ 0.86603f,	-0.5f, 0.f};
+	inline static const glm::vec3 DefaultNormal{ glm::cross(DefaultP1 - DefaultP0, DefaultP2 - DefaultP0) };
 public:
 	TriangleBV() = default;
 	inline void UpdateXform() override
 	{
-		// We have our reference "default" triangle, using DefaultPx
-		// We can use this against our "deformed" triangle, px_w
-		//glm::mat3 defaultBasis{ DefaultP0, DefaultP1, DefaultP2 };
-		glm::mat3 deformed{ m_Position + m_P0, m_Position + m_P1, m_Position + m_P2 };
+		m_Xform = glm::translate(GetPosition());
+		// Set up the linear system Ax = b
+	// We'll solve for 12 unknowns (the elements of the transformation matrix)
 
-		//// This best-fit matrix is the combination of scale and rotate
-		//glm::mat3 sclXrot = deformed * glm::inverse(defaultBasis);
+	// For each corresponding pair of vertices, we get 3 equations
+	// We need at least 4 point correspondences to solve for the full affine matrix
+	// Since we only have 3 vertices, we'll use the centroid as the 4th point
 
-		glm::vec3 ref_origin{ 0.f };
-		glm::vec3 ref_x = glm::normalize(DefaultP1 - DefaultP0);
-		glm::vec3 ref_y = glm::normalize(DefaultP2 - DefaultP0);
-		glm::vec3 ref_z = glm::normalize(glm::cross(ref_x, ref_y));
-		glm::mat3 ref_basis = glm::mat3(ref_x, ref_y, ref_z);
-
-		glm::vec3 def_origin = m_Position;
-		glm::vec3 def_x = glm::normalize(deformed[1] - deformed[0]);
-		glm::vec3 def_y = glm::normalize(deformed[2] - deformed[0]);
-		glm::vec3 def_z = glm::normalize(glm::cross(def_x, def_y));
-		glm::mat3 def_basis = glm::mat3(def_x, def_y, def_z);
-
-		// scale
-		auto avg_edge_len = [](const glm::vec3& a, const glm::vec3& b, const glm::vec3& c) {
-			return (glm::length(b - a) + glm::length(c - b) + glm::length(a - c)) / 3.0f;
-			};
-
-		float ref_scale = avg_edge_len(DefaultP0, DefaultP1, DefaultP2);
-		float def_scale = avg_edge_len(deformed[0], deformed[1], deformed[2]);
-		float uniform_scale = def_scale / ref_scale;
-
-		// rot
-		glm::mat3 rotation = def_basis * glm::transpose(ref_basis); // inverse of an orthonormal basis is its transpose
-
+	// Calculate centroids
+		//glm::vec3 centroidA{ 0.f };// (verticesA[0] + verticesA[1] + verticesA[2]) / 3.0f;
+		//glm::vec3 centroidB = m_Position;// = (verticesB[0] + verticesB[1] + verticesB[2]) / 3.0f;
 		//
-		m_Xform = glm::translate(m_Position) * glm::scale(glm::vec3{ uniform_scale }) * glm::mat4_cast(glm::quat_cast(rotation));
+		//// Create arrays including the centroids
+		//std::array<glm::vec3, 4> pointsA = { DefaultP0, DefaultP1, DefaultP2, centroidA };
+		//std::array<glm::vec3, 4> pointsB = { GetP0_W(), GetP1_W(), GetP2_W(), centroidB };
 
+		// For debugging
+		//std::cout << "Points in Triangle A (including centroid):\n";
+		//for (const auto& p : pointsA) {
+		//	std::cout << "  " << glm::to_string(p) << "\n";
+		//}
 		//
-		//m_Xform = glm::translate(m_Position) * glm::mat4{ sclXrot };
+		//std::cout << "Points in Triangle B (including centroid):\n";
+		//for (const auto& p : pointsB) {
+		//	std::cout << "  " << glm::to_string(p) << "\n";
+		//}
+
+		// Method 1: Direct solution using matrix operations
+		// We'll set up the equation system in the form PA * M = PB
+		// Where PA and PB are matrices containing the point coordinates
+
+		// Create matrices for the linear system
+		//glm::mat2 PA{ pointsA[0], pointsA[1] }; // 4 points, 3 coordinates each
+		//glm::mat2x3 PB{ pointsB[0], pointsB[1] };
+		//
+		//glm::mat2x3 M = PB * glm::inverse(PA);
+		//
+		//glm::vec3 xAxis = M[0]; // transformed d0
+		//glm::vec3 yAxis = M[1]; // transformed d1
+		//glm::vec3 zAxis = glm::normalize(glm::cross(xAxis, yAxis)); // inferred normal
+		//glm::mat4 model = glm::mat4(
+		//	glm::vec4(xAxis, 0.f),
+		//	glm::vec4(yAxis, 0.f),
+		//	glm::vec4(zAxis, 0.f),
+		//	glm::vec4(m_Position, 1.f)
+		//);
+		//m_Xform = model;
+		//return;
+
+		//// Fill the matrices with the point coordinates
+		//for (int i = 0; i < 4; i++) {
+		//	PA[i] = glm::vec3(pointsA[i].x, pointsA[i].y, pointsA[i].z);
+		//	PB[i] = glm::vec3(pointsB[i].x, pointsB[i].y, pointsB[i].z);
+		//}
+		//
+		//// Augment PA to include the homogeneous coordinate (1)
+		//glm::mat4 A;
+		//for (int i = 0; i < 4; i++) {
+		//	A[i] = glm::vec4(pointsA[i], 1.0f);
+		//}
+		//
+		//// Calculate the inverse of A
+		//glm::mat4 Ainv = glm::inverse(A);
+		//
+		//// Check if the matrix is invertible
+		//if (glm::determinant(A) == 0.0f) {
+		//	std::cerr << "Error: Source points are coplanar, transformation cannot be uniquely determined.\n";
+		//	m_Xform = glm::mat4(1.0f); // Return identity matrix as fallback
+		//	return;
+		//}
+		//
+		//// Solve for the transformation matrix M
+		//glm::mat4 M;
+		//for (int i = 0; i < 3; i++) {
+		//	// Extract column i from PB
+		//	glm::vec4 bCol(PB[0][i], PB[1][i], PB[2][i], PB[3][i]);
+		//
+		//	// Solve for column i of the transformation matrix
+		//	glm::vec4 xCol = Ainv * bCol;
+		//
+		//	// Set the column in the result matrix
+		//	M[0][i] = xCol[0];
+		//	M[1][i] = xCol[1];
+		//	M[2][i] = xCol[2];
+		//	M[3][i] = xCol[3];
+		//}
+		//
+		//// Set the last column of the transformation matrix
+		//M[0][3] = 0.0f;
+		//M[1][3] = 0.0f;
+		//M[2][3] = 0.0f;
+		//M[3][3] = 1.0f;
+		//
+		//m_Xform =  M;
 	}
+	//{
+	//	// We have our reference "default" triangle, using DefaultPx
+	//	// We can use this against our "deformed" triangle, px_w
+	//	//glm::mat3 defaultBasis{ DefaultP0, DefaultP1, DefaultP2 };
+	//	glm::mat3 deformed{ m_Position + m_P0, m_Position + m_P1, m_Position + m_P2 };
+	//
+	//	//// This best-fit matrix is the combination of scale and rotate
+	//	//glm::mat3 sclXrot = deformed * glm::inverse(defaultBasis);
+	//
+	//	glm::vec3 ref_origin{ 0.f };
+	//	glm::vec3 ref_x = glm::normalize(DefaultP1 - DefaultP0);
+	//	glm::vec3 ref_y = glm::normalize(DefaultP2 - DefaultP0);
+	//	glm::vec3 ref_z = glm::normalize(glm::cross(ref_x, ref_y));
+	//	glm::mat3 ref_basis = glm::mat3(ref_x, ref_y, ref_z);
+	//
+	//	glm::vec3 def_origin = m_Position;
+	//	glm::vec3 def_x = glm::normalize(deformed[1] - deformed[0]);
+	//	glm::vec3 def_y = glm::normalize(deformed[2] - deformed[0]);
+	//	glm::vec3 def_z = glm::normalize(glm::cross(def_x, def_y));
+	//	glm::mat3 def_basis = glm::mat3(def_x, def_y, def_z);
+	//
+	//	// scale
+	//	auto avg_edge_len = [](const glm::vec3& a, const glm::vec3& b, const glm::vec3& c) {
+	//		return (glm::length(b - a) + glm::length(c - b) + glm::length(a - c)) / 3.0f;
+	//		};
+	//
+	//	float ref_scale = avg_edge_len(DefaultP0, DefaultP1, DefaultP2);
+	//	float def_scale = avg_edge_len(deformed[0], deformed[1], deformed[2]);
+	//	float uniform_scale = def_scale / ref_scale;
+	//
+	//	// rot
+	//	glm::mat3 rotation = def_basis * glm::transpose(ref_basis); // inverse of an orthonormal basis is its transpose
+	//
+	//	//
+	//	m_Xform = glm::translate(m_Position) * glm::scale(glm::vec3{ uniform_scale }) * glm::mat4_cast(glm::quat_cast(rotation));
+	//
+	//	//
+	//	//m_Xform = glm::translate(m_Position) * glm::mat4{ sclXrot };
+	//}
 
 	inline glm::vec3 GetNormal() const
 	{
-		return glm::cross(m_P1 - m_P0, m_P2 - m_P0);
+		return glm::normalize(glm::cross(m_P1 - m_P0, m_P2 - m_P0));
 	}
 
 	inline void UpdateCentroid()
@@ -285,10 +381,7 @@ public:
 		glm::vec3 p1_w = oldCentroid + m_P1;
 		glm::vec3 p2_w = oldCentroid + m_P2;
 
-		m_Position = one_third *
-			((oldCentroid + m_P0) +
-			 (oldCentroid + m_P1) +
-			 (oldCentroid + m_P2));
+		m_Position = one_third * (p0_w + p1_w + p2_w);
 
 		// Update the local offsets since centroid changed
 		m_P0 = p0_w - m_Position;
@@ -302,6 +395,10 @@ public:
 	inline glm::vec3& GetP1() { return m_P1; }
 	inline glm::vec3 const& GetP2() const { return m_P2; }
 	inline glm::vec3& GetP2() { return m_P2; }
+
+	inline glm::vec3 GetP0_W() { return m_Position + m_P0; }
+	inline glm::vec3 GetP1_W() { return m_Position + m_P1; }
+	inline glm::vec3 GetP2_W() { return m_Position + m_P2; }
 
 private: // These points are OFFSETS from the centroid (position)
 	glm::vec3 m_P0{ DefaultP0 };
