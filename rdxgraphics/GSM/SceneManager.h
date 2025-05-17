@@ -45,7 +45,7 @@ public:
 	inline static bool IsRestart(size_t s) { return s == g.m_Scenes.size() + (size_t)State::Restart; }
 	inline static bool IsQuit(size_t s) { return s == g.m_Scenes.size() + (size_t)State::Quit; }
 
-	inline static std::shared_ptr<BaseScene> GetCommonScene() { return g.m_WorkingScene; }
+	inline static std::shared_ptr<BaseScene> GetCommonScene() { return g.m_CommonScene; }
 	inline static std::shared_ptr<BaseScene> GetWorkingScene() { return g.m_WorkingScene; }
 
 private:
