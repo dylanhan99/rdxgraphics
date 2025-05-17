@@ -225,10 +225,51 @@ private:
 class TriangleBV : public BaseBV
 {
 public:
+	inline static const glm::vec3 DefaultNormal{ 0.f,0.f,1.f };
+	inline static const glm::vec3 DefaultP0{ 0.0f,		 1.0f, 0.f};
+	inline static const glm::vec3 DefaultP1{-0.86603f,	-0.5f, 0.f};
+	inline static const glm::vec3 DefaultP2{ 0.86603f,	-0.5f, 0.f};
+public:
 	TriangleBV() = default;
 	inline void UpdateXform() override
 	{
+		// We have our reference "default" triangle, using DefaultPx
+		// We can use this against our "deformed" triangle, px_w
+		//glm::mat3 defaultBasis{ DefaultP0, DefaultP1, DefaultP2 };
+		glm::mat3 deformed{ m_Position + m_P0, m_Position + m_P1, m_Position + m_P2 };
 
+		//// This best-fit matrix is the combination of scale and rotate
+		//glm::mat3 sclXrot = deformed * glm::inverse(defaultBasis);
+
+		glm::vec3 ref_origin{ 0.f };
+		glm::vec3 ref_x = glm::normalize(DefaultP1 - DefaultP0);
+		glm::vec3 ref_y = glm::normalize(DefaultP2 - DefaultP0);
+		glm::vec3 ref_z = glm::normalize(glm::cross(ref_x, ref_y));
+		glm::mat3 ref_basis = glm::mat3(ref_x, ref_y, ref_z);
+
+		glm::vec3 def_origin = m_Position;
+		glm::vec3 def_x = glm::normalize(deformed[1] - deformed[0]);
+		glm::vec3 def_y = glm::normalize(deformed[2] - deformed[0]);
+		glm::vec3 def_z = glm::normalize(glm::cross(def_x, def_y));
+		glm::mat3 def_basis = glm::mat3(def_x, def_y, def_z);
+
+		// scale
+		auto avg_edge_len = [](const glm::vec3& a, const glm::vec3& b, const glm::vec3& c) {
+			return (glm::length(b - a) + glm::length(c - b) + glm::length(a - c)) / 3.0f;
+			};
+
+		float ref_scale = avg_edge_len(DefaultP0, DefaultP1, DefaultP2);
+		float def_scale = avg_edge_len(deformed[0], deformed[1], deformed[2]);
+		float uniform_scale = def_scale / ref_scale;
+
+		// rot
+		glm::mat3 rotation = def_basis * glm::transpose(ref_basis); // inverse of an orthonormal basis is its transpose
+
+		//
+		m_Xform = glm::translate(m_Position) * glm::scale(glm::vec3{ uniform_scale }) * glm::mat4_cast(glm::quat_cast(rotation));
+
+		//
+		//m_Xform = glm::translate(m_Position) * glm::mat4{ sclXrot };
 	}
 
 	inline glm::vec3 GetNormal() const
@@ -236,14 +277,36 @@ public:
 		return glm::cross(m_P1 - m_P0, m_P2 - m_P0);
 	}
 
-	inline glm::vec3 const& GetP0() const { return m_P0; }
-	inline glm::vec3 const& GetP1() const { return m_P1; }
-	inline glm::vec3 const& GetP2() const { return m_P2; }
+	inline void UpdateCentroid()
+	{
+		static float one_third = 1.f / 3.f;
+		glm::vec3 oldCentroid = m_Position;
+		glm::vec3 p0_w = oldCentroid + m_P0;
+		glm::vec3 p1_w = oldCentroid + m_P1;
+		glm::vec3 p2_w = oldCentroid + m_P2;
 
-private:
-	glm::vec3 m_P0{};
-	glm::vec3 m_P1{};
-	glm::vec3 m_P2{};
+		m_Position = one_third *
+			((oldCentroid + m_P0) +
+			 (oldCentroid + m_P1) +
+			 (oldCentroid + m_P2));
+
+		// Update the local offsets since centroid changed
+		m_P0 = p0_w - m_Position;
+		m_P1 = p1_w - m_Position;
+		m_P2 = p2_w - m_Position;
+	}
+
+	inline glm::vec3 const& GetP0() const { return m_P0; }
+	inline glm::vec3& GetP0() { return m_P0; }
+	inline glm::vec3 const& GetP1() const { return m_P1; }
+	inline glm::vec3& GetP1() { return m_P1; }
+	inline glm::vec3 const& GetP2() const { return m_P2; }
+	inline glm::vec3& GetP2() { return m_P2; }
+
+private: // These points are OFFSETS from the centroid (position)
+	glm::vec3 m_P0{ DefaultP0 };
+	glm::vec3 m_P1{ DefaultP1 };
+	glm::vec3 m_P2{ DefaultP2 };
 };
 
 class PlaneBV : public BaseBV

@@ -48,6 +48,7 @@ private:
 	static void CreateObjekt(ObjectParams const& objParams);
 	static ObjectParams CreatePoint();
 	static ObjectParams CreateLine();
+	static ObjectParams CreateTriangle();
 	static ObjectParams CreateQuad();
 	static ObjectParams CreatePlane();
 	static ObjectParams CreateCube();

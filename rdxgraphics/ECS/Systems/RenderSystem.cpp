@@ -451,6 +451,7 @@ void RenderSystem::CreateShapes()
 
 	CreateObjekt(CreatePoint());
 	CreateObjekt(CreateLine());
+	CreateObjekt(CreateTriangle());
 	CreateObjekt(CreateQuad());
 	CreateObjekt(CreatePlane());
 	CreateObjekt(CreateCube());
@@ -536,6 +537,31 @@ RenderSystem::ObjectParams RenderSystem::CreateLine()
 	return ObjectParams{
 		Shape::Line, GL_LINES,
 		indices,
+		positions,
+		texCoords,
+		normals,
+		nullptr
+	};
+}
+
+// An equilateral triangle, with 1 unit from center to vertex
+RenderSystem::ObjectParams RenderSystem::CreateTriangle()
+{
+	VertexBasic::Position::container_type positions{
+		TriangleBV::DefaultP0,
+		TriangleBV::DefaultP1,
+		TriangleBV::DefaultP2
+	};
+	VertexBasic::TexCoord::container_type texCoords{
+		glm::vec2{ (positions[0] + 1.f) * 0.5f },
+		glm::vec2{ (positions[1] + 1.f) * 0.5f },
+		glm::vec2{ (positions[2] + 1.f) * 0.5f },
+	};
+	VertexBasic::Normal::container_type normals{ 3, TriangleBV::DefaultNormal };
+
+	return ObjectParams{
+		Shape::Triangle, GL_TRIANGLES,
+		{},
 		positions,
 		texCoords,
 		normals,
