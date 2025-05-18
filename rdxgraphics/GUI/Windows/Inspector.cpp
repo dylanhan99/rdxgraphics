@@ -2,6 +2,40 @@
 #include "Inspector.h"
 #include "GUI/GUI.h"
 
+
+void Draggy(std::string name, std::string strHandle, float* pp, int size, std::function<void()> func = nullptr)
+{
+	std::string label = name + "##" + strHandle;
+	float step = 0.001f;
+	switch (size)
+	{
+	case 1:
+		if (ImGui::DragFloat(label.c_str(), pp, step) && func) func();
+		break;
+	case 2:
+		if (ImGui::DragFloat2(label.c_str(), pp, step) && func) func();
+		break;
+	case 3:
+		if (ImGui::DragFloat3(label.c_str(), pp, step) && func) func();
+		break;
+	case 4:
+		if (ImGui::DragFloat4(label.c_str(), pp, step) && func) func();
+		break;
+	default:
+		break;
+	}
+}
+
+void PositionDrag(std::string const& strHandle, glm::vec3& pos)
+{
+	Draggy("Position", strHandle, glm::value_ptr(pos), 3);
+}
+
+void EulerOrientationDrag(std::string const& strHandle, glm::vec3& pos)
+{
+	Draggy("Euler", strHandle, glm::value_ptr(pos), 3);
+}
+
 void Inspector::UpdateImpl(float dt)
 {
 	entt::entity selectedEntityHandle = GUI::GetSelectedEntity();
@@ -10,7 +44,7 @@ void Inspector::UpdateImpl(float dt)
 
 	std::string strHandle = std::to_string((uint32_t)selectedEntityHandle);
 	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen;
-		
+	
 #define _RX_X(Klass)															\
 	if (EntityManager::HasComponent<Klass>(selectedEntityHandle))				\
 	{ 																			\
@@ -104,6 +138,8 @@ void Inspector::UpdateCompCollider(std::string const& strHandle, Collider& comp)
 		RX_ASSERT(EntityManager::HasComponent<Klass##BV>(handle));			\
 		if (ImGui::TreeNodeEx(#Klass"##BV")) {								\
 			Klass##BV& comp = EntityManager::GetComponent<Klass##BV>(handle);	\
+			ImGui::Checkbox("Follow Xform", &comp.IsFollowXform());				\
+			PositionDrag(strHandle, comp.GetPosition());						\
 			UpdateComp##Klass##BV(strHandle, comp);								\
 			ImGui::TreePop();													\
 		}																		\
@@ -117,47 +153,12 @@ void Inspector::UpdateCompCollider(std::string const& strHandle, Collider& comp)
 #undef _RX_X
 }
 
-void Draggy(std::string name, std::string strHandle, float* pp, int size, std::function<void()> func = nullptr)
-{
-	std::string label = name + "##" + strHandle;
-	float step = 0.001f;
-	switch (size)
-	{
-	case 1:
-		if (ImGui::DragFloat(label.c_str(), pp, step) && func) func();
-		break;
-	case 2:
-		if (ImGui::DragFloat2(label.c_str(), pp, step) && func) func();
-		break;
-	case 3:
-		if (ImGui::DragFloat3(label.c_str(), pp, step) && func) func();
-		break;
-	case 4:
-		if (ImGui::DragFloat4(label.c_str(), pp, step) && func) func();
-		break;
-	default:
-		break;
-	}
-}
-
-void PositionDrag(std::string const& strHandle, glm::vec3& pos)
-{
-	Draggy("Position", strHandle, glm::value_ptr(pos), 3);
-}
-
-void EulerOrientationDrag(std::string const& strHandle, glm::vec3& pos)
-{
-	Draggy("Euler", strHandle, glm::value_ptr(pos), 3);
-}
-
 void Inspector::UpdateCompPointBV(std::string const& strHandle, PointBV& comp)
 {
-	PositionDrag(strHandle, comp.GetPosition());
 }
 
 void Inspector::UpdateCompRayBV(std::string const& strHandle, RayBV& comp)
 {
-	PositionDrag(strHandle, comp.GetPosition());
 	EulerOrientationDrag(strHandle, comp.GetOrientation());
 	
 	ImGui::Separator();
@@ -169,7 +170,6 @@ void Inspector::UpdateCompRayBV(std::string const& strHandle, RayBV& comp)
 
 void Inspector::UpdateCompTriangleBV(std::string const& strHandle, TriangleBV& comp)
 {
-	PositionDrag(strHandle, comp.GetPosition());
 	Draggy("P0", strHandle, glm::value_ptr(comp.GetP0()), 3, [&]() { comp.UpdateCentroid(); });
 	Draggy("P1", strHandle, glm::value_ptr(comp.GetP1()), 3, [&]() { comp.UpdateCentroid(); });
 	Draggy("P2", strHandle, glm::value_ptr(comp.GetP2()), 3, [&]() { comp.UpdateCentroid(); });
@@ -183,7 +183,6 @@ void Inspector::UpdateCompTriangleBV(std::string const& strHandle, TriangleBV& c
 
 void Inspector::UpdateCompPlaneBV(std::string const& strHandle, PlaneBV& comp)
 {
-	PositionDrag(strHandle, comp.GetPosition());
 	EulerOrientationDrag(strHandle, comp.GetOrientation());
 
 	ImGui::Separator();
@@ -197,7 +196,6 @@ void Inspector::UpdateCompPlaneBV(std::string const& strHandle, PlaneBV& comp)
 
 void Inspector::UpdateCompAABBBV(std::string const& strHandle, AABBBV& comp)
 {
-	PositionDrag(strHandle, comp.GetPosition());
 	Draggy("Half-Extents", strHandle, glm::value_ptr(comp.GetHalfExtents()), 3);
 
 	ImGui::Separator();
@@ -211,6 +209,5 @@ void Inspector::UpdateCompAABBBV(std::string const& strHandle, AABBBV& comp)
 
 void Inspector::UpdateCompSphereBV(std::string const& strHandle, SphereBV& comp)
 {
-	PositionDrag(strHandle, comp.GetPosition());
 	Draggy("Radius", strHandle, &comp.GetRadius(), 1);
 }

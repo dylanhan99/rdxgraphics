@@ -160,11 +160,14 @@ public:
 	inline void SetPosition(glm::vec3 pos) { m_Position = pos; }
 	inline bool const& IsCollide() const { return m_IsCollide; }
 	inline bool& IsCollide() { return m_IsCollide; }
+	inline bool const& IsFollowXform() const { return m_IsFollowXform; }
+	inline bool& IsFollowXform() { return m_IsFollowXform; }
 
 protected:
 	glm::mat4 m_Xform{};
 	glm::vec3 m_Position{};
 	bool m_IsCollide{ false };
+	bool m_IsFollowXform{ true };
 };
 
 class PointBV : public BaseBV
