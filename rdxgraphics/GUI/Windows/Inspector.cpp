@@ -53,7 +53,7 @@ void Inspector::UpdateCompCamera(std::string const& strHandle, Camera& comp)
 
 void Inspector::UpdateCompModel(std::string const& strHandle, Model& comp)
 {
-	ImGui::Text("Hewwo");
+	
 }
 
 void Inspector::UpdateCompDirectionalLight(std::string const& strHandle, DirectionalLight& comp)
@@ -63,13 +63,13 @@ void Inspector::UpdateCompDirectionalLight(std::string const& strHandle, Directi
 
 void Inspector::UpdateCompMaterial(std::string const& strHandle, Material& comp)
 {
-	ImGui::ColorPicker3(("AmbientColor##" + strHandle).c_str(), glm::value_ptr(comp.GetAmbientColor()));
-	ImGui::DragFloat(("AmbientIntensity##" + strHandle).c_str(), &comp.GetAmbientIntensity());
-	ImGui::ColorPicker3(("DiffuseColor##" + strHandle).c_str(), glm::value_ptr(comp.GetDiffuseColor()));
-	ImGui::DragFloat(("DiffuseIntensity##" + strHandle).c_str(), &comp.GetDiffuseIntensity());
-	ImGui::ColorPicker3(("SpecularColor##" + strHandle).c_str(), glm::value_ptr(comp.GetSpecularColor()));
-	ImGui::DragFloat(("SpecularIntensity##" + strHandle).c_str(), &comp.GetSpecularIntensity());
-	ImGui::DragFloat(("Shininess##" + strHandle).c_str(), &comp.GetShininess());
+	//ImGui::ColorPicker3(("AmbientColor##" + strHandle).c_str(), glm::value_ptr(comp.GetAmbientColor()));
+	//ImGui::DragFloat(("AmbientIntensity##" + strHandle).c_str(), &comp.GetAmbientIntensity());
+	//ImGui::ColorPicker3(("DiffuseColor##" + strHandle).c_str(), glm::value_ptr(comp.GetDiffuseColor()));
+	//ImGui::DragFloat(("DiffuseIntensity##" + strHandle).c_str(), &comp.GetDiffuseIntensity());
+	//ImGui::ColorPicker3(("SpecularColor##" + strHandle).c_str(), glm::value_ptr(comp.GetSpecularColor()));
+	//ImGui::DragFloat(("SpecularIntensity##" + strHandle).c_str(), &comp.GetSpecularIntensity());
+	//ImGui::DragFloat(("Shininess##" + strHandle).c_str(), &comp.GetShininess());
 }
 
 void Inspector::UpdateCompCollider(std::string const& strHandle, Collider& comp)

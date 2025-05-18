@@ -27,29 +27,8 @@ void Sandbox::Start()
 		EntityManager::AddComponent<Collider>(handle, BV::Triangle);
 		EntityManager::AddComponent<Material>(handle, glm::vec3{ 0.f,0.f,1.f });
 	}
-	{
-		auto handle = BaseScene::CreateEntity();
-		EntityManager::AddComponent<Xform>(handle, glm::vec3{ 0.f, 5.f, 0.f }, glm::vec3{ 0.3f });
-		EntityManager::AddComponent<Model>(handle, Shape::Cube);
-		EntityManager::AddComponent<DirectionalLight>(handle);
-	}
 }
 
 void Sandbox::Update(float dt)
 {
-	static float angle = 0.f;
-	auto view = EntityManager::View<Xform, DirectionalLight>();
-	for (auto [handle, xform, light] : view.each())
-	{
-		float rate = 0.25f;
-		float radius = 5.f;
-		angle += glm::two_pi<float>() * rate * dt;
-		if (angle > glm::two_pi<float>()) angle = 0.f;
-
-		xform.GetTranslate().x = glm::cos(angle) * radius;
-		xform.GetTranslate().y = 0.f;
-		xform.GetTranslate().z = glm::sin(angle) * radius;
-
-		light.GetDirection() = glm::normalize(-xform.GetTranslate()); // Look at origin
-	}
 }

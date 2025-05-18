@@ -352,11 +352,30 @@ void RenderSystem::Draw()
 				}
 				{
 					auto& obj = GetObjekt(BV::Ray);
-					glm::vec3 from = TriangleBV::DefaultNormal;
+					glm::vec3 from = RayBV::DefaultDirection;
 					glm::vec3 to = bv.GetNormal();
 
 					glm::quat quat = glm::rotation(from, to);
 					obj.Submit<VertexBasic::Xform>(glm::translate(bv.GetPosition()) * glm::mat4_cast(quat));
+					obj.Submit<VertexBasic::IsCollide>(false);
+				}
+			}
+
+			auto planeView = EntityManager::View<PlaneBV>();
+			for (auto [handle, bv] : planeView.each())
+			{
+				{
+					auto& obj = GetObjekt(BV::Point);
+					obj.Submit<VertexBasic::Xform>(glm::translate(bv.GetPosition()));
+				}
+				{
+					auto& obj = GetObjekt(BV::Ray);
+					glm::vec3 from = RayBV::DefaultDirection;
+					glm::vec3 to = bv.GetNormal();
+
+					glm::quat quat = glm::rotation(from, to);
+					obj.Submit<VertexBasic::Xform>(glm::translate(bv.GetPosition()) * glm::mat4_cast(quat));
+					obj.Submit<VertexBasic::IsCollide>(false);
 				}
 			}
 
