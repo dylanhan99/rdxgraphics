@@ -130,16 +130,44 @@ bool CollisionSystem::CheckCollision(PointBV const& lhs, SphereBV const& rhs)
 	return d2 < glm::pow(rhs.GetRadius(), 2.f);
 }
 
+// Works for both front and back face
 bool CollisionSystem::CheckCollision(RayBV const& lhs, TriangleBV const& rhs)
-{
-	glm::quat rot = glm::rotation(PlaneBV::DefaultNormal, rhs.GetNormal());
-	glm::vec3 eulerOrientation = glm::eulerAngles(rot);
-	PlaneBV triPlane{ rhs.GetPosition(), eulerOrientation };
+{ // Orange book page 191 (225 in the pdf)
+	glm::vec3 dir = lhs.GetDirection();
+	glm::vec3 n = rhs.GetNormal_NotNormalized();
 
-	PointBV pointOnTriangle{};
-	if (IntersectSegmentPlane(lhs, triPlane, &pointOnTriangle))
-		return CheckCollision(pointOnTriangle, rhs);
-	return false;
+	// Test the ray direction
+	{
+		float nd = glm::dot(n, dir);
+		glm::vec3 rl = lhs.GetPosition() - rhs.GetPosition();
+		float nrl = glm::dot(n, rl);
+
+		// 1. Face away + ray behind tri, false
+		if (nd < glm::epsilon<float>() && nrl < glm::epsilon<float>())
+			return false;
+		// 4. Face same + ray infront tri, false
+		if (nd > -glm::epsilon<float>() && nrl > -glm::epsilon<float>())
+			return false;
+	}
+
+	// 2. face away + ray infront tri, test bary
+	// 3. Face same + ray behind tri, test bary
+
+	glm::vec3 pa = rhs.GetP0() - lhs.GetPosition();
+	glm::vec3 pb = rhs.GetP1() - lhs.GetPosition();
+	glm::vec3 pc = rhs.GetP2() - lhs.GetPosition();
+
+	float u = ScalarTriple(dir, pc, pb);
+	float v = ScalarTriple(dir, pa, pc);
+	float w = ScalarTriple(dir, pb, pa);
+
+	return  (u < 0.f && v < 0.f && w < 0.f) || 
+			(u > 0.f && v > 0.f && w > 0.f);
+	//if (u < 0.f) return false;
+	//if (v < 0.f) return false;
+	//if (w < 0.f) return false;
+	//
+	//return true;
 }
 
 bool CollisionSystem::CheckCollision(RayBV const& lhs, PlaneBV const& rhs)
