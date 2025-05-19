@@ -320,7 +320,7 @@ bool CollisionSystem::IntersectSegmentPlane(RayBV const& ray, PlaneBV const& pla
 		return false;
 
 	float t = (plane.GetD() - glm::dot(n, ray.GetPosition())) / dA;
-	if (0.f <= t && t <= 1.f)
+	if (t >= 0.f)
 	{
 		if (oPoint) *oPoint = ray.GetPosition() + t * d;
 		return true;
