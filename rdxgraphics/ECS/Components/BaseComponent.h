@@ -227,9 +227,14 @@ public:
 		m_Xform = glm::translate(GetPosition());
 	}
 
+	inline glm::vec3 GetNormal_NotNormalized() const
+	{
+		return glm::cross(m_P1 - m_P0, m_P2 - m_P0);
+	}
+
 	inline glm::vec3 GetNormal() const
 	{
-		return glm::normalize(glm::cross(m_P1 - m_P0, m_P2 - m_P0));
+		return glm::normalize(GetNormal_NotNormalized());
 	}
 
 	inline void UpdateCentroid()

@@ -82,24 +82,29 @@ float ScalarTriple(glm::vec3 a, glm::vec3 b, glm::vec3 c)
 }
 
 bool CollisionSystem::CheckCollision(PointBV const& lhs, TriangleBV const& rhs)
-{ // Orange book page 191 (230 in the pdf or is it 225)
-	glm::vec3 pq = rhs.GetPosition() - lhs.GetPosition();
-	glm::vec3 pa = rhs.GetP0() - lhs.GetPosition();
-	glm::vec3 pb = rhs.GetP1() - lhs.GetPosition();
-	glm::vec3 pc = rhs.GetP2() - lhs.GetPosition();
+{ // Orange book page 204 (243 in the pdf)
+	glm::vec3 a = rhs.GetP0();
+	glm::vec3 b = rhs.GetP1();
+	glm::vec3 c = rhs.GetP2();
+	glm::vec3 p = lhs.GetPosition();
+	// Translate point and triangle so that point lies at origin
+	a -= p; b -= p; c -= p;
 
-	float u = ScalarTriple(pq, pc, pb);
-	if (u < 0.f) return false;
-	float v = ScalarTriple(pq, pa, pc);
-	if (v < 0.f) return false;
-	float w = ScalarTriple(pq, pb, pa);
-	if (w < 0.f) return false;
+	// Plane distance test
+	glm::vec3 n = rhs.GetNormal();
+	float d = glm::dot(n, a);
+	if (glm::abs(d) > glm::epsilon<float>()) return false;
 
-	float denom = 1.f / (u + v + w);
-	u *= denom;
-	v *= denom;
-	w *= denom; // Can use these if you want to i suppose
-
+	// Actual test
+	float ab = glm::dot(a, b);
+	float ac = glm::dot(a, c);
+	float bc = glm::dot(b, c);
+	float cc = glm::dot(c, c);
+	// Make sure plane normals for pab and pbc point in the same direction
+	if (bc * ac - cc * ab < 0.0f) return false;
+	// Make sure plane normals for pab and pca point in the same direction
+	float bb = glm::dot(b, b);
+	if (ab * bc - ac * bb < 0.0f) return false;
 	return true;
 }
 
