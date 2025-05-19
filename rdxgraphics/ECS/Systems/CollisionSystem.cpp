@@ -225,10 +225,11 @@ bool CollisionSystem::CheckCollision(PlaneBV const& lhs, RayBV const& rhs) { ret
 
 bool CollisionSystem::CheckCollision(PlaneBV const& lhs, AABBBV const& rhs)
 { // Orange book page 164 (203 in the pdf)
-	glm::vec3 const& e = rhs.GetHalfExtents();
+	glm::vec3 const& e = rhs.GetHalfExtents() * 0.5f;
 	glm::vec3 const& n = lhs.GetNormal();
+	float d = lhs.GetD();
 	float r = glm::dot(e, glm::abs(n));
-	float s = glm::dot(n, rhs.GetPosition()) - lhs.GetD();
+	float s = glm::dot(n, rhs.GetPosition()) - d;
 	return glm::abs(s) <= r;
 }
 
