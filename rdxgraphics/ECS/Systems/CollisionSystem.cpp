@@ -177,41 +177,20 @@ bool CollisionSystem::CheckCollision(RayBV const& lhs, PlaneBV const& rhs)
 
 bool CollisionSystem::CheckCollision(RayBV const& lhs, AABBBV const& rhs)
 { // Orange book page 179 (218 in the pdf)
+	glm::vec3 dir = lhs.GetDirection();      // Should be normalized
 	glm::vec3 p = lhs.GetPosition();
-	glm::vec3 d = lhs.GetDirection();
-	glm::vec3 amin = rhs.GetMinPoint();
-	glm::vec3 amax = rhs.GetMaxPoint();
-	float tmin = 0.f; // set to -FLT_MAX to get first hit on line
-	float tmax = FLT_MAX; // set to max distance ray can travel (for segment)
+	glm::vec3 invDir = 1.0f / dir;           // May cause div-by-zero if dir is 0 on any axis
 
-	// For all three slabs
-	for (int i = 0; i < 3; i++) 
-	{
-		if (glm::abs(d[i]) < glm::epsilon<float>()) 
-		{
-			// Ray is parallel to slab. No hit if origin not within slab
-			if (p[i] < amin[i] || p[i] > amax[i]) 
-				return false;
-		}
-		else 
-		{
-			// Compute intersection t value of ray with near and far plane of slab
-			float ood = 1.f / d[i];
-			float t1 = (amin[i] - p[i]) * ood;
-			float t2 = (amax[i] - p[i]) * ood;
-			// Make t1 be intersection with near plane, t2 with far plane
-			if (t1 > t2) std::swap(t1, t2);
-			// Compute the intersection of slab intersection intervals
-			if (t1 > tmin) tmin = t1;
-			if (t2 > tmax) tmax = t2;
-			// Exit with no collision as soon as slab intersection becomes empty
-			if (tmin > tmax) 
-				return false;
-		}
-	}
-	// Ray intersects all 3 slabs. Return point (q) and intersection t value (tmin)
-	//q = p + d * tmin;
-	return true;
+	glm::vec3 t1 = (rhs.GetMinPoint() - p) * invDir;
+	glm::vec3 t2 = (rhs.GetMaxPoint() - p) * invDir;
+
+	glm::vec3 tmin = glm::min(t1, t2);
+	glm::vec3 tmax = glm::max(t1, t2);
+
+	float tNear = glm::compMax(tmin);
+	float tFar = glm::compMin(tmax);
+
+	return tNear <= tFar && tFar >= 0.0f;
 }
 
 bool CollisionSystem::CheckCollision(RayBV const& lhs, SphereBV const& rhs)
