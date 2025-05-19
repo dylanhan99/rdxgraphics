@@ -3,6 +3,23 @@
 
 namespace fs = std::filesystem;
 
+bool Shader::Init(std::vector<std::pair<ShaderType, std::string>> const& shaderAssets)
+{
+	std::vector<GLuint> shaderIDs{};
+
+	// Loading
+	for (auto const& [t, b] : shaderAssets)
+	{
+		m_ShaderAssets[(size_t)t] = fs::path{};
+
+		GLenum shaderType = GetShaderGLenum(t);
+		GLuint shaderID = LoadShader(shaderType, b);
+		shaderIDs.emplace_back(shaderID);
+	}
+
+	return LinkAndValidateShaderProgram(shaderIDs, m_ShaderProgramID);
+}
+
 bool Shader::Init(std::vector<std::pair<ShaderType, std::filesystem::path>> const& shaderAssets)
 {
 	std::vector<GLuint> shaderIDs{};
@@ -17,42 +34,21 @@ bool Shader::Init(std::vector<std::pair<ShaderType, std::filesystem::path>> cons
 		shaderIDs.emplace_back(shaderID);
 	}
 
-	GLint success = 1;
-	for (GLuint shaderID : shaderIDs)
-		success = (bool)success & (bool)shaderID;
-
-	if (!success)
-	{
-		for (GLuint shaderID : shaderIDs)
-			glDeleteShader(shaderID);
-		return false;
-	}
-
-	// Linking
-	m_ShaderProgramID = glCreateProgram();
-	for (GLuint shaderID : shaderIDs)
-		glAttachShader(m_ShaderProgramID, shaderID);
-	glLinkProgram(m_ShaderProgramID);
-	glGetProgramiv(m_ShaderProgramID, GL_LINK_STATUS, &success);
-	if (!success)
-	{
-		char infoLog[512]{};
-		glGetProgramInfoLog(m_ShaderProgramID, 512, nullptr, infoLog);
-		RX_ERROR("Failed to link shader program - {}", infoLog);
-	}
-
-	for (GLuint shaderID : shaderIDs)
-		glDeleteShader(shaderID);
-	return (bool)success;
+	return LinkAndValidateShaderProgram(shaderIDs, m_ShaderProgramID);
 }
 
 void Shader::Terminate()
 {
 	glDeleteProgram(m_ShaderProgramID);
+	m_ShaderProgramID = 0;
 }
 
 bool Shader::Reload()
 {
+#if USE_CSD3151_AUTOMATION == 1
+	// Prevent this usage in baked-in mode
+	return true;
+#else
 	Terminate();
 	std::vector<std::pair<ShaderType, fs::path>> v{};
 	for (size_t i = 0; i < m_ShaderAssets.size(); ++i)
@@ -63,6 +59,7 @@ bool Shader::Reload()
 	}
 
 	return Init(v);
+#endif
 }
 
 void Shader::Bind() const
@@ -102,8 +99,6 @@ void Shader::SetUniformMatrix4fv(std::string const& name, std::vector<glm::mat4>
 
 GLuint Shader::LoadShader(GLenum shaderType, std::filesystem::path const& shaderPath)
 {
-	GLuint shaderID{ 0 };
-
 	std::ifstream ifs{ shaderPath };
 	if (!ifs)
 	{
@@ -111,8 +106,15 @@ GLuint Shader::LoadShader(GLenum shaderType, std::filesystem::path const& shader
 		return 0u;
 	}
 
+	RX_DEBUG("{}", shaderPath);
 	std::string shaderBuffer{ std::istreambuf_iterator<char>{ifs}, {} };
-	RX_DEBUG("{}\n{}", shaderPath, shaderBuffer);
+	return LoadShader(shaderType, shaderBuffer);
+}
+
+GLuint Shader::LoadShader(GLenum shaderType, std::string const& shaderBuffer)
+{
+	GLuint shaderID{ 0 };
+	RX_DEBUG("{}", shaderBuffer);
 	const char* shaderBufferCstr = shaderBuffer.c_str();
 
 	shaderID = glCreateShader(shaderType);
@@ -125,11 +127,42 @@ GLuint Shader::LoadShader(GLenum shaderType, std::filesystem::path const& shader
 	{
 		char infoLog[512]{};
 		glGetShaderInfoLog(shaderID, 512, nullptr, infoLog);
-		RX_ERROR(R"(Failed to compile shader "{}" - {})", shaderPath, infoLog);
+		RX_ERROR(R"(Failed to compile shader - {})", infoLog);
 		return 0u;
 	}
 
 	return shaderID;
+}
+
+bool Shader::LinkAndValidateShaderProgram(std::vector<GLuint>& shaderIDs, GLuint& shaderProgramID)
+{
+	GLint success = 1;
+	for (GLuint shaderID : shaderIDs)
+		success = (bool)success & (bool)shaderID;
+
+	if (!success)
+	{
+		for (GLuint shaderID : shaderIDs)
+			glDeleteShader(shaderID);
+		return false;
+	}
+
+	// Linking
+	shaderProgramID = glCreateProgram();
+	for (GLuint shaderID : shaderIDs)
+		glAttachShader(shaderProgramID, shaderID);
+	glLinkProgram(shaderProgramID);
+	glGetProgramiv(shaderProgramID, GL_LINK_STATUS, &success);
+	if (!success)
+	{
+		char infoLog[512]{};
+		glGetProgramInfoLog(shaderProgramID, 512, nullptr, infoLog);
+		RX_ERROR("Failed to link shader program - {}", infoLog);
+	}
+
+	for (GLuint shaderID : shaderIDs)
+		glDeleteShader(shaderID);
+	return (bool)success;
 }
 
 GLenum Shader::GetShaderGLenum(ShaderType shaderType)
@@ -148,7 +181,7 @@ GLenum Shader::GetShaderGLenum(ShaderType shaderType)
 	}
 }
 
-GLint Shader::GetUniformLocation(std::string const& name)
+GLint Shader::GetUniformLocation(std::string const& name) const
 {
 	GLint loc = glGetUniformLocation(m_ShaderProgramID, name.c_str());
 	if (loc == -1)

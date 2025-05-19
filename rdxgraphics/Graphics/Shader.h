@@ -13,6 +13,7 @@ class Shader
 {
 public:
 	// This init does not terminate any preexisting shaders. Be wary. Use reload if that's what you're intending to do.
+	bool Init(std::vector<std::pair<ShaderType, std::string>> const& shaderAssets);
 	bool Init(std::vector<std::pair<ShaderType, std::filesystem::path>> const& shaderAssets);
 	void Terminate();
 	bool Reload(); // Actually will terminate before re-initializing
@@ -29,8 +30,10 @@ public:
 private:
 	// shaderPath is appended to g_WorkingDir. eg. ".../rdxgraphics" / "Assets/default.vert" = .../rdxgraphics/Assets/default.vert
 	static GLuint LoadShader(GLenum shaderType, std::filesystem::path const& shaderPath);
+	static GLuint LoadShader(GLenum shaderType, std::string const& shaderBuffer);
+	static bool LinkAndValidateShaderProgram(std::vector<GLuint>& shaderIDs, GLuint& shaderProgramID);
 	static GLenum GetShaderGLenum(ShaderType shaderType);
-	GLint GetUniformLocation(std::string const& name);
+	GLint GetUniformLocation(std::string const& name) const;
 
 public:
 	GLuint m_ShaderProgramID{};
