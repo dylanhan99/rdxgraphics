@@ -153,9 +153,9 @@ bool CollisionSystem::CheckCollision(RayBV const& lhs, TriangleBV const& rhs)
 	// 2. face away + ray infront tri, test bary
 	// 3. Face same + ray behind tri, test bary
 
-	glm::vec3 pa = rhs.GetP0() - lhs.GetPosition();
-	glm::vec3 pb = rhs.GetP1() - lhs.GetPosition();
-	glm::vec3 pc = rhs.GetP2() - lhs.GetPosition();
+	glm::vec3 pa = rhs.GetP0_W() - lhs.GetPosition();
+	glm::vec3 pb = rhs.GetP1_W() - lhs.GetPosition();
+	glm::vec3 pc = rhs.GetP2_W() - lhs.GetPosition();
 
 	float u = ScalarTriple(dir, pc, pb);
 	float v = ScalarTriple(dir, pa, pc);

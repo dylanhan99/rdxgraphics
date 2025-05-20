@@ -131,9 +131,9 @@ public:
 	inline glm::vec3 const& GetP2() const { return m_P2; }
 	inline glm::vec3& GetP2() { return m_P2; }
 
-	inline glm::vec3 GetP0_W() { return m_Position + m_P0; }
-	inline glm::vec3 GetP1_W() { return m_Position + m_P1; }
-	inline glm::vec3 GetP2_W() { return m_Position + m_P2; }
+	inline glm::vec3 GetP0_W() const { return m_Position + m_P0; }
+	inline glm::vec3 GetP1_W() const { return m_Position + m_P1; }
+	inline glm::vec3 GetP2_W() const { return m_Position + m_P2; }
 
 private: // These points are OFFSETS from the centroid (position)
 	glm::vec3 m_P0{ DefaultP0 };
