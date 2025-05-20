@@ -92,3 +92,4 @@ Task 6:
 ## Other Notes
 - I copy pasted the keymappings from glfw.h into Input.h to mask the same mappings with my own alias instead (RX_ prefix). This is pretty bad.)
 - Average 4 hours daily on this assignment
+- The USE_CSD3151_AUTOMATION for assignment_vs/fs shader buffers are located at the top of RenderSystem.cpp

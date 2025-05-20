@@ -8,16 +8,16 @@
 // It requires an automation script to convert the shader files from file format to string literal format.
 // After conversion, the file names must be changed to my-shader.vert and my-shader.frag.
 std::string const assignment_vs = {
-  #include "../shaders/my-shader.vert"
+  #include "../shaders/default.vert.h"
 };
 std::string const assignment_fs = {
-  #include "../shaders/my-shader.frag"
+  #include "../shaders/default.frag.h"
 };
 std::string const fbo_vs = {
-  #include "../shaders/screen.vert"
+  #include "../shaders/screen.vert.h"
 };
 std::string const fbo_fs = {
-  #include "../shaders/screen.frag"
+  #include "../shaders/screen.frag.h"
 };
 #endif
 
@@ -76,8 +76,8 @@ bool RenderSystem::Init()
 		});
 #else
 	g.m_Shader.Init({
-		{ ShaderType::Vertex,	fs::path{ RX_SHADER_PREFIX"my-shader.vert" } },
-		{ ShaderType::Fragment, fs::path{ RX_SHADER_PREFIX"my-shader.frag" } }
+		{ ShaderType::Vertex,	fs::path{ RX_SHADER_PREFIX"default.vert" } },
+		{ ShaderType::Fragment, fs::path{ RX_SHADER_PREFIX"default.frag" } }
 		});
 	g.m_FBOShader.Init({
 		{ ShaderType::Vertex,	fs::path{ RX_SHADER_PREFIX"screen.vert" } },
