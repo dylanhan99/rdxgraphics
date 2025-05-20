@@ -51,11 +51,11 @@ Utils (Utils/):
 
 ## How to Use
 ### Key Binds
-ESC - Kill application
-TAB (Trigger) - Toggles FPS camera control
-W/A/S/D (Hold) - Move FPS camera forward/backward/left/right (While camera toggled)
-Move mouse - Pitch/Yaw FPS camera (While camera toggled)
-F11 (Trigger) - Toggle window enlarge/shrink
+ESC				- Kill application
+TAB (Trigger)	- Toggles FPS camera control
+W/A/S/D (Hold)	- Move FPS camera forward/backward/left/right (While camera toggled)
+Move mouse		- Pitch/Yaw FPS camera (While camera toggled)
+F11 (Trigger)	- Toggle window enlarge/shrink
 
 ### GUI Guide
 Entity Hierarchy:
@@ -71,19 +71,21 @@ Viewport:
 - Likely need to fullscreen the app to be able to see the PiP on the top right.
 
 ## Tasks
-Task 1: Window Class > Complete
+Task 1: Window Class								> Complete
 Task 2/3: Buffer class VBO and Attribute management > Complete
-Task 4: ECS > Complete
-Task 5: Light > Complete
-Task 6: Interactivity (Camera) > Complete
-Collision Tests > All complete
+Task 4: ECS											> Complete
+Task 5: Light										> Complete
+Task 6: Interactivity (Camera)						> Complete
+Collision Tests										> All complete
 
 ### Task Code Locations
-Task 1: GLFWWindow/GLFWWindow.\*, used in RDX.cpp
+Task 1:	  GLFWWindow/GLFWWindow.\*, used in RDX.cpp
 Task 2/3: Graphics/\*, used mainly in ECS/Systems/RenderSystem.cpp
-Task 4: ECS/\*, used mainly in ECS/Systems/\*
+Task 4:	  ECS/\*, used mainly in ECS/Systems/\*
 Task 5: 
 - ECS/Components/BaseComponent.h, class DirectionalLight
 - ECS/Systems/RenderSystem.cpp, submit light component data to shader
-- shaders/default.frag
-Task 6: ECS/Systems/CollisionSystem.cpp, the full suite (as stated by brief) of CheckCollision(FooBV&, GooBV&) overloads.
+- shaders/default.frag			
+Task 6:
+- ECS/Systems/CollisionSystem.cpp, the full suite (as stated by brief) of CheckCollision(FooBV&, GooBV&) overloads.
+- ECS/Components/Colliders.\*, BV components declared here
