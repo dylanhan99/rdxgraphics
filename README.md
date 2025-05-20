@@ -11,9 +11,9 @@ Engine: rdxgraphics
 - OpenGL/GLEW/GLFW/glm/ImGUI/spdlog/EnTT
 
 ### Machines Tested On
-- Laptop 1, Windows 11, Intel i7-11800H, NVIDIA GeForce RTX 3060 (Laptop)
-- Laptop 2, Windows 10, Intel i7-7500U,  NVIDIA GeForce 940MX
-- Lab PC (Multiple), did not take note of specs, but all ran fine.
+- Laptop 1, Windows 11, Intel i7-11800H, NVIDIA GeForce RTX 3060 (Laptop), OpenGL 4.5
+- Laptop 2, Windows 10, Intel i7-7500U,  NVIDIA GeForce 940MX			 , OpenGL 4.5
+- Lab PC (Multiple), did not take note of specs but all ran fine 		 , OpenGL 4.5
 
 ### CMake Changes
 Minor edits made to the cmake files provided by the professor.
@@ -88,3 +88,7 @@ Task 5:
 Task 6:
 - ECS/Systems/CollisionSystem.cpp, the full suite (as stated by brief) of CheckCollision(FooBV&, GooBV&) overloads.
 - ECS/Components/Colliders.\*, BV components declared here
+
+## Other Notes
+- I copy pasted the keymappings from glfw.h into Input.h to mask the same mappings with my own alias instead (RX_ prefix). This is pretty bad.)
+- Average 4 hours daily on this assignment
