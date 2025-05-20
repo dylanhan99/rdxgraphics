@@ -7,12 +7,6 @@ RX_SINGLETON_EXPLICIT(TransformSystem);
 
 void TransformSystem::Update(float dt)
 {
-	auto camView = EntityManager::View<Camera>();
-	for (auto [handle, cam] : camView.each())
-	{
-		cam.UpdateCameraVectors();
-	}
-
 	auto xformView = EntityManager::View<Xform>();
 	for (auto [handle, xform] : xformView.each())
 	{

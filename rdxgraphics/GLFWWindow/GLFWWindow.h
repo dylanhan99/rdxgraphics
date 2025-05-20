@@ -67,5 +67,4 @@ private:
 	uint32_t m_FPS{}, m_IntervalFPS{}; // Frames per second
 	double m_TimeScale{ 1.0 }; // DT multiplier
 	double m_IntervalTimer{ 0.0 }; // Time accumulator for GetFPSIntervaled
-
 };

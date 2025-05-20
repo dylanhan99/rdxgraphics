@@ -21,12 +21,16 @@ const std::filesystem::path g_WorkingDir{
 #endif
 };
 
-#ifdef RX_HOME
+#ifdef USE_CSD3151_AUTOMATION
+#if USE_CSD3151_AUTOMATION == 1
+#define RX_SHADER_PREFIX "../shaders/"
+#else
+#define RX_SHADER_PREFIX "../../projects/project-1/shaders/"
+#endif
+#else
 #ifdef RX_IS_IDE
 #define RX_SHADER_PREFIX RX_WORKING_DIR"/""shaders/"
 #endif
-#else
-#define RX_SHADER_PREFIX "../shaders/"
 #endif
 
 const uint64_t RX_INVALID_ID{ 0 };

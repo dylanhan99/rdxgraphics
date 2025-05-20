@@ -25,7 +25,6 @@ Minor edits made to the cmake files provided by the professor.
 Main (/):
 entrypoint.cpp (main) calls the entry to the application declared in RDX.h/.cpp.
 RDX.h/.cpp contains the application-loop.
-It looks like I use precompiled headers in this project, but I don't think the CMake settings actually reflect that. So the project "uses precompiled headers".
 
 GLFW (GLFWWindow/):
 - Wrapper class around GLFW window functionality. Does the standard initialization, as well as event setups.
@@ -34,7 +33,7 @@ GLFW (GLFWWindow/):
 ECS (ECS/):
 - The project is very much ECS based, so each system (ECS/Systems/*) only touches the components relevant to them.
 - Components (ECS/Components/*) are simple datastructures typically only with getter/setter funcitons. Data/lifetime managed by systems.
-- EntityManager.h/cpp
+- EntityManager.h/cpp wraps around EnTT interface.
 
 Graphics (Graphics/):
 - Wrapper classes around VAO/VBO (Object.h), FBO (RenderPass.h), Shaders (Shader.h), UBO (UniformBuffer.h)
@@ -51,7 +50,7 @@ Utils (Utils/):
 
 ## How to Use
 ### Key Binds
-ESC				- Kill application
+ESC (Trigger)	- Kill application
 TAB (Trigger)	- Toggles FPS camera control
 W/A/S/D (Hold)	- Move FPS camera forward/backward/left/right (While camera toggled)
 Move mouse		- Pitch/Yaw FPS camera (While camera toggled)
