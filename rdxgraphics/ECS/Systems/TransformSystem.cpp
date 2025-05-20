@@ -1,7 +1,7 @@
 #include <pch.h>
 #include "TransformSystem.h"
 #include "ECS/EntityManager.h"
-#include "ECS/Components/Camera.h"
+#include "ECS/Components.h"
 
 RX_SINGLETON_EXPLICIT(TransformSystem);
 

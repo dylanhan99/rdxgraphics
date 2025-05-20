@@ -1,5 +1,4 @@
 #pragma once
-#include <entt/entt.hpp>
 #include "Components/BaseComponent.h"
 
 // Helper to check that component has the HasEnttHandle boolean

@@ -1,5 +1,6 @@
 #pragma once
 #include "ECS/EntityManager.h"
+#include "ECS/Components/Collider.h"
 
 class CollisionSystem : public BaseSingleton<CollisionSystem>
 {

@@ -1,7 +1,8 @@
 #include <pch.h>
 #include "RenderSystem.h"
 #include "GLFWWindow/GLFWWindow.h"
-#include "ECS/Components/Camera.h"
+#include "ECS/Components.h"
+
 #if USE_CSD3151_AUTOMATION == 1
 // This automation hook reads the shader from the submission tutorial's shader directory as a string literal.
 // It requires an automation script to convert the shader files from file format to string literal format.
