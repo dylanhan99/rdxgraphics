@@ -53,7 +53,6 @@ void CommonLayer::Start()
 
 void CommonLayer::Update(float dt)
 {
-	// This is what is camera view.
 	Camera& cam = EntityManager::GetComponent<Camera>(RenderSystem::GetActiveCamera());
 
 	if (Input::IsKeyTriggered(RX_KEY_TAB))
@@ -67,19 +66,31 @@ void CommonLayer::Update(float dt)
 	if (cam.IsCameraInUserControl())
 		cam.Inputs(dt);
 
-	static float angle = 0.f;
-	auto view = EntityManager::View<Xform, DirectionalLight>();
-	for (auto [handle, xform, light] : view.each())
+	// PiP following FPS's X/Z
 	{
-		float rate = 0.25f;
-		float radius = 5.f;
-		angle += glm::two_pi<float>() * rate * dt;
-		if (angle > glm::two_pi<float>()) angle = 0.f;
+		auto [xform, pip] = EntityManager::GetComponent<Xform, Camera>(RenderSystem::GetMinimapCamera());
+		auto& pos = xform.GetTranslate();
+		glm::vec3 followPos = cam.GetPosition();
+		pos.x = followPos.x;
+		pos.z = followPos.z;
+	}
 
-		xform.GetTranslate().x = glm::cos(angle) * radius;
-		xform.GetTranslate().y = 0.f;
-		xform.GetTranslate().z = glm::sin(angle) * radius;
+	// Directional light moving in a circle
+	{
+		static float angle = 0.f;
+		auto view = EntityManager::View<Xform, DirectionalLight>();
+		for (auto [handle, xform, light] : view.each())
+		{
+			float rate = 0.25f;
+			float radius = 5.f;
+			angle += glm::two_pi<float>() * rate * dt;
+			if (angle > glm::two_pi<float>()) angle = 0.f;
 
-		light.GetDirection() = glm::normalize(-xform.GetTranslate()); // Look at origin
+			xform.GetTranslate().x = glm::cos(angle) * radius;
+			xform.GetTranslate().y = 0.f;
+			xform.GetTranslate().z = glm::sin(angle) * radius;
+
+			light.GetDirection() = glm::normalize(-xform.GetTranslate()); // Look at origin
+		}
 	}
 }
