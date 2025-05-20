@@ -105,6 +105,11 @@ void GLFWWindow::SetWindowShouldClose()
 	glfwSetWindowShouldClose(g.m_pWindow, true); 
 }
 
+bool GLFWWindow::IsIconified()
+{
+	return glfwGetWindowAttrib(g.m_pWindow, GLFW_ICONIFIED);
+}
+
 bool GLFWWindow::IsFocused() 
 { 
 	return glfwGetWindowAttrib(g.m_pWindow, GLFW_FOCUSED); 

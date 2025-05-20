@@ -40,7 +40,7 @@ void RDX::Run()
 		GLFWWindow::Update(std::move(
 			[&](float dt)
 			{
-				if (GLFWWindow::IsFocused())
+				if (!GLFWWindow::IsIconified())
 				{
 					if (Input::IsKeyTriggered(RX_KEY_ESCAPE))
 					GLFWWindow::SetWindowShouldClose();
@@ -65,7 +65,7 @@ void RDX::Run()
 				CollisionSystem::Update(dt);
 
 				// Render
-				if (GLFWWindow::IsFocused())
+				if (!GLFWWindow::IsIconified())
 				{
 					RenderSystem::Draw();
 					GUI::Draw();

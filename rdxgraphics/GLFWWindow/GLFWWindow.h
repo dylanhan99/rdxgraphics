@@ -15,6 +15,7 @@ public:
 
 	static bool IsWindowShouldClose();
 	static void SetWindowShouldClose();
+	static bool IsIconified();
 	static bool IsFocused();
 	static void MakeContextCurrent();
 
