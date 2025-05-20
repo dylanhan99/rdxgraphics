@@ -440,17 +440,17 @@ void RenderSystem::Draw()
 			g.m_FBOShader.Bind();
 
 			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, basePass.m_TextureBuffer);
+			glBindTexture(GL_TEXTURE_2D, basePass.GetTextureBuffer());
 			g.m_FBOShader.SetUniform1i("uBaseTex", 0);
 			g.m_FBOShader.SetUniform1i("uHasBaseTex", renderOption != 1);
 
 			glActiveTexture(GL_TEXTURE1);
-			glBindTexture(GL_TEXTURE_2D, wireframePass.m_TextureBuffer);
+			glBindTexture(GL_TEXTURE_2D, wireframePass.GetTextureBuffer());
 			g.m_FBOShader.SetUniform1i("uWireframeTex", 1);
 			g.m_FBOShader.SetUniform1i("uHasWireframeTex", renderOption != 0);
 
 			glActiveTexture(GL_TEXTURE2);
-			glBindTexture(GL_TEXTURE_2D, minimapPass.m_TextureBuffer);
+			glBindTexture(GL_TEXTURE_2D, minimapPass.GetTextureBuffer());
 			g.m_FBOShader.SetUniform1i("uMinimapTex", 2);
 			//g.m_FBOShader.SetUniform1i("uHasWireframeTex", renderOption != 0);
 

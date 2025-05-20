@@ -11,7 +11,11 @@ public:
 	// maybe something like this will be how drawing could take place (flow-wise)
 	void DrawThis(std::function<void()> drawStuff) const;
 
-public:
+	inline GLuint GetTextureBuffer() const { return m_TextureBuffer; }
+	inline glm::ivec2 GetViewportDims() const { return m_ViewportDims; }
+	inline glm::ivec2 GetBufferDims() const { return m_BufferDims; }
+
+private:
 	GLuint m_FBO{};
 	GLuint m_TextureBuffer{};
 	GLuint m_DepthBuffer{};

@@ -5,8 +5,8 @@
 void Viewport::UpdateImpl(float dt)
 {
 	auto& pass = RenderSystem::GetScreenPass();
-	GLuint const frameHandle = pass.m_TextureBuffer;
+	GLuint const frameHandle = pass.GetTextureBuffer();
 	ImGui::Image(frameHandle, 
-		ImVec2{ (float)pass.m_BufferDims.x, (float)pass.m_BufferDims.y }, 
+		ImVec2{ (float)pass.GetBufferDims().x, (float)pass.GetBufferDims().y},
 		{ 0.f, 1.f }, { 1.f, 0.f }); // It's flipped vertically
 }
