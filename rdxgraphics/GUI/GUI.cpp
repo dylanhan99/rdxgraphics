@@ -55,7 +55,7 @@ void GUI::Terminate()
 	ImGui::DestroyContext();
 }
 
-void GUI::Update(double dt)
+void GUI::Update(float dt)
 {
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();

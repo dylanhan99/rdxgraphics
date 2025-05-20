@@ -84,7 +84,7 @@ void Shader::SetUniform3f(std::string const& name, glm::vec3 const& v)
 
 void Shader::SetUniform3fv(std::string const& name, std::vector<glm::vec3> const& v)
 {
-	glUniform3fv(GetUniformLocation(name), v.size(), glm::value_ptr(v[0]));
+	glUniform3fv(GetUniformLocation(name), (GLsizei)v.size(), glm::value_ptr(v[0]));
 }
 
 void Shader::SetUniformMatrix4f(std::string const& name, glm::mat4 const& v)
@@ -94,7 +94,7 @@ void Shader::SetUniformMatrix4f(std::string const& name, glm::mat4 const& v)
 
 void Shader::SetUniformMatrix4fv(std::string const& name, std::vector<glm::mat4> const& v)
 {
-	glUniformMatrix4fv(GetUniformLocation(name), v.size(), GL_FALSE, &glm::value_ptr(v[0])[0]);
+	glUniformMatrix4fv(GetUniformLocation(name), (GLsizei)v.size(), GL_FALSE, &glm::value_ptr(v[0])[0]);
 }
 
 GLuint Shader::LoadShader(GLenum shaderType, std::filesystem::path const& shaderPath)

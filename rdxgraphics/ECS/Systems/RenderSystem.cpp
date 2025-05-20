@@ -881,7 +881,7 @@ RenderSystem::ObjectParams RenderSystem::CreateSphere(int refinement)
 			glm::vec3 const& v4 = MidPoint(v1, v2);
 			glm::vec3 const& v5 = MidPoint(v2, v0);
 
-			GLuint currIndex = tempPositions.size();
+			GLuint currIndex = (GLuint)tempPositions.size();
 			tempPositions.push_back(v0);
 			tempPositions.push_back(v1);
 			tempPositions.push_back(v2);

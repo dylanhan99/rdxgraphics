@@ -30,7 +30,7 @@
 		}																											\
 		else																										\
 		{																											\
-			m_PrimCount = m_Indices.size();																			\
+			m_PrimCount = (GLsizei)m_Indices.size();																\
 		}																											\
 		glBindVertexArray(0);																						\
 	}																												\
@@ -173,7 +173,7 @@ void Object<T>::Draw(size_t count)
 			m_Indices.size(),
 			GL_UNSIGNED_INT,
 			nullptr,
-			count
+			(GLsizei)count
 		);
 	}
 	else
@@ -182,7 +182,7 @@ void Object<T>::Draw(size_t count)
 			m_Primitive,
 			0,
 			GetPrimCount(),
-			count
+			(GLsizei)count
 		);
 	}
 }

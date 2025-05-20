@@ -60,9 +60,9 @@ public:
 	{
 		RX_ASSERT(pData, "Cannot be NULL");
 		GLsizeiptr sz = count * sizeof(value_type);
-		RX_ASSERT(sz <= GetBufferSize(), "Size is larger than buffer size.");
+		RX_ASSERT(sz <= (GLsizeiptr)GetBufferSize(), "Size is larger than buffer size.");
 		GLsizeiptr offsetSz = offsetCount * sizeof(value_type);
-		RX_ASSERT((offsetSz + sz) <= GetBufferSize(), "Size + offset is larger than buffer size.");
+		RX_ASSERT((offsetSz + sz) <= (GLsizeiptr)GetBufferSize(), "Size + offset is larger than buffer size.");
 
 		Bind();
 		glBufferSubData(GL_UNIFORM_BUFFER, offsetSz, sz, pData);
