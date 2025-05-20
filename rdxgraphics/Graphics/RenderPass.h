@@ -15,6 +15,8 @@ public:
 	inline glm::ivec2 GetViewportDims() const { return m_ViewportDims; }
 	inline glm::ivec2 GetBufferDims() const { return m_BufferDims; }
 
+	inline glm::vec4& GetBackbufferColor() { return m_BackbufferColor; }
+
 private:
 	GLuint m_FBO{};
 	GLuint m_TextureBuffer{};
@@ -22,4 +24,6 @@ private:
 
 	glm::ivec2 m_ViewportPos{}, m_ViewportDims{};
 	glm::ivec2 m_BufferPos{}, m_BufferDims{};
+
+	glm::vec4 m_BackbufferColor{ 0.2f, 0.3f, 0.3f, 0.f };
 };

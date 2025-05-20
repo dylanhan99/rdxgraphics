@@ -24,8 +24,9 @@ std::string const fbo_fs = {
 RX_SINGLETON_EXPLICIT(RenderSystem);
 namespace fs = std::filesystem;
 
-float move = 0.f;
-int renderOption = 2;
+bool hasDefault = true;
+bool hasWireframe = true;
+bool hasMinimap = true;
 
 //GLuint m_FBO{};
 //GLuint textureColorBuffer{};
@@ -157,10 +158,10 @@ void RenderSystem::Draw()
 	//	}
 	//}
 
-	basePass.DrawThis(
-		[&]()
+	auto BaseAndMinimap =
+		[&](bool condition, int camera)
 		{
-			if (renderOption == 1)
+			if (!condition)
 				return;
 
 			auto view = EntityManager::View<const Xform, const Model>();
@@ -169,7 +170,7 @@ void RenderSystem::Draw()
 				Rxuid meshID = model.GetMesh();
 				if (meshID == RX_INVALID_ID)
 					continue;
-			
+
 				Object<VertexBasic>& o = GetObjekt(meshID);
 				o.Submit<VertexBasic::Xform>(xform.GetXform());
 
@@ -192,7 +193,7 @@ void RenderSystem::Draw()
 
 			g.m_Shader.Bind();
 			g.m_Shader.SetUniform1i("uIsWireframe", 0);
-			g.m_Shader.SetUniform1i("uCam", 0);
+			g.m_Shader.SetUniform1i("uCam", camera);
 
 			{ // directional light hardcode
 				auto view = EntityManager::View<DirectionalLight>();
@@ -225,62 +226,15 @@ void RenderSystem::Draw()
 
 				object.Flush();
 			}
-		}
-	);
+		};
 
-	minimapPass.DrawThis(
-		[&]()
-		{
-			// Effectively same as base pass
-
-			if (renderOption == 1)
-				return;
-
-			auto view = EntityManager::View<Xform, Model>();
-			for (auto [handle, xform, model] : view.each())
-			{
-				Rxuid meshID = model.GetMesh();
-				if (meshID == RX_INVALID_ID)
-					continue;
-
-				Object<VertexBasic>& o = GetObjekt(meshID);
-				o.Submit<VertexBasic::Xform>(xform.GetXform());
-			}
-
-			//glClearColor(g.m_BackColor.x, g.m_BackColor.y, g.m_BackColor.z, 0.f);
-			//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-			g.m_Shader.Bind();
-			g.m_Shader.SetUniform1i("uIsWireframe", 0);
-			g.m_Shader.SetUniform1i("uCam", 1);
-
-			glEnable(GL_CULL_FACE);
-			glCullFace(GL_BACK);
-
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-			for (auto& [uid, object] : g.m_Objects)
-			{
-				object.Bind();
-
-				auto& data1 = object.GetVBData<VertexBasic::Xform>();
-				size_t maxVal = data1.size(); // glm::min(data1, data2, ...)
-				for (size_t count{ 0 }, offset{ 0 }; offset < maxVal; offset += count)
-				{
-					count = glm::min<size_t>(maxVal - offset, RX_MAX_INSTANCES);
-					object.BindInstancedData<VertexBasic::Xform>(offset, count);
-					// more binds...
-					object.Draw(count);
-				}
-
-				object.Flush();
-			}
-		}
-	);
+	basePass.DrawThis(std::bind(BaseAndMinimap, hasDefault, 0));
+	minimapPass.DrawThis(std::bind(BaseAndMinimap, hasMinimap, 1));
 
 	wireframePass.DrawThis(
 		[&]()
 		{
-			if (renderOption == 0)
+			if (!hasWireframe)
 				return;
 
 			//for (Entity& ent : EntityManager::GetEntities())
@@ -442,17 +396,17 @@ void RenderSystem::Draw()
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, basePass.GetTextureBuffer());
 			g.m_FBOShader.SetUniform1i("uBaseTex", 0);
-			g.m_FBOShader.SetUniform1i("uHasBaseTex", renderOption != 1);
+			g.m_FBOShader.SetUniform1i("uHasBaseTex", hasDefault);
 
 			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, wireframePass.GetTextureBuffer());
 			g.m_FBOShader.SetUniform1i("uWireframeTex", 1);
-			g.m_FBOShader.SetUniform1i("uHasWireframeTex", renderOption != 0);
+			g.m_FBOShader.SetUniform1i("uHasWireframeTex", hasWireframe);
 
 			glActiveTexture(GL_TEXTURE2);
 			glBindTexture(GL_TEXTURE_2D, minimapPass.GetTextureBuffer());
 			g.m_FBOShader.SetUniform1i("uMinimapTex", 2);
-			//g.m_FBOShader.SetUniform1i("uHasWireframeTex", renderOption != 0);
+			g.m_FBOShader.SetUniform1i("uHasMinimapTex", hasMinimap);
 
 			g.m_FBOObject.Bind();
 			g.m_FBOObject.Draw(1);

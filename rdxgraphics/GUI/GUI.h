@@ -16,4 +16,5 @@ public:
 private:
 	std::vector<std::unique_ptr<BaseGUIWindow>> m_GUIWindows{};
 	entt::entity m_SelectedEntity{};
+	ImGuiID m_DockID{};
 };

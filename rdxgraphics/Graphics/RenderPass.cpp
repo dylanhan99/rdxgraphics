@@ -62,7 +62,7 @@ void RenderPass::DrawThis(std::function<void()> drawStuff) const
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 	glDepthMask(GL_TRUE);
-	glClearColor(0.2f, 0.3f, 0.3f, 0.f);
+	glClearColor(m_BackbufferColor.r, m_BackbufferColor.g, m_BackbufferColor.b, m_BackbufferColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	drawStuff();
