@@ -36,9 +36,19 @@ ECS (ECS/):
 - EntityManager.h/cpp wraps around EnTT interface.
 
 Graphics (Graphics/):
+- An instance based graphics system.
 - Wrapper classes around VAO/VBO (Object.h), FBO (RenderPass.h), Shaders (Shader.h), UBO (UniformBuffer.h)
 - Usage can mainly be seen in ECS/Systems/RenderSystem.*
 - This engine does multi-pass rendering, it requires one set of "main" shaders for our standard rendering, and another set of "screen" shaders to combine the results of each pass into the output we see.
+- Object creation (Object.h usage) found in RenderSystem.cpp [457], RenderSystem::CreateShapes()
+> Objects refer to meshes such as Sphere, Cube, Line, etc. 
+> These meshes are reused both in regular rendering, and debug wireframes.
+> The data submitted to GPU can be seen in RenderSystem::Draw, find multiple ".Submit". These specialy submitted data are the instanced data.
+
+Collision (ECS/Systems/CollisionSystem.\*):
+- The other bulk of the rubrics are here
+- Using a naive O(n^2) double for-loop to check collisions. This will be improved during upcoming BVH project.
+- Each test stated by the rubric can be found in each CollisionSystem::CheckCollision function overload.
 
 GSM/GUI (GSM/, GUI/):
 - Wrappers around "scripting" and ImGUI windows respectively.
@@ -50,24 +60,32 @@ Utils (Utils/):
 
 ## How to Use
 ### Key Binds
-ESC (Trigger)	- Kill application
-TAB (Trigger)	- Toggles FPS camera control
-W/A/S/D (Hold)	- Move FPS camera forward/backward/left/right (While camera toggled)
 Move mouse		- Pitch/Yaw FPS camera (While camera toggled)
-F11 (Trigger)	- Toggle window enlarge/shrink
+TAB  (Trigger)	- Toggles FPS camera control
+W/A/S/D (Hold)	- Move FPS camera forward/backward/left/right (While camera toggled)
+L-SHIFT (Hold)	- Move in -Y
+SPACE	(Hold)	- Move in +Y
+L-CTRL	(Hold)	- Increase speed while moving (1.5x i think)
+F11  (Trigger)	- Toggle window enlarge/shrink
+ESC  (Trigger)	- Kill application
 
 ### GUI Guide
 Entity Hierarchy:
 - Lists entities within each active scene.
 - You may select an entity, which allows you to inspect its components.
+
 Inspector:
 - Displays the selected entity's components, and the attributes (only Xform, Camera, Directional light, and Collider/BV are supported now)
 - Collider/BV's position/xform is separate from Xform component's position/xform. But I made it sync through the TransformaSystem for convenience for now. This can be toggled on/off through the Collider/BV component.
 - You may change the Collider's BV on the fly without recompilation.
 - There is no [Add Component] function (not yet).
+
 Viewport:
 - Displays two camera views by default, FPS (Perspective) and PiP (Ortho).
 - Likely need to fullscreen the app to be able to see the PiP on the top right.
+
+Settings:
+- Random settings such as toggling different passes and FPS
 
 ## Tasks
 Task 1: Window Class								> Complete
