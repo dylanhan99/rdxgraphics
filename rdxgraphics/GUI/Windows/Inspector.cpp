@@ -1,6 +1,7 @@
 #include <pch.h>
 #include "Inspector.h"
 #include "GUI/GUI.h"
+#include "ECS/Systems/RenderSystem.h"
 
 
 void Draggy(std::string name, std::string strHandle, float* pp, int size, std::function<void()> func = nullptr)
@@ -86,8 +87,10 @@ void Inspector::UpdateCompCamera(std::string const& strHandle, Camera& comp)
 
 	//ImGui::Text("Cam [Pos]|X:% -4.1f |Y:% -4.1f |Z:% -4.1f", camPos.x, camPos.y, camPos.z);
 	//ImGui::Text("    [Dir]|X:% -4.1f |Y:% -4.1f |Z:% -4.1f", camFace.x, camFace.y, camFace.z);
+	ImGui::BeginDisabled(RenderSystem::GetActiveCamera() != comp.GetEntityHandle());
 	if (ImGui::Checkbox("CameraToggled", &comp.IsCameraInUserControl()))
 		EventDispatcher<Camera&>::FireEvent(RX_EVENT_CAMERA_USER_TOGGLED, comp);
+	ImGui::EndDisabled();
 }
 
 void Inspector::UpdateCompModel(std::string const& strHandle, Model& comp)

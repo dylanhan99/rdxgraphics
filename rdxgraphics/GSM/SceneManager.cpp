@@ -22,28 +22,24 @@ bool SceneManager::ResolveScenes()
 	size_t const& curr = GetCurrScene();
 	if (IsQuit(curr))
 	{
-		g.m_CommonScene->Unload();
-		if (g.m_WorkingScene)g.m_WorkingScene->Unload();
+		if (g.m_CommonScene)  g.m_CommonScene->Stop();
+		if (g.m_WorkingScene) g.m_WorkingScene->Stop();
 		EntityManager::Clear();
 		return false;
 	}
 	else if (IsRestart(curr))
 	{
-		g.m_CommonScene->Start();
-		if (g.m_WorkingScene) g.m_WorkingScene->Start();
+		if (g.m_CommonScene)  g.m_CommonScene->Stop();
+		if (g.m_WorkingScene) g.m_WorkingScene->Stop();
+
+		SetNextScene(GetPrevScene());
 	}
 	else
 	{
-		g.m_CommonScene->Start();
-		if (g.m_WorkingScene)
-		{
-			g.m_WorkingScene->Unload();
-			EntityManager::Destroy(g.m_WorkingScene->GetEntities());
-		}
 		g.m_WorkingScene = g.m_Scenes[curr];
-		RX_ASSERT(g.m_WorkingScene);
-		g.m_WorkingScene->Load();
-		g.m_WorkingScene->Start();
+
+		if (g.m_CommonScene)  g.m_CommonScene->Start();
+		if (g.m_WorkingScene) g.m_WorkingScene->Start();
 	}
 
 	return true;
@@ -51,6 +47,6 @@ bool SceneManager::ResolveScenes()
 
 void SceneManager::Update(float dt)
 {
-	g.m_CommonScene->Update(dt);
+	if (g.m_CommonScene)  g.m_CommonScene->Update(dt);
 	if (g.m_WorkingScene) g.m_WorkingScene->Update(dt);
 }

@@ -43,7 +43,7 @@ void EntityHierarchy::UpdateScene(std::shared_ptr<BaseScene> pScene, int id)
 	if (ImGui::ButtonEx(("Create Entity##" + name).c_str(), {ImGui::GetWindowContentRegionMax().x , ImGui::GetTextLineHeight() * 2.f}))
 	{
 		static int count = 0;
-		entt::entity handle = pScene->CreateEntity<Metadata, Xform>();
+		entt::entity handle = pScene->CreateDefaultEntity();
 		EntityManager::GetComponent<Metadata>(handle).GetName() = "Entity (" + std::to_string(count++) + ")";
 
 		GUI::SetSelectedEntity(handle);
@@ -75,7 +75,7 @@ void EntityHierarchy::UpdateEntity(std::shared_ptr<BaseScene> pScene, entt::enti
 	ImGui::BeginDisabled(EntityManager::HasComponent<NoDelete>(handle));
 	if (ImGui::Button("X"))
 	{
-		pScene->ExileEntity(handle);
+		pScene->DestroyEntity(handle);
 	}
 	ImGui::EndDisabled();
 

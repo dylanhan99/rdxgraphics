@@ -5,9 +5,8 @@ class CommonLayer : public BaseScene
 {
 	RX_SCENE_DEFAULT(CommonLayer);
 public:
-	void Load() override;
-	void Start() override;
-	void Update(float dt) override;
+	void StartImpl() override;
+	void UpdateImpl(float dt) override;
 
 private:
 	entt::entity m_ActiveCamera{};

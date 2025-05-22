@@ -21,8 +21,6 @@ public:
 		GetNextScene() = 0; // Arbitrarily start on the first.
 		RX_ASSERT(!g.m_Scenes.empty(), "No scenes?");
 		RX_ASSERT(g.m_CommonScene, "Missing common scene");
-
-		g.m_CommonScene->Load();
 	}
 	static void Terminate();
 	static bool ResolveScenes();
@@ -38,6 +36,8 @@ public:
 	inline static size_t& GetPrevScene() { return g.m_PrevScene; }
 	inline static size_t& GetCurrScene() { return g.m_CurrScene; }
 	inline static size_t& GetNextScene() { return g.m_NextScene; }
+
+	inline static void SetNextScene(size_t s) { g.m_NextScene = s; }
 
 	inline static void Restart() { g.m_NextScene = g.m_Scenes.size() + (size_t)State::Restart; }
 	inline static void Quit() { g.m_NextScene = g.m_Scenes.size() + (size_t)State::Quit; }

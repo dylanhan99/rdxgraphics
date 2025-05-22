@@ -4,27 +4,19 @@
 #include "ECS/Systems/RenderSystem.h"
 #include "ECS/Components.h"
 
-void CommonLayer::Load()
+void CommonLayer::StartImpl()
 {
-	m_MainCamera = BaseScene::CreateEntity<NoDelete>();
-	m_MinimapCamera = BaseScene::CreateEntity<NoDelete>();
-
 	{
-		auto handle = BaseScene::CreateEntity();
+		auto handle = BaseScene::CreateDefaultEntity<NoDelete>();
+		EntityManager::AddComponent<Metadata>(handle, "Directional Light");
 		EntityManager::AddComponent<Xform>(handle, glm::vec3{ 0.f, 5.f, 0.f }, glm::vec3{ 0.3f });
 		EntityManager::AddComponent<Model>(handle, Shape::Cube);
 		EntityManager::AddComponent<DirectionalLight>(handle);
 	}
-}
-
-void CommonLayer::Start()
-{
-	m_ActiveCamera = m_MainCamera;
-	RenderSystem::SetActiveCamera(m_ActiveCamera);
-	RenderSystem::SetMinimapCamera(m_MinimapCamera);
 
 	{
-		entt::entity handle = m_MainCamera;
+		entt::entity handle = m_MainCamera = BaseScene::CreateDefaultEntity<NoDelete>();
+		EntityManager::AddComponent<Metadata>(handle, "FPS Cam");
 		EntityManager::AddComponent<Model>(handle, Shape::Cube);
 		EntityManager::AddComponent<Material>(handle, glm::vec3{ 1.f,1.f,0.f });
 		EntityManager::AddComponent<Camera>(handle,
@@ -36,8 +28,10 @@ void CommonLayer::Start()
 			glm::vec3{ 0.2f },
 			glm::vec3{ -0.7f, -0.7f, 0.f });
 	}
+
 	{
-		entt::entity handle = m_MinimapCamera;
+		entt::entity handle = m_MinimapCamera = BaseScene::CreateDefaultEntity<NoDelete>();
+		EntityManager::AddComponent<Metadata>(handle, "PiP Cam");
 		EntityManager::AddComponent<Model>(handle, Shape::Cube);
 		EntityManager::AddComponent<Material>(handle, glm::vec3{ 1.f,1.f,0.f });
 		EntityManager::AddComponent<Camera>(handle,
@@ -49,9 +43,13 @@ void CommonLayer::Start()
 			glm::vec3{ 0.2f },
 			glm::vec3{ -glm::half_pi<float>() + glm::epsilon<float>(), 0.f, 0.f });
 	}
+
+	m_ActiveCamera = m_MainCamera;
+	RenderSystem::SetActiveCamera(m_ActiveCamera);
+	RenderSystem::SetMinimapCamera(m_MinimapCamera);
 }
 
-void CommonLayer::Update(float dt)
+void CommonLayer::UpdateImpl(float dt)
 {
 	Camera& cam = EntityManager::GetComponent<Camera>(RenderSystem::GetActiveCamera());
 
