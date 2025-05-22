@@ -21,7 +21,30 @@ Minor edits made to the cmake files provided by the professor.
 - Added /Zc:preprocessor in MSVC target_compile_options. This allows me to use __VA_OPT__ C++20 preprocessor feature.
 - Added setup for other libraries as instructed in CMaksLists.txt and ImportDependencies.cmake. Libraries added include glm, ImGUI, spdlog and EnTT.
 
-### Project Structure
+### How to use the Application
+Prenote: 
+- The use of the postfix "BV" is somewhat wrongly used. Think of it as "Collider" instead.
+- [TAB] toggles the FPS camera control
+The ImGUI window names are refered to as they are in the app. ("Hierarchy", "Viewport", "Inspector", "Settings")
+Within the Hierarchy, there are two scenes, "Common" and "Sandbox".
+Common includes 3 entities, those being - FPS (Perspective) camera, PiP (Ortho) camera, and the light.
+Sandbox includes 2 entities, those being - Collider A, and Collider B.
+> 
+
+First some context on how to use the GUI, you may first select the entity (in Hierarchy), then in Inspector, "Choose BV Type" from the combo box.
+Whichever BV you select, the attributes can be seen under the combo box, as a dropdown tree node.
+It should be noted that the BVs have a separate positional attribute from the xform component. However, the "Follow Xform" tag is enabled by default to follow the xform. (For triangle related tests, this should be FALSE for the triangle to allow position(triangle centroid) to move).
+
+So now that you've changed the pair of BVs to whichever test you're trying to perform, say Triangle-Ray, you may change the translation of the entities using "Pos" in Xform component (As mentioned before, for triangle, disable "FollowXform" in the BV attributes then change position there). 
+As for the BV attributes, you change them in Collider component, under the combobox as mentioned before.
+
+Notes:
+- BVs with "orientation" or "normal" attributes such as PlaneBV or RayBV have **euler-based** orientations, Pitch(x)-Yaw(y)-Roll(z), expressed in Radians.
+- TriangleBV must uncheck "Follow Xform", and move position from there. NOT from Xform component.
+- TriangleBV has P0, P1, P2, which when changed, updates the Collider's position (centroid), hence the above note.
+- TriangleBV's 3 points are offsets from centroid.
+
+### Project Structure (Code Stuff)
 Main (/):
 entrypoint.cpp (main) calls the entry to the application declared in RDX.h/.cpp.
 RDX.h/.cpp contains the application-loop.
