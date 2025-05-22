@@ -48,6 +48,8 @@ public:
 	inline static std::shared_ptr<BaseScene> GetCommonScene() { return g.m_CommonScene; }
 	inline static std::shared_ptr<BaseScene> GetWorkingScene() { return g.m_WorkingScene; }
 
+	inline static std::vector<std::shared_ptr<BaseScene>> const& GetScenes() { return g.m_Scenes; }
+
 private:
 	std::vector<std::shared_ptr<BaseScene>> m_Scenes{};
 

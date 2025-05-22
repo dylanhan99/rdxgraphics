@@ -14,14 +14,6 @@ void Viewport::UpdateImpl(float dt)
 	ImGui::TableNextRow();
 	ImGui::TableNextColumn();
 
-	if (ImGui::Button("Restart Scene"))
-	{
-		SceneManager::Restart();
-	}
-
-	ImGui::TableNextRow();
-	ImGui::TableNextColumn();
-
 	ImVec2 currPos = ImGui::GetCursorPos();
 	auto& pass = RenderSystem::GetScreenPass();
 	ImVec2 winDims{
