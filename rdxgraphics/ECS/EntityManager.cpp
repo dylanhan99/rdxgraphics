@@ -13,11 +13,6 @@ void EntityManager::Terminate()
 	g.m_Registry.clear();
 }
 
-void EntityManager::ExileEntity(entt::entity handle)
-{
-	g.m_Registry.destroy(handle);
-}
-
 bool EntityManager::HasEntity(entt::entity handle)
 {
 	return g.m_Registry.valid(handle);

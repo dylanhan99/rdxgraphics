@@ -4,6 +4,10 @@
 class Metadata : public BaseComponent
 {
 public:
+	Metadata() = default;
+	inline Metadata(std::string const& name)
+		: m_Name(name) {}
+
 	inline std::string& GetName() { return m_Name; }
 
 private:

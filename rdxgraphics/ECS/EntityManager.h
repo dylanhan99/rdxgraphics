@@ -25,8 +25,6 @@ public:
 		return handle;
 	}
 
-	static void ExileEntity(entt::entity handle);
-
 	template <typename T, typename ...Args>
 	static std::enable_if_t<
 		std::is_base_of_v<BaseComponent, T> &&

@@ -10,27 +10,43 @@ public:
 		: m_SceneName(name), m_SceneDesc(desc) {}
 	~BaseScene() = default;
 
-	virtual void Load() = 0;
-	inline virtual void UnloadImpl(){};
-	virtual void Start() = 0;
-	virtual void Update(float dt) = 0;
+	inline virtual void StartImpl() {};
+	inline virtual void UpdateImpl(float dt) {};
+	inline virtual void StopImpl() {};
 
 	template <typename ...Args>
 	entt::entity CreateEntity()
 	{
-		entt::entity handle = EntityManager::CreateEntity<NoDelete, Args...>();
+		entt::entity handle = EntityManager::CreateEntity<Args...>();
 		m_Handles.push_back(handle);
 		return handle;
 	}
 
-	inline void ExileEntity(entt::entity handle)
+	template <typename ...Args>
+	inline entt::entity CreateDefaultEntity()
 	{
-		EntityManager::ExileEntity(handle);
+		return CreateEntity<Metadata, Xform, Args...>();
 	}
 
-	inline void Unload()
+	inline void DestroyEntity(entt::entity handle)
 	{
-		UnloadImpl();
+		EntityManager::Destroy(handle);
+		std::erase(m_Handles, handle);
+	}
+
+	inline void Start()
+	{
+		StartImpl();
+	}
+
+	inline void Update(float dt)
+	{
+		UpdateImpl(dt);
+	}
+
+	inline void Stop()
+	{
+		StopImpl();
 		EntityManager::Destroy(m_Handles);
 	}
 
