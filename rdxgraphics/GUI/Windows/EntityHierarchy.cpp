@@ -2,6 +2,7 @@
 #include "EntityHierarchy.h"
 #include "GUI/GUI.h"
 #include "GSM/SceneManager.h"
+#include "ECS/Components.h"
 
 void EntityHierarchy::UpdateImpl(float dt)
 {
@@ -32,23 +33,54 @@ void EntityHierarchy::UpdateScene(std::shared_ptr<BaseScene> pScene, int id)
 
 	if (sceneOpen)
 	{
-		name = "Ent #";
 		for (auto handle : entities)
 		{
-			ImGuiTreeNodeFlags flags = 
-				ImGuiTreeNodeFlags_Leaf | 
-				ImGuiTreeNodeFlags_SpanFullWidth;
-			if (handle == GUI::GetSelectedEntity())
-				flags |= ImGuiTreeNodeFlags_Selected;
-
-			std::string id = name + std::to_string((uint32_t)handle);
-			if (ImGui::TreeNodeEx(id.c_str(), flags))
-				ImGui::TreePop();
-
-			if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
-				GUI::SetSelectedEntity(handle);
+			UpdateEntity(pScene, handle);
 		}
 
+		ImGui::TreePop();
+	}
+	if (ImGui::ButtonEx(("Create Entity##" + name).c_str(), {ImGui::GetWindowContentRegionMax().x , ImGui::GetTextLineHeight() * 2.f}))
+	{
+		static int count = 0;
+		entt::entity handle = pScene->CreateEntity<Metadata, Xform>();
+		EntityManager::GetComponent<Metadata>(handle).GetName() = "Entity (" + std::to_string(count++) + ")";
+
+		GUI::SetSelectedEntity(handle);
+	}
+
+	ImGui::NewLine();
+}
+
+void EntityHierarchy::UpdateEntity(std::shared_ptr<BaseScene> pScene, entt::entity handle)
+{
+	ImGuiTreeNodeFlags flags =
+		ImGuiTreeNodeFlags_Leaf |
+		ImGuiTreeNodeFlags_SpanFullWidth;
+	if (handle == GUI::GetSelectedEntity())
+		flags |= ImGuiTreeNodeFlags_Selected;
+
+	std::string id{};
+	bool hasMeta = EntityManager::HasComponent<Metadata>(handle);
+	if (hasMeta)
+		id = EntityManager::GetComponent<Metadata>(handle).GetName();
+	else
+		id = "<META MISSING>";
+
+	id += "##" + std::to_string((uint32_t)handle);
+	bool isOpen = ImGui::TreeNodeEx(id.c_str(), flags);
+	if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+		GUI::SetSelectedEntity(handle);
+	ImGui::SameLine();
+	ImGui::BeginDisabled(EntityManager::HasComponent<NoDelete>(handle));
+	if (ImGui::Button("X"))
+	{
+		pScene->ExileEntity(handle);
+	}
+	ImGui::EndDisabled();
+
+	if (isOpen)
+	{
 		ImGui::TreePop();
 	}
 }

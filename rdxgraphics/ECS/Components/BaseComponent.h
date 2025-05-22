@@ -14,6 +14,7 @@ private: entt::entity m_Handle{};
 // These cover all "main" components. 
 // In the context of collider, Collider is the "main", while _BV variants are the "subsidiaries"
 #define RX_DO_MAIN_COMPONENTS_M(F_O_O, ...)\
+	F_O_O(Metadata, ##__VA_ARGS__);		   \
 	F_O_O(Xform, ##__VA_ARGS__);		   \
 	F_O_O(Camera, ##__VA_ARGS__);		   \
 	F_O_O(Model, ##__VA_ARGS__);		   \

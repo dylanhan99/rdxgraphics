@@ -23,6 +23,11 @@ public:
 		return handle;
 	}
 
+	inline void ExileEntity(entt::entity handle)
+	{
+		EntityManager::ExileEntity(handle);
+	}
+
 	inline void Unload()
 	{
 		UnloadImpl();

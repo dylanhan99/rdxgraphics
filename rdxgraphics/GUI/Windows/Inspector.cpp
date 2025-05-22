@@ -61,6 +61,11 @@ void Inspector::UpdateImpl(float dt)
 #undef _RX_X
 }
 
+void Inspector::UpdateCompMetadata(std::string const& strHandle, Metadata& comp)
+{
+
+}
+
 void Inspector::UpdateCompXform(std::string const& strHandle, Xform& comp)
 {
 	ImGui::DragFloat3(("Pos##xform" + strHandle).c_str(), glm::value_ptr(comp.GetTranslate()), 0.01f);

@@ -7,4 +7,5 @@ class EntityHierarchy : public BaseGUIWindow
 	RX_GUIWINDOW_DEC(EntityHierarchy);
 private:
 	static void UpdateScene(std::shared_ptr<BaseScene> pScene, int id);
+	static void UpdateEntity(std::shared_ptr<BaseScene> pScene, entt::entity handle);
 };
