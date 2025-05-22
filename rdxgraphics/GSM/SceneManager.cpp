@@ -36,6 +36,9 @@ bool SceneManager::ResolveScenes()
 	}
 	else
 	{
+		if (g.m_CommonScene)  g.m_CommonScene->Stop();
+		if (g.m_WorkingScene) g.m_WorkingScene->Stop();
+
 		g.m_WorkingScene = g.m_Scenes[curr];
 
 		if (g.m_CommonScene)  g.m_CommonScene->Start();
