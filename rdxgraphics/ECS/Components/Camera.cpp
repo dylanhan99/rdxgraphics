@@ -102,7 +102,9 @@ void Camera::Inputs(float dt)
 	float pitch = windowDims.y ? m_PitchSpeed * ((windowDims.y * 0.5f - cursorPos.y) / windowDims.y) : 0.f;
 	float yaw	= windowDims.x ? m_YawSpeed	  * ((windowDims.x * 0.5f - cursorPos.x) / windowDims.x) : 0.f;
 	
-	eulerOrientation.x = glm::clamp(eulerOrientation.x + pitch, -glm::half_pi<float>() + glm::epsilon<float>(), glm::half_pi<float>() - glm::epsilon<float>());
+	eulerOrientation.x = glm::clamp(eulerOrientation.x + pitch, 
+		-glm::half_pi<float>() + glm::radians(1.f),
+		 glm::half_pi<float>() - glm::radians(1.f));
 	eulerOrientation.y += yaw;
 
 	GLFWWindow::CenterCursor();
