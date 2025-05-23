@@ -6,6 +6,9 @@ class SphereXSphereScene : public BaseScene
 	RX_SCENE_DEFAULT(SphereXSphereScene);
 public:
 	void StartImpl() override;
+
+private:
+	entt::entity m_MovingHandle{};
 };
 
 class AABBXSphereScene : public BaseScene

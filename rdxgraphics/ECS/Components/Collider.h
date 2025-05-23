@@ -187,7 +187,7 @@ public:
 	inline glm::vec3 GetMaxPoint() const { return m_Position + 0.5f * m_HalfExtents; }
 
 private:
-	glm::vec3 m_HalfExtents{ 1.f, 1.f, 1.f };
+	glm::vec3 m_HalfExtents{ 0.5f };
 
 };
 
