@@ -125,6 +125,9 @@ bool CollisionSystem::CheckCollision(RayPrimitive const& lhs, TrianglePrimitive 
 			return glm::dot(a, glm::cross(b, c));
 		};
 
+	if (CheckCollision(PointPrimitive(lhs.GetPosition()), rhs))
+		return true;
+
 	glm::vec3 dir = lhs.GetDirection();
 	glm::vec3 n = rhs.GetNormal_NotNormalized();
 
