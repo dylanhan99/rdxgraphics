@@ -68,9 +68,9 @@ bool CollisionSystem::CheckCollision(PointPrimitive const& lhs, PointPrimitive c
 
 bool CollisionSystem::CheckCollision(PointPrimitive const& lhs, TrianglePrimitive const& rhs)
 { // Orange book page 204 (243 in the pdf)
-	glm::vec3 a = rhs.GetP0();
-	glm::vec3 b = rhs.GetP1();
-	glm::vec3 c = rhs.GetP2();
+	glm::vec3 a = rhs.GetP0_W();
+	glm::vec3 b = rhs.GetP1_W();
+	glm::vec3 c = rhs.GetP2_W();
 	glm::vec3 p = lhs.GetPosition();
 	// Translate point and triangle so that point lies at origin
 	a -= p; b -= p; c -= p;
