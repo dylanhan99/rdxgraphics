@@ -96,7 +96,8 @@ bool CollisionSystem::CheckCollision(PointPrimitive const& lhs, TrianglePrimitiv
 bool CollisionSystem::CheckCollision(PointPrimitive const& lhs, PlanePrimitive const& rhs)
 {
 	glm::vec3 pp = lhs.GetPosition() - rhs.GetPosition();
-	return glm::dot(pp, rhs.GetNormal()) == 0.f;
+	return glm::abs(glm::dot(pp, rhs.GetNormal())) <= (glm::epsilon<float>() * 10.f); 
+	// More leeway for floating point error due to my crappy conversions from euler to normal
 }
 
 bool CollisionSystem::CheckCollision(PointPrimitive const& lhs, AABBPrimitive const& rhs)
