@@ -125,7 +125,7 @@ void Inspector::UpdateCompCollider(std::string const& strHandle, Collider& comp)
 	};
 #undef _RX_X
 
-	size_t currIndex = (size_t)comp.GetBVType();
+	size_t currIndex = (size_t)comp.GetPrimitiveType();
 	ImGuiComboFlags comboFlags = 0;
 	if (ImGui::BeginCombo("BV Type", bvOptions[currIndex].c_str(), comboFlags))
 	{
@@ -135,24 +135,24 @@ void Inspector::UpdateCompCollider(std::string const& strHandle, Collider& comp)
 			bool currSelected = currIndex == i;
 			if (ImGui::Selectable(c.c_str(), &currSelected))
 			{
-				comp.SetBV((BV)i);
+				comp.SetPrimitiveType((Primitive)i);
 			}
 		}
 		ImGui::EndCombo();
 	}
 
-#define _RX_X(Klass) case BV::Klass:										\
-	{																		\
-		RX_ASSERT(EntityManager::HasComponent<Klass##BV>(handle));			\
-		if (ImGui::TreeNodeEx(#Klass"##BV")) {								\
-			Klass##BV& comp = EntityManager::GetComponent<Klass##BV>(handle);	\
-			ImGui::Checkbox("Follow Xform", &comp.IsFollowXform());				\
-			PositionDrag(strHandle, comp.GetPosition());						\
-			UpdateComp##Klass##BV(strHandle, comp);								\
-			ImGui::TreePop();													\
-		}																		\
+#define _RX_X(Klass) case Primitive::Klass:													\
+	{																						\
+		RX_ASSERT(EntityManager::HasComponent<Klass##Primitive>(handle));					\
+		if (ImGui::TreeNodeEx(#Klass" Primitive")) {										\
+			Klass##Primitive& comp = EntityManager::GetComponent<Klass##Primitive>(handle);	\
+			ImGui::Checkbox("Follow Xform", &comp.IsFollowXform());							\
+			PositionDrag(strHandle, comp.GetPosition());									\
+			UpdateComp##Klass##Primitive(strHandle, comp);									\
+			ImGui::TreePop();																\
+		}																					\
 	} break;
-	switch (comp.GetBVType())
+	switch (comp.GetPrimitiveType())
 	{
 		RX_DO_ALL_BV_ENUM;
 	default:
@@ -161,11 +161,11 @@ void Inspector::UpdateCompCollider(std::string const& strHandle, Collider& comp)
 #undef _RX_X
 }
 
-void Inspector::UpdateCompPointBV(std::string const& strHandle, PointBV& comp)
+void Inspector::UpdateCompPointPrimitive(std::string const& strHandle, PointPrimitive& comp)
 {
 }
 
-void Inspector::UpdateCompRayBV(std::string const& strHandle, RayBV& comp)
+void Inspector::UpdateCompRayPrimitive(std::string const& strHandle, RayPrimitive& comp)
 {
 	EulerOrientationDrag(strHandle, comp.GetOrientation());
 	
@@ -176,7 +176,7 @@ void Inspector::UpdateCompRayBV(std::string const& strHandle, RayBV& comp)
 	ImGui::EndDisabled();
 }
 
-void Inspector::UpdateCompTriangleBV(std::string const& strHandle, TriangleBV& comp)
+void Inspector::UpdateCompTrianglePrimitive(std::string const& strHandle, TrianglePrimitive& comp)
 {
 	Draggy("P0", strHandle, glm::value_ptr(comp.GetP0()), 3, [&]() { comp.UpdateCentroid(); });
 	Draggy("P1", strHandle, glm::value_ptr(comp.GetP1()), 3, [&]() { comp.UpdateCentroid(); });
@@ -189,7 +189,7 @@ void Inspector::UpdateCompTriangleBV(std::string const& strHandle, TriangleBV& c
 	ImGui::EndDisabled();
 }
 
-void Inspector::UpdateCompPlaneBV(std::string const& strHandle, PlaneBV& comp)
+void Inspector::UpdateCompPlanePrimitive(std::string const& strHandle, PlanePrimitive& comp)
 {
 	EulerOrientationDrag(strHandle, comp.GetOrientation());
 
@@ -202,7 +202,7 @@ void Inspector::UpdateCompPlaneBV(std::string const& strHandle, PlaneBV& comp)
 	ImGui::EndDisabled();
 }
 
-void Inspector::UpdateCompAABBBV(std::string const& strHandle, AABBBV& comp)
+void Inspector::UpdateCompAABBPrimitive(std::string const& strHandle, AABBPrimitive& comp)
 {
 	Draggy("Half-Extents", strHandle, glm::value_ptr(comp.GetHalfExtents()), 3);
 
@@ -215,7 +215,7 @@ void Inspector::UpdateCompAABBBV(std::string const& strHandle, AABBBV& comp)
 	ImGui::EndDisabled();
 }
 
-void Inspector::UpdateCompSphereBV(std::string const& strHandle, SphereBV& comp)
+void Inspector::UpdateCompSpherePrimitive(std::string const& strHandle, SpherePrimitive& comp)
 {
 	Draggy("Radius", strHandle, &comp.GetRadius(), 1);
 }

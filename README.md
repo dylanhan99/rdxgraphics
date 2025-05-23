@@ -39,10 +39,10 @@ So now that you've changed the pair of BVs to whichever test you're trying to pe
 As for the BV attributes, you change them in Collider component, under the combobox as mentioned before.
 
 Notes:
-- BVs with "orientation" or "normal" attributes such as PlaneBV or RayBV have **euler-based** orientations, Pitch(x)-Yaw(y)-Roll(z), expressed in Radians.
-- TriangleBV must uncheck "Follow Xform", and move position from there. NOT from Xform component.
-- TriangleBV has P0, P1, P2, which when changed, updates the Collider's position (centroid), hence the above note.
-- TriangleBV's 3 points are offsets from centroid.
+- BVs with "orientation" or "normal" attributes such as PlanePrimitive or RayPrimitive have **euler-based** orientations, Pitch(x)-Yaw(y)-Roll(z), expressed in Radians.
+- TrianglePrimitive must uncheck "Follow Xform", and move position from there. NOT from Xform component.
+- TrianglePrimitive has P0, P1, P2, which when changed, updates the Collider's position (centroid), hence the above note.
+- TrianglePrimitive's 3 points are offsets from centroid.
 
 ### Project Structure (Code Stuff)
 Main (/):

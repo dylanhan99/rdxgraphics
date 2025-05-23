@@ -240,7 +240,7 @@ void RenderSystem::Draw()
 			//for (Entity& ent : EntityManager::GetEntities())
 			//{
 			//	auto& colDetails = ent.GetColliderDetails();
-			//	if (colDetails.BVType == BV::NIL || !colDetails.pBV)
+			//	if (colDetails.BVType == Primitive::NIL || !colDetails.pBV)
 			//		continue;
 			//
 			//	Object<VertexBasic>& o = GetObjekt(ent.GetColliderDetails().BVType);
@@ -251,21 +251,21 @@ void RenderSystem::Draw()
 			auto view = EntityManager::View<Collider>();
 			for (auto [handle, collider] : view.each())
 			{
-				BV bvType = collider.GetBVType();
-				if (bvType == BV::NIL)
+				Primitive primType = collider.GetPrimitiveType();
+				if (primType == Primitive::NIL)
 					continue;
 
 				// Some triangle non-conforming hardcode.
 				// Hopefully is temporary. I'd prefer to use the actual
 				// triangle mesh.
-				if (bvType == BV::Triangle)
+				if (primType == Primitive::Triangle)
 				{
-					TriangleBV& bv = EntityManager::GetComponent<TriangleBV>(handle);
-					glm::vec3 from = RayBV::DefaultDirection;
+					TrianglePrimitive& prim = EntityManager::GetComponent<TrianglePrimitive>(handle);
+					glm::vec3 from = RayPrimitive::DefaultDirection;
 
-					glm::vec3 p0 = bv.GetP0_W();
-					glm::vec3 p1 = bv.GetP1_W();
-					glm::vec3 p2 = bv.GetP2_W();
+					glm::vec3 p0 = prim.GetP0_W();
+					glm::vec3 p1 = prim.GetP1_W();
+					glm::vec3 p2 = prim.GetP2_W();
 
 					glm::vec3 to0 = p1 - p0;
 					glm::vec3 to1 = p2 - p1;
@@ -278,7 +278,7 @@ void RenderSystem::Draw()
 						glm::mat4 scale = glm::scale(glm::vec3(glm::length(t)));	\
 						glm::mat4 rotate = glm::mat4_cast(glm::rotation(from, glm::normalize(t)));	\
 						o.Submit<VertexBasic::Xform>(translate * scale * rotate);	\
-						o.Submit<VertexBasic::IsCollide>(bv.IsCollide());			\
+						o.Submit<VertexBasic::IsCollide>(prim.IsCollide());			\
 					}
 					_RX_X(p0, to0);
 					_RX_X(p1, to1);
@@ -288,32 +288,32 @@ void RenderSystem::Draw()
 				}
 
 #define _RX_X(Klass)																\
-				if (bvType == BV::Klass)											\
+				if (primType == Primitive::Klass)									\
 				{																	\
 					/*Should check ensure that get<BV> exists*/						\
-					Klass##BV& bv = EntityManager::GetComponent<Klass##BV>(handle);	\
-					Object<VertexBasic>& o = GetObjekt(bvType);						\
-					o.Submit<VertexBasic::Xform>(bv.GetXform());					\
-					o.Submit<VertexBasic::IsCollide>(bv.IsCollide());				\
+					Klass##Primitive& prim = EntityManager::GetComponent<Klass##Primitive>(handle);	\
+					Object<VertexBasic>& o = GetObjekt(primType);					\
+					o.Submit<VertexBasic::Xform>(prim.GetXform());					\
+					o.Submit<VertexBasic::IsCollide>(prim.IsCollide());				\
 				}
 				RX_DO_ALL_BV_ENUM;
 #undef _RX_X
 			}
 
 			// Extra per collider type stuff
-			auto triangleView = EntityManager::View<TriangleBV>();
+			auto triangleView = EntityManager::View<TrianglePrimitive>();
 			for (auto [handle, bv] : triangleView.each())
 			{
 				{
-					auto& obj = GetObjekt(BV::Point);
+					auto& obj = GetObjekt(Primitive::Point);
 					//obj.Submit<VertexBasic::Xform>(glm::translate(bv.GetP0_W()));
 					//obj.Submit<VertexBasic::Xform>(glm::translate(bv.GetP1_W()));
 					//obj.Submit<VertexBasic::Xform>(glm::translate(bv.GetP2_W()));
 					obj.Submit<VertexBasic::Xform>(glm::translate(bv.GetPosition()));
 				}
 				{
-					auto& obj = GetObjekt(BV::Ray);
-					glm::vec3 from = RayBV::DefaultDirection;
+					auto& obj = GetObjekt(Primitive::Ray);
+					glm::vec3 from = RayPrimitive::DefaultDirection;
 					glm::vec3 to = bv.GetNormal();
 
 					glm::quat quat = glm::rotation(from, to);
@@ -322,16 +322,16 @@ void RenderSystem::Draw()
 				}
 			}
 
-			auto planeView = EntityManager::View<PlaneBV>();
+			auto planeView = EntityManager::View<PlanePrimitive>();
 			for (auto [handle, bv] : planeView.each())
 			{
 				{
-					auto& obj = GetObjekt(BV::Point);
+					auto& obj = GetObjekt(Primitive::Point);
 					obj.Submit<VertexBasic::Xform>(glm::translate(bv.GetPosition()));
 				}
 				{
-					auto& obj = GetObjekt(BV::Ray);
-					glm::vec3 from = RayBV::DefaultDirection;
+					auto& obj = GetObjekt(Primitive::Ray);
+					glm::vec3 from = RayPrimitive::DefaultDirection;
 					glm::vec3 to = bv.GetNormal();
 
 					glm::quat quat = glm::rotation(from, to);
@@ -432,21 +432,21 @@ Object<VertexBasic>& RenderSystem::GetObjekt(Shape shape)
 	return g.m_Objects[Rxuid{ shape }];
 }
 
-Object<VertexBasic>& RenderSystem::GetObjekt(BV bv)
+Object<VertexBasic>& RenderSystem::GetObjekt(Primitive bv)
 {
 	switch (bv)
 	{
-		case BV::Point:
+		case Primitive::Point:
 			return GetObjekt(Shape::Point);
-		case BV::Ray:
+		case Primitive::Ray:
 			return GetObjekt(Shape::Line);
-		case BV::Triangle:
+		case Primitive::Triangle:
 			return GetObjekt(Shape::Triangle);
-		case BV::Plane:
+		case Primitive::Plane:
 			return GetObjekt(Shape::Plane);
-		case BV::AABB:
+		case Primitive::AABB:
 			return GetObjekt(Shape::Cube);
-		case BV::Sphere:
+		case Primitive::Sphere:
 			return GetObjekt(Shape::Sphere);
 		default:
 			RX_ASSERT(false);
@@ -565,7 +565,7 @@ RenderSystem::ObjectParams RenderSystem::CreateLine()
 	VertexBasic::TexCoord::container_type texCoords{};
 	texCoords.resize(positions.size());
 	VertexBasic::Normal::container_type normals{};
-	normals.resize(positions.size(), RayBV::DefaultDirection);
+	normals.resize(positions.size(), RayPrimitive::DefaultDirection);
 
 	return ObjectParams{
 		Shape::Line, GL_LINES,
@@ -581,16 +581,16 @@ RenderSystem::ObjectParams RenderSystem::CreateLine()
 RenderSystem::ObjectParams RenderSystem::CreateTriangle()
 {
 	VertexBasic::Position::container_type positions{
-		TriangleBV::DefaultP0,
-		TriangleBV::DefaultP1,
-		TriangleBV::DefaultP2
+		TrianglePrimitive::DefaultP0,
+		TrianglePrimitive::DefaultP1,
+		TrianglePrimitive::DefaultP2
 	};
 	VertexBasic::TexCoord::container_type texCoords{
 		glm::vec2{ (positions[0] + 1.f) * 0.5f },
 		glm::vec2{ (positions[1] + 1.f) * 0.5f },
 		glm::vec2{ (positions[2] + 1.f) * 0.5f },
 	};
-	VertexBasic::Normal::container_type normals{ 3, TriangleBV::DefaultNormal };
+	VertexBasic::Normal::container_type normals{ 3, TrianglePrimitive::DefaultNormal };
 
 	return ObjectParams{
 		Shape::Triangle, GL_TRIANGLES,
@@ -621,7 +621,7 @@ RenderSystem::ObjectParams RenderSystem::CreateQuad()
 		{ 1.f, 1.f },
 	};
 	VertexBasic::Normal::container_type normals{};
-	normals.resize(positions.size(), PlaneBV::DefaultNormal);
+	normals.resize(positions.size(), PlanePrimitive::DefaultNormal);
 
 	return ObjectParams{
 		Shape::Quad, GL_TRIANGLES,
@@ -635,7 +635,7 @@ RenderSystem::ObjectParams RenderSystem::CreateQuad()
 
 RenderSystem::ObjectParams RenderSystem::CreatePlane()
 { // Will be a XY plane by default
-	const uint32_t size = 20;
+	const uint32_t size = PlanePrimitive::DefaultSize;
 	const float edgeLength = 1.f;
 	std::vector<GLuint> indices{};
 	std::vector<glm::vec3> positions{};
@@ -676,7 +676,7 @@ RenderSystem::ObjectParams RenderSystem::CreatePlane()
 	VertexBasic::TexCoord::container_type texCoords{};
 	texCoords.resize(positions.size());
 	VertexBasic::Normal::container_type normals{};
-	normals.resize(positions.size(), PlaneBV::DefaultNormal);
+	normals.resize(positions.size(), PlanePrimitive::DefaultNormal);
 
 	return ObjectParams{
 		Shape::Plane, GL_TRIANGLES,

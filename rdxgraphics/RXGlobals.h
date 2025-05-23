@@ -50,7 +50,7 @@ enum class Shape
 	//MAX
 };
 
-enum class BV
+enum class Primitive
 {
 	NIL = 0,
 	Point,

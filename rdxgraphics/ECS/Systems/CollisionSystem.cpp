@@ -7,9 +7,9 @@ void CollisionSystem::Update(float dt)
 {
 	// Hardcoding here to un-set it for the next frame for now
 	// Maybe do some colliding pairs system in the future for efficiency if needed
-#define _RX_X(Klass){														\
-	auto bvView = EntityManager::View<Klass##BV>();\
-		for (auto [handle, bv] : bvView.each()) { bv.IsCollide() = false; } \
+#define _RX_X(Klass){															  \
+		auto primView = EntityManager::View<Klass##Primitive>();				  \
+		for (auto [handle, prim] : primView.each()) { prim.IsCollide() = false; } \
 	}
 
 	RX_DO_ALL_BV_ENUM;
@@ -18,39 +18,39 @@ void CollisionSystem::Update(float dt)
 	auto colView = EntityManager::View<Collider>();
 	for (auto [lhandle, lcol] : colView.each())
 	{
-		BV lBVType = lcol.GetBVType();
-		if (lBVType == BV::NIL)
+		Primitive lPType = lcol.GetPrimitiveType();
+		if (lPType == Primitive::NIL)
 			continue;
 		for (auto [rhandle, rcol] : colView.each())
 		{
 			if (lhandle == rhandle)
 				continue;
-			BV rBVType = rcol.GetBVType();
-			if (rBVType == BV::NIL)
+			Primitive rPType = rcol.GetPrimitiveType();
+			if (rPType == Primitive::NIL)
 				continue;
 
-#define _RX_C_C(RKlass, LKlass)												\
-	case BV::RKlass:														\
-	{																		\
-		LKlass##BV& lbv = EntityManager::GetComponent<LKlass##BV>(lhandle);	\
-		RKlass##BV& rbv = EntityManager::GetComponent<RKlass##BV>(rhandle);	\
-		if (CheckCollision(lbv, rbv))										\
-		{																	\
-			lbv.IsCollide() |= true;										\
-			rbv.IsCollide() |= true;										\
-		}																	\
+#define _RX_C_C(RKlass, LKlass)					  \
+	case Primitive::RKlass:						  \
+	{											  \
+		LKlass##Primitive& lP = EntityManager::GetComponent<LKlass##Primitive>(lhandle); \
+		RKlass##Primitive& rP = EntityManager::GetComponent<RKlass##Primitive>(rhandle); \
+		if (CheckCollision(lP, rP))				  \
+		{										  \
+			lP.IsCollide() |= true;				  \
+			rP.IsCollide() |= true;				  \
+		}										  \
 	} break;
-#define _RX_C_X(LKlass)							 \
-	case BV::LKlass:							 \
-	{											 \
-		switch (rBVType)						 \
-		{										 \
-			RX_DO_ALL_BV_ENUM_M_(_RX_C_C, LKlass);\
-			default: RX_ASSERT(false); break;    \
-		}										 \
+#define _RX_C_X(LKlass)							   \
+	case Primitive::LKlass:						   \
+	{											   \
+		switch (rPType)							   \
+		{										   \
+			RX_DO_ALL_BV_ENUM_M_(_RX_C_C, LKlass); \
+			default: RX_ASSERT(false); break;      \
+		}										   \
 	} break;
 
-			switch (lBVType)
+			switch (lPType)
 			{
 				RX_DO_ALL_BV_ENUM_M(_RX_C_X);
 			default: RX_ASSERT(false); break;
@@ -61,27 +61,12 @@ void CollisionSystem::Update(float dt)
 	}
 }
 
-bool CollisionSystem::CheckCollision(PointBV const& lhs, PointBV const& rhs)
+bool CollisionSystem::CheckCollision(PointPrimitive const& lhs, PointPrimitive const& rhs)
 {
 	return lhs.GetPosition() == rhs.GetPosition();
 }
 
-//bool CollisionSystem::CheckCollision(PointBV const& lhs, RayBV const& rhs)
-//{
-//	glm::vec3 op = lhs.GetPosition() - rhs.GetPosition();
-//	glm::vec3 dir = rhs.GetDirection();
-//	float t = glm::dot(op, dir); // Is along the ray direction
-//	bool isColinear = glm::length2(glm::cross(op, dir)) <glm::epsilon<float>();
-//
-//	return (t >= 0.f) && isColinear;
-//}
-
-float ScalarTriple(glm::vec3 a, glm::vec3 b, glm::vec3 c)
-{
-	return glm::dot(a, glm::cross(b, c));
-}
-
-bool CollisionSystem::CheckCollision(PointBV const& lhs, TriangleBV const& rhs)
+bool CollisionSystem::CheckCollision(PointPrimitive const& lhs, TrianglePrimitive const& rhs)
 { // Orange book page 204 (243 in the pdf)
 	glm::vec3 a = rhs.GetP0();
 	glm::vec3 b = rhs.GetP1();
@@ -108,13 +93,13 @@ bool CollisionSystem::CheckCollision(PointBV const& lhs, TriangleBV const& rhs)
 	return true;
 }
 
-bool CollisionSystem::CheckCollision(PointBV const& lhs, PlaneBV const& rhs)
+bool CollisionSystem::CheckCollision(PointPrimitive const& lhs, PlanePrimitive const& rhs)
 {
 	glm::vec3 pp = lhs.GetPosition() - rhs.GetPosition();
 	return glm::dot(pp, rhs.GetNormal()) == 0.f;
 }
 
-bool CollisionSystem::CheckCollision(PointBV const& lhs, AABBBV const& rhs)
+bool CollisionSystem::CheckCollision(PointPrimitive const& lhs, AABBPrimitive const& rhs)
 {
 	glm::vec3 pos = lhs.GetPosition();
 	glm::vec3 min = rhs.GetMinPoint();
@@ -124,15 +109,21 @@ bool CollisionSystem::CheckCollision(PointBV const& lhs, AABBBV const& rhs)
 			(min.z <= pos.z && pos.z <= max.z);
 }
 
-bool CollisionSystem::CheckCollision(PointBV const& lhs, SphereBV const& rhs)
+bool CollisionSystem::CheckCollision(PointPrimitive const& lhs, SpherePrimitive const& rhs)
 {
 	float d2 = glm::distance2(lhs.GetPosition(), rhs.GetPosition());
 	return d2 < glm::pow(rhs.GetRadius(), 2.f);
 }
 
 // Works for both front and back face
-bool CollisionSystem::CheckCollision(RayBV const& lhs, TriangleBV const& rhs)
+bool CollisionSystem::CheckCollision(RayPrimitive const& lhs, TrianglePrimitive const& rhs)
 { // Orange book page 191 (225 in the pdf)
+	static auto ScalarTriple = 
+		[](glm::vec3 a, glm::vec3 b, glm::vec3 c)
+		{
+			return glm::dot(a, glm::cross(b, c));
+		};
+
 	glm::vec3 dir = lhs.GetDirection();
 	glm::vec3 n = rhs.GetNormal_NotNormalized();
 
@@ -170,12 +161,12 @@ bool CollisionSystem::CheckCollision(RayBV const& lhs, TriangleBV const& rhs)
 	//return true;
 }
 
-bool CollisionSystem::CheckCollision(RayBV const& lhs, PlaneBV const& rhs)
+bool CollisionSystem::CheckCollision(RayPrimitive const& lhs, PlanePrimitive const& rhs)
 { // Orange book page 176 (215 in the pdf)
 	return IntersectSegmentPlane(lhs, rhs);
 }
 
-bool CollisionSystem::CheckCollision(RayBV const& lhs, AABBBV const& rhs)
+bool CollisionSystem::CheckCollision(RayPrimitive const& lhs, AABBPrimitive const& rhs)
 { // Orange book page 179 (218 in the pdf)
 	glm::vec3 dir = lhs.GetDirection();      // Should be normalized
 	glm::vec3 p = lhs.GetPosition();
@@ -193,7 +184,7 @@ bool CollisionSystem::CheckCollision(RayBV const& lhs, AABBBV const& rhs)
 	return tNear <= tFar && tFar >= 0.0f;
 }
 
-bool CollisionSystem::CheckCollision(RayBV const& lhs, SphereBV const& rhs)
+bool CollisionSystem::CheckCollision(RayPrimitive const& lhs, SpherePrimitive const& rhs)
 { // Orange book page 178 (217 in the pdf)
 	glm::vec3 m = lhs.GetPosition() - rhs.GetPosition();
 	float c = glm::dot(m, m) - glm::pow(rhs.GetRadius(), 2.f);
@@ -215,15 +206,15 @@ bool CollisionSystem::CheckCollision(RayBV const& lhs, SphereBV const& rhs)
 	return true;
 }
 
-bool CollisionSystem::CheckCollision(TriangleBV const& lhs, PointBV const& rhs) { return CheckCollision(rhs, lhs); }
+bool CollisionSystem::CheckCollision(TrianglePrimitive const& lhs, PointPrimitive const& rhs) { return CheckCollision(rhs, lhs); }
 
-bool CollisionSystem::CheckCollision(TriangleBV const& lhs, RayBV const& rhs) { return CheckCollision(rhs, lhs); }
+bool CollisionSystem::CheckCollision(TrianglePrimitive const& lhs, RayPrimitive const& rhs) { return CheckCollision(rhs, lhs); }
 
-bool CollisionSystem::CheckCollision(PlaneBV const& lhs, PointBV const& rhs) { return CheckCollision(rhs, lhs); }
+bool CollisionSystem::CheckCollision(PlanePrimitive const& lhs, PointPrimitive const& rhs) { return CheckCollision(rhs, lhs); }
 
-bool CollisionSystem::CheckCollision(PlaneBV const& lhs, RayBV const& rhs) { return CheckCollision(rhs, lhs); }
+bool CollisionSystem::CheckCollision(PlanePrimitive const& lhs, RayPrimitive const& rhs) { return CheckCollision(rhs, lhs); }
 
-bool CollisionSystem::CheckCollision(PlaneBV const& lhs, AABBBV const& rhs)
+bool CollisionSystem::CheckCollision(PlanePrimitive const& lhs, AABBPrimitive const& rhs)
 { // Orange book page 164 (203 in the pdf)
 	glm::vec3 const& e = rhs.GetHalfExtents() * 0.5f;
 	glm::vec3 const& n = lhs.GetNormal();
@@ -233,19 +224,19 @@ bool CollisionSystem::CheckCollision(PlaneBV const& lhs, AABBBV const& rhs)
 	return glm::abs(s) <= r;
 }
 
-bool CollisionSystem::CheckCollision(PlaneBV const& lhs, SphereBV const& rhs)
+bool CollisionSystem::CheckCollision(PlanePrimitive const& lhs, SpherePrimitive const& rhs)
 { // Orange book page 161 (200 in the pdf)
 	float dist = glm::dot(rhs.GetPosition(), lhs.GetNormal()) - lhs.GetD();
 	return glm::abs(dist) <= rhs.GetRadius();
 }
 
-bool CollisionSystem::CheckCollision(AABBBV const& lhs, PointBV const& rhs) { return CheckCollision(rhs, lhs); }
+bool CollisionSystem::CheckCollision(AABBPrimitive const& lhs, PointPrimitive const& rhs) { return CheckCollision(rhs, lhs); }
 
-bool CollisionSystem::CheckCollision(AABBBV const& lhs, RayBV const& rhs) { return CheckCollision(rhs, lhs); }
+bool CollisionSystem::CheckCollision(AABBPrimitive const& lhs, RayPrimitive const& rhs) { return CheckCollision(rhs, lhs); }
 
-bool CollisionSystem::CheckCollision(AABBBV const& lhs, PlaneBV const& rhs) { return CheckCollision(rhs, lhs); }
+bool CollisionSystem::CheckCollision(AABBPrimitive const& lhs, PlanePrimitive const& rhs) { return CheckCollision(rhs, lhs); }
 
-bool CollisionSystem::CheckCollision(AABBBV const& lhs, AABBBV const& rhs)
+bool CollisionSystem::CheckCollision(AABBPrimitive const& lhs, AABBPrimitive const& rhs)
 {
 	glm::vec3 minL{ lhs.GetMinPoint() }, maxL{ lhs.GetMaxPoint() };
 	glm::vec3 minR{ rhs.GetMinPoint() }, maxR{ rhs.GetMaxPoint() };
@@ -259,14 +250,14 @@ bool CollisionSystem::CheckCollision(AABBBV const& lhs, AABBBV const& rhs)
 		maxL.z >= minR.z;
 }
 
-bool CollisionSystem::CheckCollision(AABBBV const& lhs, SphereBV const& rhs)
+bool CollisionSystem::CheckCollision(AABBPrimitive const& lhs, SpherePrimitive const& rhs)
 { // Orange book page 165 (204 in the pdf)
 	// https://developer.mozilla.org/en-US/docs/Games/Techniques/3D_collision_detection
 	// Get the closest point on the sphere to the AABB by clamping
 	glm::vec3 boxMin = lhs.GetMinPoint();
 	glm::vec3 boxMax = lhs.GetMaxPoint();
 	glm::vec3 sphPos = rhs.GetPosition();
-	PointBV closestPoint{
+	PointPrimitive closestPoint{
 		glm::max(boxMin.x, glm::min(sphPos.x, boxMax.x)),
 		glm::max(boxMin.y, glm::min(sphPos.y, boxMax.y)),
 		glm::max(boxMin.z, glm::min(sphPos.z, boxMax.z))
@@ -275,23 +266,23 @@ bool CollisionSystem::CheckCollision(AABBBV const& lhs, SphereBV const& rhs)
 	return CheckCollision(closestPoint, rhs);
 }
 
-bool CollisionSystem::CheckCollision(SphereBV const& lhs, PointBV const& rhs) { return CheckCollision(rhs, lhs); }
+bool CollisionSystem::CheckCollision(SpherePrimitive const& lhs, PointPrimitive const& rhs) { return CheckCollision(rhs, lhs); }
 
-bool CollisionSystem::CheckCollision(SphereBV const& lhs, RayBV const& rhs) { return CheckCollision(rhs, lhs); }
+bool CollisionSystem::CheckCollision(SpherePrimitive const& lhs, RayPrimitive const& rhs) { return CheckCollision(rhs, lhs); }
 
-bool CollisionSystem::CheckCollision(SphereBV const& lhs, PlaneBV const& rhs) { return CheckCollision(rhs, lhs); }
+bool CollisionSystem::CheckCollision(SpherePrimitive const& lhs, PlanePrimitive const& rhs) { return CheckCollision(rhs, lhs); }
 
-bool CollisionSystem::CheckCollision(SphereBV const& lhs, AABBBV const& rhs) { return CheckCollision(rhs, lhs); }
+bool CollisionSystem::CheckCollision(SpherePrimitive const& lhs, AABBPrimitive const& rhs) { return CheckCollision(rhs, lhs); }
 
-bool CollisionSystem::CheckCollision(SphereBV const& lhs, SphereBV const& rhs)
+bool CollisionSystem::CheckCollision(SpherePrimitive const& lhs, SpherePrimitive const& rhs)
 {
 	return CheckCollision(
-		PointBV{ lhs.GetPosition() },
-		SphereBV{ rhs.GetPosition(), lhs.GetRadius() + rhs.GetRadius() }
+		PointPrimitive{ lhs.GetPosition() },
+		SpherePrimitive{ rhs.GetPosition(), lhs.GetRadius() + rhs.GetRadius() }
 	);
 }
 
-bool CollisionSystem::IntersectSegmentPlane(RayBV const& ray, PlaneBV const& plane, PointBV* oPoint)
+bool CollisionSystem::IntersectSegmentPlane(RayPrimitive const& ray, PlanePrimitive const& plane, PointPrimitive* oPoint)
 {
 	glm::vec3 d = ray.GetDirection();
 	glm::vec3 n = plane.GetNormal();

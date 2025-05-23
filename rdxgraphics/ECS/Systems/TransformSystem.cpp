@@ -16,18 +16,18 @@ void TransformSystem::Update(float dt)
 	auto colView = EntityManager::View<const Xform, const Collider>();
 	for (auto [handle, xform, col] : colView.each())
 	{
-		if (col.GetBVType() == BV::NIL)
+		if (col.GetPrimitiveType() == Primitive::NIL)
 			continue;
 
 		Xform& xform = EntityManager::GetComponent<Xform>(handle);
 #define _RX_X(Klass)														 \
-		case BV::Klass:														 \
+		case Primitive::Klass:														 \
 		{																	 \
-			Klass##BV& bv = EntityManager::GetComponent<Klass##BV>(handle);  \
+			Klass##Primitive& bv = EntityManager::GetComponent<Klass##Primitive>(handle);  \
 			if (bv.IsFollowXform()) bv.GetPosition() = xform.GetTranslate(); \
 		} break;
 
-		switch (col.GetBVType())
+		switch (col.GetPrimitiveType())
 		{
 			RX_DO_ALL_BV_ENUM;
 		default:
@@ -36,14 +36,14 @@ void TransformSystem::Update(float dt)
 #undef _RX_X
 
 #define _RX_X(Klass)													\
-	case BV::Klass:														\
+	case Primitive::Klass:														\
 	{																	\
 		/*Should check ensure that get<BV> exists*/						\
-		Klass##BV& bv = EntityManager::GetComponent<Klass##BV>(handle);	\
+		Klass##Primitive& bv = EntityManager::GetComponent<Klass##Primitive>(handle);	\
 		bv.UpdateXform();												\
 	} break;
 
-		switch (col.GetBVType())
+		switch (col.GetPrimitiveType())
 		{
 			RX_DO_ALL_BV_ENUM;
 		default:

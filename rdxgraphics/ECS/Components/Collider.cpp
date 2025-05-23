@@ -3,24 +3,24 @@
 #include "ECS/EntityManager.h"
 #include "ECS/Components.h"
 
-void Collider::SetBV(BV bvType)
+void Collider::SetPrimitiveType(Primitive primType)
 {
-	if (m_BVType == bvType)
+	if (m_PrimitiveType == primType)
 		return;
 
-	glm::vec3 prevPos = RemoveBV(); // Remove the existing BV first
-	m_BVType = bvType;
-	if (bvType == BV::NIL)
+	glm::vec3 prevPos = RemovePrimitive(); // Remove the existing BV first
+	m_PrimitiveType = primType;
+	if (primType == Primitive::NIL)
 		return;
 
 #define _RX_X(Klass)									 \
-	case BV::Klass:										 \
-		EntityManager::AddComponent<Klass##BV>(m_Handle);\
-		RX_ASSERT(EntityManager::HasComponent<Klass##BV>(m_Handle));\
-		EntityManager::GetComponent<Klass##BV>(m_Handle).SetPosition(prevPos);\
+	case Primitive::Klass:										 \
+		EntityManager::AddComponent<Klass##Primitive>(m_Handle);\
+		RX_ASSERT(EntityManager::HasComponent<Klass##Primitive>(m_Handle));\
+		EntityManager::GetComponent<Klass##Primitive>(m_Handle).SetPosition(prevPos);\
 		break;
 
-	switch (m_BVType)
+	switch (m_PrimitiveType)
 	{
 		RX_DO_ALL_BV_ENUM;
 	default:
@@ -30,20 +30,20 @@ void Collider::SetBV(BV bvType)
 #undef _RX_X
 }
 
-glm::vec3 Collider::RemoveBV()
+glm::vec3 Collider::RemovePrimitive()
 {
-	if (m_BVType == BV::NIL)
+	if (m_PrimitiveType == Primitive::NIL)
 		return {};
 
 	glm::vec3 pos{};
 #define _RX_X(Klass)												\
-	case BV::Klass:													\
-		RX_ASSERT(EntityManager::HasComponent<Klass##BV>(m_Handle));\
-		pos = EntityManager::GetComponent<Klass##BV>(m_Handle).GetPosition();\
-		EntityManager::RemoveComponent<Klass##BV>(m_Handle);		\
+	case Primitive::Klass:													\
+		RX_ASSERT(EntityManager::HasComponent<Klass##Primitive>(m_Handle));\
+		pos = EntityManager::GetComponent<Klass##Primitive>(m_Handle).GetPosition();\
+		EntityManager::RemoveComponent<Klass##Primitive>(m_Handle);		\
 		break;
 
-	switch (m_BVType)
+	switch (m_PrimitiveType)
 	{
 		RX_DO_ALL_BV_ENUM;
 	default:
@@ -52,6 +52,6 @@ glm::vec3 Collider::RemoveBV()
 	}
 #undef _RX_X
 
-	m_BVType = BV::NIL;
+	m_PrimitiveType = Primitive::NIL;
 	return pos;
 }

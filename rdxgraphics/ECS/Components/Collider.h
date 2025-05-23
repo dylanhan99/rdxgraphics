@@ -5,23 +5,23 @@ class Collider : public BaseComponent
 {
 	RX_COMPONENT_HAS_HANDLE(Collider);
 public:
-	inline Collider(entt::entity handle, BV bvType) : Collider(handle) { SetBV(bvType); }
+	inline Collider(entt::entity handle, Primitive primType) : Collider(handle) { SetPrimitiveType(primType); }
 
-	inline BV GetBVType() const { return m_BVType; }
-	void SetBV(BV bvType);
-	glm::vec3 RemoveBV(); // returns position of removed BV
+	inline Primitive GetPrimitiveType() const { return m_PrimitiveType; }
+	void SetPrimitiveType(Primitive primType);
+	glm::vec3 RemovePrimitive(); // returns position of removed BV
 
 private:
-	BV m_BVType{ BV::NIL };
+	Primitive m_PrimitiveType{ Primitive::NIL };
 };
 
-class BaseBV : public BaseComponent
+class BasePrimitive : public BaseComponent
 {
 public:
-	BaseBV() = default;
-	~BaseBV() = default;
-	inline BaseBV(glm::vec3 const& p) : m_Position(p) {}
-	inline BaseBV(float x, float y, float z) : m_Position({ x, y, z }) {}
+	BasePrimitive() = default;
+	~BasePrimitive() = default;
+	inline BasePrimitive(glm::vec3 const& p) : m_Position(p) {}
+	inline BasePrimitive(float x, float y, float z) : m_Position({ x, y, z }) {}
 
 	virtual void UpdateXform() = 0;
 
@@ -41,12 +41,12 @@ protected:
 	bool m_IsFollowXform{ true };
 };
 
-class PointBV : public BaseBV
+class PointPrimitive : public BasePrimitive
 {
 public:
-	PointBV() = default;
-	inline PointBV(glm::vec3 const& p) : BaseBV(p) {}
-	inline PointBV(float x, float y, float z) : BaseBV(x, y, z) {}
+	PointPrimitive() = default;
+	inline PointPrimitive(glm::vec3 const& p) : BasePrimitive(p) {}
+	inline PointPrimitive(float x, float y, float z) : BasePrimitive(x, y, z) {}
 
 	inline void UpdateXform() override
 	{
@@ -54,12 +54,12 @@ public:
 	}
 };
 
-class RayBV : public BaseBV
+class RayPrimitive : public BasePrimitive
 {
 public:
 	inline static const glm::vec3 DefaultDirection{ 0.f,0.f,-1.f };
 public:
-	RayBV() = default;
+	RayPrimitive() = default;
 	inline void UpdateXform() override
 	{
 		//RX_INFO("{} > {} > {}", GetDirection().x, GetDirection().y, GetDirection().z);
@@ -80,11 +80,11 @@ public:
 private:
 	glm::vec3 m_EulerOrientation{ 0.f,0.f,0.f }; // (Radians) Pitch, Yaw, Roll
 
-	inline static float s_Scale{ 10.f };
+	inline static float s_Scale{ 100.f };
 };
 
 // Must be CCW orientation
-class TriangleBV : public BaseBV
+class TrianglePrimitive : public BasePrimitive
 {
 public:
 	inline static const glm::vec3 DefaultP0{ 0.0f,		 1.0f, 0.f };
@@ -92,7 +92,7 @@ public:
 	inline static const glm::vec3 DefaultP2{ 0.86603f,	-0.5f, 0.f };
 	inline static const glm::vec3 DefaultNormal{ glm::normalize(glm::cross(DefaultP1 - DefaultP0, DefaultP2 - DefaultP0)) };
 public:
-	TriangleBV() = default;
+	TrianglePrimitive() = default;
 	inline void UpdateXform() override
 	{
 		m_Xform = glm::translate(GetPosition());
@@ -141,13 +141,14 @@ private: // These points are OFFSETS from the centroid (position)
 	glm::vec3 m_P2{ DefaultP2 };
 };
 
-class PlaneBV : public BaseBV
+class PlanePrimitive : public BasePrimitive
 {
 public:
 	inline static const glm::vec3 DefaultNormal{ 0.f,0.f,1.f };
+	inline static const uint32_t DefaultSize{ 40 };
 public:
-	PlaneBV() = default;
-	inline PlaneBV(glm::vec3 p, glm::vec3 const& eulerOrientation) : BaseBV(p), m_EulerOrientation(eulerOrientation) {}
+	PlanePrimitive() = default;
+	inline PlanePrimitive(glm::vec3 p, glm::vec3 const& eulerOrientation) : BasePrimitive(p), m_EulerOrientation(eulerOrientation) {}
 	inline void UpdateXform() override
 	{
 		m_Xform = glm::translate(m_Position) * glm::scale(s_Scale) *
@@ -168,13 +169,13 @@ private:
 	// Orientation of the normal
 	glm::vec3 m_EulerOrientation{ 0.f,0.f,0.f }; // (Radians) Pitch, Yaw, Roll
 
-	inline static glm::vec3 s_Scale{ 1.f, 1.f, 1.f };
+	inline static glm::vec3 s_Scale{ 2.f };
 };
 
-class AABBBV : public BaseBV
+class AABBPrimitive : public BasePrimitive
 {
 public:
-	AABBBV() = default;
+	AABBPrimitive() = default;
 	inline void UpdateXform() override
 	{
 		m_Xform = glm::translate(m_Position) * glm::scale(m_HalfExtents);
@@ -190,11 +191,11 @@ private:
 
 };
 
-class SphereBV : public BaseBV
+class SpherePrimitive : public BasePrimitive
 {
 public:
-	SphereBV() = default;
-	inline SphereBV(glm::vec3 const& p, float r) : BaseBV(p), m_Radius(r) {}
+	SpherePrimitive() = default;
+	inline SpherePrimitive(glm::vec3 const& p, float r) : BasePrimitive(p), m_Radius(r) {}
 
 	inline void UpdateXform() override
 	{

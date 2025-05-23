@@ -32,7 +32,7 @@ public:
 
 	static Object<VertexBasic>& GetObjekt(Rxuid uid);
 	static Object<VertexBasic>& GetObjekt(Shape shape);
-	static Object<VertexBasic>& GetObjekt(BV bv);
+	static Object<VertexBasic>& GetObjekt(Primitive bv);
 
 	inline static entt::entity GetActiveCamera() { return g.m_ActiveCamera; }
 	inline static void SetActiveCamera(entt::entity handle) { g.m_ActiveCamera = handle; }
