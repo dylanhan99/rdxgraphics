@@ -310,6 +310,7 @@ void RenderSystem::Draw()
 					//obj.Submit<VertexBasic::Xform>(glm::translate(bv.GetP1_W()));
 					//obj.Submit<VertexBasic::Xform>(glm::translate(bv.GetP2_W()));
 					obj.Submit<VertexBasic::Xform>(glm::translate(bv.GetPosition()));
+					obj.Submit<VertexBasic::IsCollide>(false);
 				}
 				{
 					auto& obj = GetObjekt(Primitive::Ray);
