@@ -55,7 +55,7 @@ private:
 	static ObjectParams CreatePlane();
 	static ObjectParams CreateCube();
 	static ObjectParams CreateSphere_Ico(int refinement = 3);
-	static ObjectParams CreateSphere_UV(int stacks = 28, int sectors = 12);
+	static ObjectParams CreateSphere_UV(int stacks = 32, int sectors = 24);
 
 private:
 	glm::vec3 m_BackColor{ 0.2f, 0.3f, 0.3f };

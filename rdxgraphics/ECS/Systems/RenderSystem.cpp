@@ -425,6 +425,8 @@ bool RenderSystem::ReloadShaders()
 Object<VertexBasic>& RenderSystem::GetObjekt(Rxuid uid)
 {
 	RX_ASSERT(uid != RX_INVALID_ID);
+	if (uid == (uint64_t)Shape::Sphere)
+		return GetObjekt(Primitive::Sphere);
 	return g.m_Objects[uid];
 }
 
@@ -889,9 +891,12 @@ RenderSystem::ObjectParams RenderSystem::CreateSphere_Ico(int refinement)
 
 RenderSystem::ObjectParams RenderSystem::CreateSphere_UV(int stacks, int sectors)
 {
+	if (stacks < 3) stacks = 3;
+	if (sectors < 2) sectors = 2;
+
 	const float radius = 1.f; const float radInv = 1.f / radius;
-	const float phiStep = glm::pi<float>() / (float)stacks;
-	const float thetaStep = glm::two_pi<float>() / (float)sectors;
+	const float stackStep = glm::pi<float>() / (float)stacks;
+	const float sectorStep = glm::two_pi<float>() / (float)sectors;
 
 	std::vector<GLuint> indices{};
 	std::vector<glm::vec3> positions{};
@@ -899,19 +904,19 @@ RenderSystem::ObjectParams RenderSystem::CreateSphere_UV(int stacks, int sectors
 	VertexBasic::Normal::container_type normals{};
 
 	// x = (r * cos(phi)) * cos(theta)
-	// y =  r * sin(phi)
-	// z = (r * cos(phi)) * sin(theta)
-	for (int i = 0; i < stacks; ++i)
+	// y = (r * cos(phi)) * sin(theta)
+	// z =  r * sin(phi)
+	for (int i = 0; i <= stacks; ++i)
 	{
-		float stackAngle = i * phiStep;
+		float stackAngle = glm::half_pi<float>() - (float)i * stackStep;
 		float rcosP = radius * glm::cos(stackAngle);
-		float y = radius * glm::sin(stackAngle);
+		float z		= radius * glm::sin(stackAngle);
 
-		for (int j = 0; j < sectors; ++j)
+		for (int j = 0; j <= sectors; ++j)
 		{
-			float sectorAngle = j * thetaStep;
+			float sectorAngle = (float)j * sectorStep;
 			float x = rcosP * glm::cos(sectorAngle);
-			float z = rcosP * glm::sin(sectorAngle);
+			float y = rcosP * glm::sin(sectorAngle);
 
 			glm::vec3 pos{ x, y, z };
 			glm::vec2 tex{
@@ -944,10 +949,9 @@ RenderSystem::ObjectParams RenderSystem::CreateSphere_UV(int stacks, int sectors
 				indices.emplace_back(k2);
 				indices.emplace_back(k2 + 1);
 			}
+			++k1;
+			++k2;
 		}
-
-		++k1;
-		++k2;
 	}
 
 	return ObjectParams{
