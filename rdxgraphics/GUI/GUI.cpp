@@ -47,7 +47,7 @@ bool GUI::Init()
 
 	g.m_GUIWindows.emplace_back(std::make_unique<EntityHierarchy>("Hierarchy", 0));
 	g.m_GUIWindows.emplace_back(std::make_unique<Inspector>("Inspector", 0));
-	g.m_GUIWindows.emplace_back(std::make_unique<Viewport>("Viewport", 0));
+	g.m_GUIWindows.emplace_back(std::make_unique<Viewport>("Viewport", ImGuiWindowFlags_NoScrollbar));
 	g.m_GUIWindows.emplace_back(std::make_unique<Settings>("Settings", 0));
 
 	g.m_DockID = static_cast<uint32_t>(Rxuid{ "RX_DOCKSPACE_UID" });

@@ -430,6 +430,8 @@ Object<VertexBasic>& RenderSystem::GetObjekt(Rxuid uid)
 
 Object<VertexBasic>& RenderSystem::GetObjekt(Shape shape)
 {
+	if (shape == Shape::Sphere)
+		return GetObjekt(Primitive::Sphere);
 	return g.m_Objects[Rxuid{ shape }];
 }
 
@@ -448,7 +450,7 @@ Object<VertexBasic>& RenderSystem::GetObjekt(Primitive bv)
 		case Primitive::AABB:
 			return GetObjekt(Shape::Cube);
 		case Primitive::Sphere:
-			return GetObjekt(Shape::Sphere);
+			return IsIcosphere() ? GetObjekt(Shape::Sphere_Ico) : GetObjekt(Shape::Sphere_UV);
 		default:
 			RX_ASSERT(false);
 			return GetObjekt(Shape::Cube);
@@ -489,7 +491,8 @@ void RenderSystem::CreateShapes()
 	CreateObjekt(CreateQuad());
 	CreateObjekt(CreatePlane());
 	CreateObjekt(CreateCube());
-	CreateObjekt(CreateSphere());
+	CreateObjekt(CreateSphere_Ico());
+	CreateObjekt(CreateSphere_UV());
 }
 
 void RenderSystem::CreateObjekt(ObjectParams const& objParams)
@@ -774,7 +777,7 @@ RenderSystem::ObjectParams RenderSystem::CreateCube()
 
 // This sphere is bad becasue there are holes, and ALOT of duplicates vertices.
 // Too lazy to fix it rn
-RenderSystem::ObjectParams RenderSystem::CreateSphere(int refinement)
+RenderSystem::ObjectParams RenderSystem::CreateSphere_Ico(int refinement)
 { // https://blog.lslabs.dev/posts/generating_icosphere_with_code
 	// Vertices stolen from https://schneide.blog/2016/07/15/generating-an-icosphere-in-c/
 	std::vector<GLuint> indices{
@@ -875,7 +878,80 @@ RenderSystem::ObjectParams RenderSystem::CreateSphere(int refinement)
 	texCoords.resize(positions.size());
 
 	return ObjectParams{
-		Shape::Sphere, GL_TRIANGLES,
+		Shape::Sphere_Ico, GL_TRIANGLES,
+		indices,
+		positions,
+		texCoords,
+		normals,
+		nullptr
+	};
+}
+
+RenderSystem::ObjectParams RenderSystem::CreateSphere_UV(int stacks, int sectors)
+{
+	const float radius = 1.f; const float radInv = 1.f / radius;
+	const float phiStep = glm::pi<float>() / (float)stacks;
+	const float thetaStep = glm::two_pi<float>() / (float)sectors;
+
+	std::vector<GLuint> indices{};
+	std::vector<glm::vec3> positions{};
+	VertexBasic::TexCoord::container_type texCoords{};
+	VertexBasic::Normal::container_type normals{};
+
+	// x = (r * cos(phi)) * cos(theta)
+	// y =  r * sin(phi)
+	// z = (r * cos(phi)) * sin(theta)
+	for (int i = 0; i < stacks; ++i)
+	{
+		float stackAngle = i * phiStep;
+		float rcosP = radius * glm::cos(stackAngle);
+		float y = radius * glm::sin(stackAngle);
+
+		for (int j = 0; j < sectors; ++j)
+		{
+			float sectorAngle = j * thetaStep;
+			float x = rcosP * glm::cos(sectorAngle);
+			float z = rcosP * glm::sin(sectorAngle);
+
+			glm::vec3 pos{ x, y, z };
+			glm::vec2 tex{
+				(float)j / sectors,
+				(float)i / stacks
+			};
+
+			positions.push_back(pos);
+			texCoords.push_back(tex);
+			normals.push_back(pos * radInv);
+		}
+	}
+
+	for (int i = 0; i < stacks; ++i)
+	{
+		GLuint k1 = i * (sectors + 1);
+		GLuint k2 = k1 + sectors + 1;
+		for (int j = 0; j < sectors; ++j)
+		{
+			if (i != 0)
+			{
+				indices.emplace_back(k1);
+				indices.emplace_back(k2);
+				indices.emplace_back(k1 + 1);
+			}
+
+			if (i != (stacks - 1))
+			{
+				indices.emplace_back(k1 + 1);
+				indices.emplace_back(k2);
+				indices.emplace_back(k2 + 1);
+			}
+		}
+
+		++k1;
+		++k2;
+	}
+
+	return ObjectParams{
+		Shape::Sphere_UV, GL_TRIANGLES,
 		indices,
 		positions,
 		texCoords,

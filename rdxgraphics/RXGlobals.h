@@ -46,6 +46,8 @@ enum class Shape
 	Plane,
 	Cube,
 	Sphere,
+	Sphere_Ico,
+	Sphere_UV,
 
 	//MAX
 };

@@ -42,6 +42,8 @@ public:
 
 	inline static RenderPass& GetScreenPass() { return g.m_ScreenPass; }
 
+	inline static bool& IsIcosphere() { return g.m_IsIcosphere; }
+
 private:
 	static void CreateShapes();
 
@@ -52,7 +54,8 @@ private:
 	static ObjectParams CreateQuad();
 	static ObjectParams CreatePlane();
 	static ObjectParams CreateCube();
-	static ObjectParams CreateSphere(int refinement = 3);
+	static ObjectParams CreateSphere_Ico(int refinement = 3);
+	static ObjectParams CreateSphere_UV(int stacks = 28, int sectors = 12);
 
 private:
 	glm::vec3 m_BackColor{ 0.2f, 0.3f, 0.3f };
@@ -67,4 +70,6 @@ private:
 	entt::entity m_MinimapCamera{};
 
 	RenderPass m_ScreenPass{};
+
+	bool m_IsIcosphere{ false };
 };

@@ -4,6 +4,7 @@
 #include "GSM/SceneManager.h"
 #include "GLFWWindow/GLFWWindow.h"
 #include "Graphics/RenderPass.h"
+#include "ECS/Systems/RenderSystem.h"
 
 extern bool hasDefault;
 extern bool hasWireframe;
@@ -46,6 +47,8 @@ void Settings::UpdateImpl(float dt)
 		ImGui::Checkbox("Wireframe", &hasWireframe);
 		ImGui::Checkbox("Minimap", &hasMinimap);
 		//ImGui::ColorEdit3("Minimap Color", glm::value_ptr(minimapPass.GetBackbufferColor())); dosnt work as i expected
+		ImGui::Spacing();
+		ImGui::Checkbox("Is Icosphere", &RenderSystem::IsIcosphere());
 	}
 
 	ImGui::SeparatorText("Window");
