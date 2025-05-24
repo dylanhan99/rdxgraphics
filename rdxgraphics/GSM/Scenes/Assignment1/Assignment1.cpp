@@ -22,8 +22,8 @@ void SphereXSphereScene::StartImpl()
 	}
 
 
-	int halfWidth = 1.f;
-	int step = 4.f;
+	int halfWidth = 1;
+	int step = 4;
 
 	int begin = -halfWidth;
 	int end = halfWidth;
@@ -72,8 +72,8 @@ void AABBXSphereScene::StartImpl()
 	}
 
 
-	int halfWidth = 1.f;
-	int step = 4.f;
+	int halfWidth = 1;
+	int step = 4;
 
 	int begin = -halfWidth;
 	int end = halfWidth;
@@ -122,8 +122,8 @@ void AABBXAABBScene::StartImpl()
 	}
 
 
-	int halfWidth = 1.f;
-	int step = 4.f;
+	int halfWidth = 1;
+	int step = 4;
 
 	int begin = -halfWidth;
 	int end = halfWidth;
@@ -171,8 +171,8 @@ void PointXSphereScene::StartImpl()
 	}
 
 
-	int halfWidth = 1.f;
-	int step = 4.f;
+	int halfWidth = 1;
+	int step = 4;
 
 	int begin = -halfWidth;
 	int end = halfWidth;
@@ -220,8 +220,8 @@ void PointXAABBScene::StartImpl()
 	}
 
 
-	int halfWidth = 1.f;
-	int step = 4.f;
+	int halfWidth = 1;
+	int step = 4;
 
 	int begin = -halfWidth;
 	int end = halfWidth;
@@ -270,8 +270,8 @@ void PointXTriangleScene::StartImpl()
 	}
 
 
-	int halfWidth = 1.f;
-	int step = 4.f;
+	int halfWidth = 1;
+	int step = 4;
 
 	int begin = -halfWidth;
 	int end = halfWidth;
@@ -319,8 +319,8 @@ void PointXPlaneScene::StartImpl()
 	}
 
 
-	int halfWidth = 1.f;
-	int step = 4.f;
+	int halfWidth = 1;
+	int step = 4;
 
 	int begin = -halfWidth;
 	int end = halfWidth;
@@ -368,8 +368,8 @@ void RayXSphereScene::StartImpl()
 	}
 
 
-	int halfWidth = 1.f;
-	int step = 4.f;
+	int halfWidth = 1;
+	int step = 4;
 
 	int begin = -halfWidth;
 	int end = halfWidth;
@@ -417,8 +417,8 @@ void RayXAABBScene::StartImpl()
 	}
 
 
-	int halfWidth = 1.f;
-	int step = 4.f;
+	int halfWidth = 1;
+	int step = 4;
 
 	int begin = -halfWidth;
 	int end = halfWidth;
@@ -466,8 +466,8 @@ void RayXTriangleScene::StartImpl()
 	}
 
 
-	int halfWidth = 1.f;
-	int step = 4.f;
+	int halfWidth = 1;
+	int step = 4;
 
 	int begin = -halfWidth;
 	int end = halfWidth;
@@ -570,8 +570,8 @@ void PlaneXAABBScene::StartImpl()
 	}
 
 
-	int halfWidth = 1.f;
-	int step = 4.f;
+	int halfWidth = 1;
+	int step = 4;
 
 	int begin = -halfWidth;
 	int end = halfWidth;
@@ -619,8 +619,8 @@ void PlaneXSphereScene::StartImpl()
 	}
 
 
-	int halfWidth = 1.f;
-	int step = 4.f;
+	int halfWidth = 1;
+	int step = 4;
 
 	int begin = -halfWidth;
 	int end = halfWidth;

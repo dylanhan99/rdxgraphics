@@ -6,7 +6,7 @@
 	template Object<Klass>& Object<Klass>::Push<VKlass>(typename VKlass::container_type const &); \
 	template void Object<Klass>::BindInstancedData<VKlass>(GLsizeiptr offset, GLsizeiptr count);
 #define _RX_XXX(Klass) m_VBData.emplace_back(std::make_shared<Klass>());
-#define _RX_XXXX(Klass) { typename Klass::container_type& pData = GetVBData<Klass>(); m_PrimCount = pData.size(); break; }
+#define _RX_XXXX(Klass) { typename Klass::container_type& pData = GetVBData<Klass>(); m_PrimCount = (GLsizei)pData.size(); break; }
 #define _RX_XXXXX(Klass) if (Klass::IsInstanced) GetVBData<Klass>().clear();
 
 #define _RX_X(Klass, _RX_FOR_EACH)				\
@@ -170,7 +170,7 @@ void Object<T>::Draw(size_t count)
 	{
 		glDrawElementsInstanced(
 			m_Primitive,
-			m_Indices.size(),
+			(GLsizei)m_Indices.size(),
 			GL_UNSIGNED_INT,
 			nullptr,
 			(GLsizei)count
