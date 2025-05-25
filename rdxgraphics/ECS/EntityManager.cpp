@@ -5,6 +5,8 @@ RX_SINGLETON_EXPLICIT(EntityManager);
 
 bool EntityManager::Init()
 {
+	Xform::Init(g.m_Registry);
+
 	return true;
 }
 

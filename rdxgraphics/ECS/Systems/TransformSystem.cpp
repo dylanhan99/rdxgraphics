@@ -7,10 +7,14 @@ RX_SINGLETON_EXPLICIT(TransformSystem);
 
 void TransformSystem::Update(float dt)
 {
-	auto xformView = EntityManager::View<Xform>();
-	for (auto [handle, xform] : xformView.each())
+	auto xformView = EntityManager::View<Xform, Xform::Dirty, Metadata>();
+	int i = 0;
+	for (auto [handle, xform, dirty, meta] : xformView.each())
 	{
 		xform.UpdateXform();
+		EntityManager::RemoveComponent<Xform::Dirty>(handle);
+		RX_INFO("{}, {}", i, meta.GetName());
+		++i;
 	}
 
 	auto colView = EntityManager::View<const Xform, const Collider>();
@@ -19,7 +23,7 @@ void TransformSystem::Update(float dt)
 		if (col.GetPrimitiveType() == Primitive::NIL)
 			continue;
 
-		Xform& xform = EntityManager::GetComponent<Xform>(handle);
+		Xform const& xform = EntityManager::GetComponent<const Xform>(handle);
 #define _RX_X(Klass)														 \
 		case Primitive::Klass:														 \
 		{																	 \

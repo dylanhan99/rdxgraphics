@@ -32,10 +32,51 @@ private:
 
 };
 
+
+
+#define RX_COMPONENT_DEC_HANDLE \
+public:							\
+	inline entt::entity GetEntityHandle() const { return m_Handle; } \
+private: \
+	entt::entity m_Handle{}; \
+	inline void SetEntityHandle(entt::entity handle) { m_Handle = handle; }
+#define RX_COMPONENT_HAS_HANDLE_2(Klass)										 \
+RX_COMPONENT_DEC_HANDLE;														 \
+private:																		 \
+	inline static void OnConstruct(entt::registry& registry, entt::entity handle)\
+	{																			 \
+		Klass& klass = registry.get<Klass>(handle);								 \
+		klass.SetEntityHandle(handle);											 \
+		klass.OnConstructImpl();												 \
+	}																			 \
+public:																			 \
+	inline static void Init(entt::registry& registry)							 \
+	{																			 \
+		registry.on_construct<Xform>().connect<&Xform::OnConstruct>();			 \
+		registry.on_update<Xform>().connect<&Xform::OnConstruct>();				 \
+	}																			 \
+private:
+
+
 class Xform : public BaseComponent
 {
+	//RX_COMPONENT_HAS_HANDLE_2(Xform);
+
+public: inline entt::entity GetEntityHandle() const {
+	return m_Handle;
+} private: entt::entity m_Handle{}; inline void SetEntityHandle(entt::entity handle) {
+	m_Handle = handle;
+}; private: inline static void OnConstruct(entt::registry& registry, entt::entity handle) {
+	Xform& klass = registry.get<Xform>(handle); 
+	klass.SetEntityHandle(handle); 
+	klass.OnConstructImpl();
+} public: inline static void Init(entt::registry& registry) {
+	registry.on_construct<Xform>().connect<&Xform::OnConstruct>();
+	registry.on_update<Xform>().connect<&Xform::OnConstruct>();
+} private:;
+
 public:
-	class Dirty : public BaseComponent {};
+	class Dirty : public BaseComponent { private: bool f{}; };
 
 public:
 	Xform() = default;
@@ -47,11 +88,18 @@ public:
 	inline glm::mat4 const& GetXform() const { return m_Xform; }
 	inline glm::mat4& GetXform() { return m_Xform; }
 	inline glm::vec3 const& GetTranslate() const { return m_Translate; }
-	inline glm::vec3& GetTranslate() { return m_Translate; }
 	inline glm::vec3 const& GetScale() const { return m_Scale; }
-	inline glm::vec3& GetScale() { return m_Scale; }
 	inline glm::vec3 const& GetEulerOrientation() const { return m_Rotate; }
-	inline glm::vec3& GetEulerOrientation() { return m_Rotate; }
+	glm::vec3& GetTranslate();
+	glm::vec3& GetScale();
+	glm::vec3& GetEulerOrientation();
+	void SetTranslate(glm::vec3);
+	void SetScale(glm::vec3);
+	void SetEulerOrientation(glm::vec3);
+
+private:
+	inline void OnConstructImpl() { SetDirty(); }
+	void SetDirty(); // Indicates this xform to be dirty and m_Xform MUST be updated.
 
 private:
 	glm::vec3 m_Translate{ 0.f }, m_Scale{ 1.f }, m_Rotate{ 0.f };
