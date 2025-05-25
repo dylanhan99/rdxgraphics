@@ -35,6 +35,9 @@ private:
 class Xform : public BaseComponent
 {
 public:
+	class Dirty : public BaseComponent {};
+
+public:
 	Xform() = default;
 	inline Xform(glm::vec3 const& pos, glm::vec3 scale = glm::vec3{1.f}, glm::vec3 eulOri = glm::vec3{0.f})
 		: m_Translate(pos), m_Scale(scale), m_Rotate(eulOri) { }
