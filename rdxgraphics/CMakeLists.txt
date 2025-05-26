@@ -44,4 +44,5 @@ target_link_libraries("${PROJECT_NAME}"
 	PRIVATE imgui
 	PRIVATE spdlog::spdlog
 	PRIVATE EnTT::EnTT
+	PRIVATE assimp
 )

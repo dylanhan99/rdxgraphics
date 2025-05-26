@@ -21,6 +21,7 @@ void RDX::Run()
 
 	bool initOK = true;
 	initOK &= GLFWWindow::Init();
+	initOK &= EntityManager::Init();
 	initOK &= RenderSystem::Init();
 	initOK &= GUI::Init();
 	if (!initOK)

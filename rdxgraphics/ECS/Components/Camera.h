@@ -13,11 +13,12 @@ public:
 
 public:
 	Camera(
-		entt::entity handle, Mode camMode,
-		glm::vec3 const& orientation = DefaultFront,
+		Mode camMode,
 		glm::vec2 aspect = { 4.f, 3.f },
 		float fov = 90
 	);
+
+	void OnConstructImpl() override;
 
 	void UpdateCameraVectors();
 	void Inputs(float dt);

@@ -116,7 +116,7 @@ void Inspector::UpdateCompMaterial(std::string const& strHandle, Material& comp)
 
 void Inspector::UpdateCompCollider(std::string const& strHandle, Collider& comp)
 {
-	ImGui::Text("Choose BV type");
+	ImGui::Text("Choose Primitive");
 	entt::entity handle = comp.GetEntityHandle();
 
 #define _RX_X(Klass) #Klass,
@@ -127,7 +127,7 @@ void Inspector::UpdateCompCollider(std::string const& strHandle, Collider& comp)
 
 	size_t currIndex = (size_t)comp.GetPrimitiveType();
 	ImGuiComboFlags comboFlags = 0;
-	if (ImGui::BeginCombo("BV Type", bvOptions[currIndex].c_str(), comboFlags))
+	if (ImGui::BeginCombo("Primitive", bvOptions[currIndex].c_str(), comboFlags))
 	{
 		for (size_t i = 0; i < bvOptions.size(); ++i)
 		{
@@ -146,8 +146,7 @@ void Inspector::UpdateCompCollider(std::string const& strHandle, Collider& comp)
 		RX_ASSERT(EntityManager::HasComponent<Klass##Primitive>(handle));					\
 		if (ImGui::TreeNodeEx(#Klass" Primitive")) {										\
 			Klass##Primitive& comp = EntityManager::GetComponent<Klass##Primitive>(handle);	\
-			ImGui::Checkbox("Follow Xform", &comp.IsFollowXform());							\
-			PositionDrag(strHandle, comp.GetPosition());									\
+			PositionDrag(strHandle, comp.GetOffset());										\
 			UpdateComp##Klass##Primitive(strHandle, comp);									\
 			ImGui::TreePop();																\
 		}																					\

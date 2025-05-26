@@ -68,29 +68,7 @@ bool CollisionSystem::CheckCollision(PointPrimitive const& lhs, PointPrimitive c
 
 bool CollisionSystem::CheckCollision(PointPrimitive const& lhs, TrianglePrimitive const& rhs)
 { // Orange book page 204 (243 in the pdf)
-	glm::vec3 a = rhs.GetP0_W();
-	glm::vec3 b = rhs.GetP1_W();
-	glm::vec3 c = rhs.GetP2_W();
-	glm::vec3 p = lhs.GetPosition();
-	// Translate point and triangle so that point lies at origin
-	a -= p; b -= p; c -= p;
-
-	// Plane distance test
-	glm::vec3 n = rhs.GetNormal();
-	float d = glm::dot(n, a);
-	if (glm::abs(d) > glm::epsilon<float>()) return false;
-
-	// Actual test
-	float ab = glm::dot(a, b);
-	float ac = glm::dot(a, c);
-	float bc = glm::dot(b, c);
-	float cc = glm::dot(c, c);
-	// Make sure plane normals for pab and pbc point in the same direction
-	if (bc * ac - cc * ab < 0.0f) return false;
-	// Make sure plane normals for pab and pca point in the same direction
-	float bb = glm::dot(b, b);
-	if (ab * bc - ac * bb < 0.0f) return false;
-	return true;
+	return IntersectPointTriangle(lhs.GetPosition(), rhs.GetP0_W(), rhs.GetP1_W(), rhs.GetP2_W(), rhs.GetNormal());
 }
 
 bool CollisionSystem::CheckCollision(PointPrimitive const& lhs, PlanePrimitive const& rhs)
@@ -112,8 +90,7 @@ bool CollisionSystem::CheckCollision(PointPrimitive const& lhs, AABBPrimitive co
 
 bool CollisionSystem::CheckCollision(PointPrimitive const& lhs, SpherePrimitive const& rhs)
 {
-	float d2 = glm::distance2(lhs.GetPosition(), rhs.GetPosition());
-	return d2 < glm::pow(rhs.GetRadius(), 2.f);
+	return IntersectPointSphere(lhs.GetPosition(), rhs.GetPosition(), rhs.GetRadius());
 }
 
 // Works for both front and back face
@@ -125,7 +102,7 @@ bool CollisionSystem::CheckCollision(RayPrimitive const& lhs, TrianglePrimitive 
 			return glm::dot(a, glm::cross(b, c));
 		};
 
-	if (CheckCollision(PointPrimitive(lhs.GetPosition()), rhs))
+	if (IntersectPointTriangle(lhs.GetPosition(), rhs.GetP0_W(), rhs.GetP1_W(), rhs.GetP2_W(), rhs.GetNormal()))
 		return true;
 
 	glm::vec3 dir = lhs.GetDirection();
@@ -261,13 +238,14 @@ bool CollisionSystem::CheckCollision(AABBPrimitive const& lhs, SpherePrimitive c
 	glm::vec3 boxMin = lhs.GetMinPoint();
 	glm::vec3 boxMax = lhs.GetMaxPoint();
 	glm::vec3 sphPos = rhs.GetPosition();
-	PointPrimitive closestPoint{
+
+	glm::vec3 closestPoint{
 		glm::max(boxMin.x, glm::min(sphPos.x, boxMax.x)),
 		glm::max(boxMin.y, glm::min(sphPos.y, boxMax.y)),
 		glm::max(boxMin.z, glm::min(sphPos.z, boxMax.z))
 	};
 
-	return CheckCollision(closestPoint, rhs);
+	return IntersectPointSphere(closestPoint, sphPos, rhs.GetRadius());
 }
 
 bool CollisionSystem::CheckCollision(SpherePrimitive const& lhs, PointPrimitive const& rhs) { return CheckCollision(rhs, lhs); }
@@ -280,10 +258,41 @@ bool CollisionSystem::CheckCollision(SpherePrimitive const& lhs, AABBPrimitive c
 
 bool CollisionSystem::CheckCollision(SpherePrimitive const& lhs, SpherePrimitive const& rhs)
 {
-	return CheckCollision(
-		PointPrimitive{ lhs.GetPosition() },
-		SpherePrimitive{ rhs.GetPosition(), lhs.GetRadius() + rhs.GetRadius() }
-	);
+	return IntersectPointSphere(
+		lhs.GetPosition(),
+		rhs.GetPosition(), lhs.GetRadius() + rhs.GetRadius());
+}
+
+bool CollisionSystem::IntersectPointTriangle(glm::vec3 const& p, glm::vec3 const& q0, glm::vec3 const& q1, glm::vec3 const& q2, glm::vec3 const& qn)
+{
+	glm::vec3 a = q0;
+	glm::vec3 b = q1;
+	glm::vec3 c = q2;
+	// Translate point and triangle so that point lies at origin
+	a -= p; b -= p; c -= p;
+
+	// Plane distance test
+	glm::vec3 n = qn;
+	float d = glm::dot(n, a);
+	if (glm::abs(d) > glm::epsilon<float>()) return false;
+
+	// Actual test
+	float ab = glm::dot(a, b);
+	float ac = glm::dot(a, c);
+	float bc = glm::dot(b, c);
+	float cc = glm::dot(c, c);
+	// Make sure plane normals for pab and pbc point in the same direction
+	if (bc * ac - cc * ab < 0.0f) return false;
+	// Make sure plane normals for pab and pca point in the same direction
+	float bb = glm::dot(b, b);
+	if (ab * bc - ac * bb < 0.0f) return false;
+	return true;
+}
+
+bool CollisionSystem::IntersectPointSphere(glm::vec3 const& p, glm::vec3 const& q, float radius)
+{
+	float d2 = glm::distance2(p, q);
+	return d2 < glm::pow(radius, 2.f);
 }
 
 bool CollisionSystem::IntersectSegmentPlane(RayPrimitive const& ray, PlanePrimitive const& plane, PointPrimitive* oPoint)

@@ -1,16 +1,6 @@
 #pragma once
 #include <entt/entt.hpp>
 
-#define RX_COMPONENT_HAS_HANDLE(Klass) 						 \
-public:														 \
-inline static const bool HasEnttHandle{ true };				 \
-															 \
-public:														 \
-	Klass() = delete; /*We want to force the entt::entity*/	 \
-	inline Klass(entt::entity handle) : m_Handle(handle) {}; \
-	inline entt::entity GetEntityHandle() const { return m_Handle; } \
-private: entt::entity m_Handle{};
-
 // These cover all "main" components. 
 // In the context of collider, Collider is the "main", while _BV variants are the "subsidiaries"
 #define RX_DO_MAIN_COMPONENTS_M(F_O_O, ...)\
@@ -28,12 +18,43 @@ class BaseComponent
 {
 public:
 	~BaseComponent() = default;
+	inline virtual void OnConstructImpl() {};
+private:
+};
+
+#define RX_COMPONENT_DEC_HANDLE												\
+public:																		\
+	inline entt::entity GetEntityHandle() const { return m_Handle; }		\
+	inline void SetEntityHandle(entt::entity handle) { m_Handle = handle; } \
+private:																	\
+	entt::entity m_Handle{};
+
+#define RX_COMPONENT_DEF_HANDLE(Klass)											 \
+private:																		 \
+	inline static void OnConstruct(entt::registry& registry, entt::entity handle)\
+	{																			 \
+		Klass& klass = registry.get<Klass>(handle);								 \
+		klass.SetEntityHandle(handle);											 \
+		klass.OnConstructImpl();												 \
+	}																			 \
+public:																			 \
+	inline static void Init(entt::registry& registry)							 \
+	{																			 \
+		registry.on_construct<Klass>().connect<&Klass::OnConstruct>();			 \
+		registry.on_update<Klass>().connect<&Klass::OnConstruct>();				 \
+	}																			 \
 private:
 
-};
+#define RX_COMPONENT_HAS_HANDLE(Klass) \
+RX_COMPONENT_DEC_HANDLE;			   \
+RX_COMPONENT_DEF_HANDLE(Klass);
 
 class Xform : public BaseComponent
 {
+	RX_COMPONENT_HAS_HANDLE(Xform);
+public:
+	class Dirty : public BaseComponent { char _{}; };
+
 public:
 	Xform() = default;
 	inline Xform(glm::vec3 const& pos, glm::vec3 scale = glm::vec3{1.f}, glm::vec3 eulOri = glm::vec3{0.f})
@@ -44,11 +65,18 @@ public:
 	inline glm::mat4 const& GetXform() const { return m_Xform; }
 	inline glm::mat4& GetXform() { return m_Xform; }
 	inline glm::vec3 const& GetTranslate() const { return m_Translate; }
-	inline glm::vec3& GetTranslate() { return m_Translate; }
 	inline glm::vec3 const& GetScale() const { return m_Scale; }
-	inline glm::vec3& GetScale() { return m_Scale; }
 	inline glm::vec3 const& GetEulerOrientation() const { return m_Rotate; }
-	inline glm::vec3& GetEulerOrientation() { return m_Rotate; }
+	glm::vec3& GetTranslate();
+	glm::vec3& GetScale();
+	glm::vec3& GetEulerOrientation();
+	void SetTranslate(glm::vec3);
+	void SetScale(glm::vec3);
+	void SetEulerOrientation(glm::vec3);
+
+private:
+	inline void OnConstructImpl() { SetDirty(); }
+	void SetDirty() const; // Indicates this xform to be dirty and m_Xform MUST be updated.
 
 private:
 	glm::vec3 m_Translate{ 0.f }, m_Scale{ 1.f }, m_Rotate{ 0.f };

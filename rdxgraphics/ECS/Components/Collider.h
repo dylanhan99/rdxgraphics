@@ -5,10 +5,17 @@ class Collider : public BaseComponent
 {
 	RX_COMPONENT_HAS_HANDLE(Collider);
 public:
-	inline Collider(entt::entity handle, Primitive primType) : Collider(handle) { SetPrimitiveType(primType); }
+	class Dirty : public BaseComponent { char _{}; };
+
+public:
+	inline Collider(Primitive primType = Primitive::NIL) : m_PrimitiveType(primType) { }
+	inline void OnConstructImpl() override { SetupPrimitive(); }
 
 	inline Primitive GetPrimitiveType() const { return m_PrimitiveType; }
 	void SetPrimitiveType(Primitive primType);
+
+private:
+	void SetupPrimitive(glm::vec3 pos = glm::vec3{0.f}) const;
 	glm::vec3 RemovePrimitive(); // returns position of removed BV
 
 private:
@@ -17,53 +24,63 @@ private:
 
 class BasePrimitive : public BaseComponent
 {
+	RX_COMPONENT_DEC_HANDLE;
 public:
 	BasePrimitive() = default;
 	~BasePrimitive() = default;
-	inline BasePrimitive(glm::vec3 const& p) : m_Position(p) {}
-	inline BasePrimitive(float x, float y, float z) : m_Position({ x, y, z }) {}
+	inline BasePrimitive(glm::vec3 const& o) : m_Offset(o) {}
+	inline BasePrimitive(float x, float y, float z) : m_Offset({ x, y, z }) {}
+
+	// Can be overrided again if needed, but call BasePrimitive::OnConstructImpl() first
+	inline void OnConstructImpl() override { SetDirty(); }
 
 	virtual void UpdateXform() = 0;
 
 	inline glm::mat4 const& GetXform() const { return m_Xform; }
-	inline glm::vec3 const& GetPosition() const { return m_Position; }
-	inline glm::vec3& GetPosition() { return m_Position; }
-	inline void SetPosition(glm::vec3 pos) { m_Position = pos; }
+	inline glm::vec3 const& GetOffset() const { return m_Offset; }
+	inline glm::vec3& GetOffset() { SetDirty(); return m_Offset; }
+	inline void SetOffset(glm::vec3 o) { SetDirty(); m_Offset = o; }
+
+	glm::vec3 GetPosition() const;
+	void SetPosition(glm::vec3 pos);
+
 	inline bool const& IsCollide() const { return m_IsCollide; }
 	inline bool& IsCollide() { return m_IsCollide; }
-	inline bool const& IsFollowXform() const { return m_IsFollowXform; }
-	inline bool& IsFollowXform() { return m_IsFollowXform; }
+
+	void SetDirty() const;
 
 protected:
 	glm::mat4 m_Xform{};
-	glm::vec3 m_Position{};
+
+private:
+	glm::vec3 m_Offset{};
 	bool m_IsCollide{ false };
-	bool m_IsFollowXform{ true };
 };
 
 class PointPrimitive : public BasePrimitive
 {
+	RX_COMPONENT_DEF_HANDLE(PointPrimitive);
 public:
 	PointPrimitive() = default;
-	inline PointPrimitive(glm::vec3 const& p) : BasePrimitive(p) {}
+	inline PointPrimitive(glm::vec3 const& o) : BasePrimitive(o) {}
 	inline PointPrimitive(float x, float y, float z) : BasePrimitive(x, y, z) {}
 
 	inline void UpdateXform() override
 	{
-		m_Xform = glm::translate(m_Position);
+		m_Xform = glm::translate(GetPosition());
 	}
 };
 
 class RayPrimitive : public BasePrimitive
 {
+	RX_COMPONENT_DEF_HANDLE(RayPrimitive);
 public:
 	inline static const glm::vec3 DefaultDirection{ 0.f,0.f,-1.f };
 public:
 	RayPrimitive() = default;
 	inline void UpdateXform() override
 	{
-		//RX_INFO("{} > {} > {}", GetDirection().x, GetDirection().y, GetDirection().z);
-		m_Xform = glm::translate(m_Position) * glm::scale(glm::vec3{ s_Scale }) *
+		m_Xform = glm::translate(GetPosition()) * glm::scale(glm::vec3{ s_Scale }) *
 			glm::mat4_cast(GetOrientationQuat());
 	}
 
@@ -86,6 +103,7 @@ private:
 // Must be CCW orientation
 class TrianglePrimitive : public BasePrimitive
 {
+	RX_COMPONENT_DEF_HANDLE(TrianglePrimitive);
 public:
 	inline static const glm::vec3 DefaultP0{ 0.0f,		 1.0f, 0.f };
 	inline static const glm::vec3 DefaultP1{ -0.86603f,	-0.5f, 0.f };
@@ -111,17 +129,18 @@ public:
 	inline void UpdateCentroid()
 	{
 		static float one_third = 1.f / 3.f;
-		glm::vec3 oldCentroid = m_Position;
+		glm::vec3 oldCentroid = GetPosition();
 		glm::vec3 p0_w = oldCentroid + m_P0;
 		glm::vec3 p1_w = oldCentroid + m_P1;
 		glm::vec3 p2_w = oldCentroid + m_P2;
-
-		m_Position = one_third * (p0_w + p1_w + p2_w);
-
+		
+		glm::vec3 newCentroid = one_third * (p0_w + p1_w + p2_w);
+		SetPosition(newCentroid); // Updates m_Offset
+		
 		// Update the local offsets since centroid changed
-		m_P0 = p0_w - m_Position;
-		m_P1 = p1_w - m_Position;
-		m_P2 = p2_w - m_Position;
+		m_P0 = p0_w - newCentroid;
+		m_P1 = p1_w - newCentroid;
+		m_P2 = p2_w - newCentroid;
 	}
 
 	inline glm::vec3 const& GetP0() const { return m_P0; }
@@ -131,9 +150,9 @@ public:
 	inline glm::vec3 const& GetP2() const { return m_P2; }
 	inline glm::vec3& GetP2() { return m_P2; }
 
-	inline glm::vec3 GetP0_W() const { return m_Position + m_P0; }
-	inline glm::vec3 GetP1_W() const { return m_Position + m_P1; }
-	inline glm::vec3 GetP2_W() const { return m_Position + m_P2; }
+	inline glm::vec3 GetP0_W() const { return GetPosition() + m_P0; }
+	inline glm::vec3 GetP1_W() const { return GetPosition() + m_P1; }
+	inline glm::vec3 GetP2_W() const { return GetPosition() + m_P2; }
 
 private: // These points are OFFSETS from the centroid (position)
 	glm::vec3 m_P0{ DefaultP0 };
@@ -143,15 +162,16 @@ private: // These points are OFFSETS from the centroid (position)
 
 class PlanePrimitive : public BasePrimitive
 {
+	RX_COMPONENT_DEF_HANDLE(PlanePrimitive);
 public:
 	inline static const glm::vec3 DefaultNormal{ 0.f,0.f,1.f };
 	inline static const uint32_t DefaultSize{ 40 };
 public:
 	PlanePrimitive() = default;
-	inline PlanePrimitive(glm::vec3 p, glm::vec3 const& eulerOrientation) : BasePrimitive(p), m_EulerOrientation(eulerOrientation) {}
+	inline PlanePrimitive(glm::vec3 o, glm::vec3 const& eulerOrientation) : BasePrimitive(o), m_EulerOrientation(eulerOrientation) {}
 	inline void UpdateXform() override
 	{
-		m_Xform = glm::translate(m_Position) * glm::scale(s_Scale) *
+		m_Xform = glm::translate(GetPosition()) * glm::scale(s_Scale) *
 			glm::mat4_cast(glm::quat{ m_EulerOrientation });
 	}
 
@@ -174,32 +194,33 @@ private:
 
 class AABBPrimitive : public BasePrimitive
 {
+	RX_COMPONENT_DEF_HANDLE(AABBPrimitive);
 public:
 	AABBPrimitive() = default;
 	inline void UpdateXform() override
 	{
-		m_Xform = glm::translate(m_Position) * glm::scale(m_HalfExtents);
+		m_Xform = glm::translate(GetPosition()) * glm::scale(m_HalfExtents);
 	}
 
 	inline glm::vec3 const& GetHalfExtents() const { return m_HalfExtents; }
 	inline glm::vec3& GetHalfExtents() { return m_HalfExtents; }
-	inline glm::vec3 GetMinPoint() const { return m_Position - 0.5f * m_HalfExtents; }
-	inline glm::vec3 GetMaxPoint() const { return m_Position + 0.5f * m_HalfExtents; }
+	inline glm::vec3 GetMinPoint() const { return GetPosition() - 0.5f * m_HalfExtents; }
+	inline glm::vec3 GetMaxPoint() const { return GetPosition() + 0.5f * m_HalfExtents; }
 
 private:
 	glm::vec3 m_HalfExtents{ 0.5f };
-
 };
 
 class SpherePrimitive : public BasePrimitive
 {
+	RX_COMPONENT_DEF_HANDLE(SpherePrimitive);
 public:
 	SpherePrimitive() = default;
-	inline SpherePrimitive(glm::vec3 const& p, float r) : BasePrimitive(p), m_Radius(r) {}
+	inline SpherePrimitive(glm::vec3 const& o, float r) : BasePrimitive(o), m_Radius(r) {}
 
 	inline void UpdateXform() override
 	{
-		m_Xform = glm::translate(m_Position) * glm::scale(glm::vec3{ m_Radius });
+		m_Xform = glm::translate(GetPosition()) * glm::scale(glm::vec3{ m_Radius });
 	}
 
 	inline float const& GetRadius() const { return m_Radius; }

@@ -13,4 +13,5 @@ private:
 
 	entt::entity m_MainCamera{};
 	entt::entity m_MinimapCamera{};
+	entt::entity m_LightHandle{};
 };

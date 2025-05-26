@@ -60,5 +60,7 @@ private:
 	static bool CheckCollision(SpherePrimitive const& lhs, SpherePrimitive const& rhs);
 
 public: // Helper functions, most of these are directly from the orange textbook
+	static bool IntersectPointTriangle(glm::vec3 const& p, glm::vec3 const& q0, glm::vec3 const& q1, glm::vec3 const& q2, glm::vec3 const& qn);
+	static bool IntersectPointSphere(glm::vec3 const& p, glm::vec3 const& q, float radius);
 	static bool IntersectSegmentPlane(RayPrimitive const& ray, PlanePrimitive const& plane, PointPrimitive* oPoint = nullptr);
 };

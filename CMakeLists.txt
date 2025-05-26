@@ -38,6 +38,10 @@ set(SPDLOG_ENABLE_PCH   ON CACHE BOOL "" FORCE)
 
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libs" FORCE)
 
+set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(ASSIMP_WARNINGS_AS_ERRORS OFF CACHE BOOL "" FORCE)
+
+
 FetchContent_Declare(glfw
     GIT_REPOSITORY https://github.com/glfw/glfw.git
     GIT_TAG        3.4
@@ -82,6 +86,11 @@ FetchContent_Declare(entt
     GIT_TAG        v3.15.0
 )
 
+FetchContent_Declare(assimp
+    GIT_REPOSITORY https://github.com/assimp/assimp.git
+    GIT_TAG        v5.4.3
+)
+
 #########################################################
 # Additional setup for BS_thread_pool. Header-only, no cmakelists
 FetchContent_GetProperties(BS_thread_pool)
@@ -101,7 +110,7 @@ endif()
 #########################################################
 # Only MakeAvailable projects who have cmakelists file
 #FetchContent_MakeAvailable(glfw glm glad imgui spdlog)
-FetchContent_MakeAvailable(glfw glm glew imgui spdlog entt)
+FetchContent_MakeAvailable(glfw glm glew imgui spdlog entt assimp)
 
 # Add your actual project
 add_subdirectory(rdxgraphics)
