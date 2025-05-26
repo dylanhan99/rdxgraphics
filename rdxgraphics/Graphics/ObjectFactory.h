@@ -1,0 +1,33 @@
+#pragma once
+#include "Graphics/Object.h"
+
+#define _RX_X(Klass, ...) typename Klass::container_type,
+	using ObjectParams_VertexBasic = std::tuple<GLenum, std::vector<GLuint>,
+	RX_VERTEX_BASIC_ATTRIBS_M_NOINSTANCED(_RX_X)
+	void* // Hack to overcome the trailing comma
+	>;
+#undef _RX_X
+#define _RX_X(Klass, ...) typename Klass::container_type,
+	using ObjectParams_VertexFBO = std::tuple<GLenum, std::vector<GLuint>,
+	RX_VERTEX_FBO_ATTRIBS_M_NOINSTANCED(_RX_X)
+	void* // Hack to overcome the trailing comma
+	>;
+#undef _RX_X
+
+// Wrapper for assimp. It's meant to be a helper for Object creation via assimp,
+// moved into its own file for neatness
+class ObjectFactory
+{
+public:
+
+public:
+	template <typename T, typename U>
+	static Object<T> CreateObjekt(U const& objParams);
+
+	// Assimp wrappers
+
+	static ObjectParams_VertexBasic LoadModelFile(std::filesystem::path const& path);
+	static ObjectParams_VertexBasic LoadModelBuffer(std::string const& buffer);
+
+	static ObjectParams_VertexBasic SetupPoint();
+};

@@ -2,6 +2,7 @@
 #include "RenderSystem.h"
 #include "GLFWWindow/GLFWWindow.h"
 #include "ECS/Components.h"
+#include "Graphics/ObjectFactory.h"
 
 #if USE_CSD3151_AUTOMATION == 1
 // This automation hook reads the shader from the submission tutorial's shader directory as a string literal.
@@ -483,11 +484,13 @@ void RenderSystem::CreateShapes()
 		g.m_FBOObject.BeginObject(GL_TRIANGLES)
 			.PushIndices(indices)
 			.Push<VertexFBO::Position>(positions)
-			.Push<VertexFBO::TexCoords>(texCoords)
+			.Push<VertexFBO::TexCoord>(texCoords)
 			.EndObject();
 	}
 
-	CreateObjekt(CreatePoint());
+	GetObjekt(Shape::Point) = ObjectFactory::CreateObjekt<VertexBasic, ObjectParams_VertexBasic>(ObjectFactory::SetupPoint());
+	
+	//CreateObjekt(CreatePoint());
 	CreateObjekt(CreateLine());
 	CreateObjekt(CreateTriangle());
 	CreateObjekt(CreateQuad());
