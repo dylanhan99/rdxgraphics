@@ -6,21 +6,12 @@
 #include "ECS/EntityManager.h"
 
 Camera::Camera(
-	entt::entity handle, Mode camMode,
-	glm::vec3 const& orientation,
+	Mode camMode,
 	glm::vec2 aspect, float fov)
-	: Camera(handle)
 {
 	m_AspectRatio = aspect.s / aspect.t;
 	m_FOV = fov;
 	m_CameraMode = camMode;
-
-	if (!EntityManager::HasComponent<Xform>(handle))
-	{ // Add an xform if not found
-		EntityManager::AddComponent<Xform>(handle, glm::vec3{}, glm::vec3{ 1.f }, orientation);
-	}
-
-	UpdateCameraVectors();
 
 	EventDispatcher<int, int>::RegisterEvent(RX_EVENT_FRAMEBUFFER_RESIZE,
 		[&](int x, int y)
@@ -29,8 +20,21 @@ Camera::Camera(
 		});
 }
 
+void Camera::OnConstructImpl()
+{
+	entt::entity const handle = GetEntityHandle();
+	if (!EntityManager::HasComponent<Xform>(handle))
+	{ // Add an xform if not found
+		EntityManager::AddComponent<Xform>(handle, glm::vec3{}, glm::vec3{ 1.f }, DefaultFront);
+	}
+
+	UpdateCameraVectors();
+}
+
 void Camera::UpdateCameraVectors()
 {
+	// [todo] add a camera::dirty, UpdateCameraVectors should only run if either xform or camera dirty
+
 	Xform& xform = EntityManager::GetComponent<Xform>(GetEntityHandle());
 	glm::vec3 const& position = xform.GetTranslate();
 	glm::vec3& eulerOrientation = xform.GetEulerOrientation();

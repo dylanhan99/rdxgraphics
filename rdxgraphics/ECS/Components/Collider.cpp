@@ -13,11 +13,17 @@ void Collider::SetPrimitiveType(Primitive primType)
 	if (primType == Primitive::NIL)
 		return;
 
-#define _RX_X(Klass)									 \
-	case Primitive::Klass:										 \
-		EntityManager::AddComponent<Klass##Primitive>(m_Handle);\
-		RX_ASSERT(EntityManager::HasComponent<Klass##Primitive>(m_Handle));\
-		EntityManager::GetComponent<Klass##Primitive>(m_Handle).SetPosition(prevPos);\
+	SetupPrimitive(prevPos);
+}
+
+void Collider::SetupPrimitive(glm::vec3 pos) const
+{
+	entt::entity const handle = GetEntityHandle();
+#define _RX_X(Klass)															\
+	case Primitive::Klass:														\
+		EntityManager::AddComponent<Klass##Primitive>(handle);					\
+		RX_ASSERT(EntityManager::HasComponent<Klass##Primitive>(handle));		\
+		EntityManager::GetComponent<Klass##Primitive>(handle).SetPosition(pos);	\
 		break;
 
 	switch (m_PrimitiveType)
@@ -35,12 +41,13 @@ glm::vec3 Collider::RemovePrimitive()
 	if (m_PrimitiveType == Primitive::NIL)
 		return {};
 
+	entt::entity const handle = GetEntityHandle();
 	glm::vec3 pos{};
-#define _RX_X(Klass)												\
-	case Primitive::Klass:													\
-		RX_ASSERT(EntityManager::HasComponent<Klass##Primitive>(m_Handle));\
-		pos = EntityManager::GetComponent<Klass##Primitive>(m_Handle).GetPosition();\
-		EntityManager::RemoveComponent<Klass##Primitive>(m_Handle);		\
+#define _RX_X(Klass)																\
+	case Primitive::Klass:															\
+		RX_ASSERT(EntityManager::HasComponent<Klass##Primitive>(handle));			\
+		pos = EntityManager::GetComponent<Klass##Primitive>(handle).GetPosition();	\
+		EntityManager::RemoveComponent<Klass##Primitive>(handle);					\
 		break;
 
 	switch (m_PrimitiveType)

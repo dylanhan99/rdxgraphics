@@ -5,10 +5,14 @@ class Collider : public BaseComponent
 {
 	RX_COMPONENT_HAS_HANDLE(Collider);
 public:
-	inline Collider(entt::entity handle, Primitive primType) : Collider(handle) { SetPrimitiveType(primType); }
+	inline Collider(Primitive primType = Primitive::NIL) : m_PrimitiveType(primType) { }
+	inline void OnConstructImpl() override { SetupPrimitive(); }
 
 	inline Primitive GetPrimitiveType() const { return m_PrimitiveType; }
 	void SetPrimitiveType(Primitive primType);
+
+private:
+	void SetupPrimitive(glm::vec3 pos = glm::vec3{0.f}) const;
 	glm::vec3 RemovePrimitive(); // returns position of removed BV
 
 private:

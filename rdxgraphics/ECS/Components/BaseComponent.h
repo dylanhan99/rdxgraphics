@@ -1,16 +1,6 @@
 #pragma once
 #include <entt/entt.hpp>
 
-#define RX_COMPONENT_HAS_HANDLE(Klass) 						 \
-public:														 \
-inline static const bool HasEnttHandle{ true };				 \
-															 \
-public:														 \
-	Klass() = delete; /*We want to force the entt::entity*/	 \
-	inline Klass(entt::entity handle) : m_Handle(handle) {}; \
-	inline entt::entity GetEntityHandle() const { return m_Handle; } \
-private: entt::entity m_Handle{};
-
 // These cover all "main" components. 
 // In the context of collider, Collider is the "main", while _BV variants are the "subsidiaries"
 #define RX_DO_MAIN_COMPONENTS_M(F_O_O, ...)\
@@ -28,20 +18,18 @@ class BaseComponent
 {
 public:
 	~BaseComponent() = default;
+	inline virtual void OnConstructImpl() {};
 private:
-
 };
 
-
-
-#define RX_COMPONENT_DEC_HANDLE \
-public:							\
-	inline entt::entity GetEntityHandle() const { return m_Handle; } \
-private: \
-	entt::entity m_Handle{}; \
+#define RX_COMPONENT_DEC_HANDLE												\
+public:																		\
+	inline entt::entity GetEntityHandle() const { return m_Handle; }		\
+private:																	\
+	entt::entity m_Handle{};												\
 	inline void SetEntityHandle(entt::entity handle) { m_Handle = handle; }
-#define RX_COMPONENT_HAS_HANDLE_2(Klass)										 \
-RX_COMPONENT_DEC_HANDLE;														 \
+
+#define RX_COMPONENT_DEF_HANDLE(Klass)											 \
 private:																		 \
 	inline static void OnConstruct(entt::registry& registry, entt::entity handle)\
 	{																			 \
@@ -52,31 +40,20 @@ private:																		 \
 public:																			 \
 	inline static void Init(entt::registry& registry)							 \
 	{																			 \
-		registry.on_construct<Xform>().connect<&Xform::OnConstruct>();			 \
-		registry.on_update<Xform>().connect<&Xform::OnConstruct>();				 \
+		registry.on_construct<Klass>().connect<&Klass::OnConstruct>();			 \
+		registry.on_update<Klass>().connect<&Klass::OnConstruct>();				 \
 	}																			 \
 private:
 
+#define RX_COMPONENT_HAS_HANDLE(Klass) \
+RX_COMPONENT_DEC_HANDLE;			   \
+RX_COMPONENT_DEF_HANDLE(Klass);
 
 class Xform : public BaseComponent
 {
-	//RX_COMPONENT_HAS_HANDLE_2(Xform);
-
-public: inline entt::entity GetEntityHandle() const {
-	return m_Handle;
-} private: entt::entity m_Handle{}; inline void SetEntityHandle(entt::entity handle) {
-	m_Handle = handle;
-}; private: inline static void OnConstruct(entt::registry& registry, entt::entity handle) {
-	Xform& klass = registry.get<Xform>(handle); 
-	klass.SetEntityHandle(handle); 
-	klass.OnConstructImpl();
-} public: inline static void Init(entt::registry& registry) {
-	registry.on_construct<Xform>().connect<&Xform::OnConstruct>();
-	registry.on_update<Xform>().connect<&Xform::OnConstruct>();
-} private:;
-
+	RX_COMPONENT_HAS_HANDLE(Xform);
 public:
-	class Dirty : public BaseComponent { private: bool f{}; };
+	class Dirty : public BaseComponent { char _{}; };
 
 public:
 	Xform() = default;

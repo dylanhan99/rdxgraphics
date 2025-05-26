@@ -24,11 +24,11 @@ void TransformSystem::Update(float dt)
 			continue;
 
 		Xform const& xform = EntityManager::GetComponent<const Xform>(handle);
-#define _RX_X(Klass)														 \
-		case Primitive::Klass:														 \
-		{																	 \
-			Klass##Primitive& bv = EntityManager::GetComponent<Klass##Primitive>(handle);  \
-			if (bv.IsFollowXform()) bv.GetPosition() = xform.GetTranslate(); \
+#define _RX_X(Klass)																		\
+		case Primitive::Klass:																\
+		{																					\
+			Klass##Primitive& bv = EntityManager::GetComponent<Klass##Primitive>(handle);	\
+			if (bv.IsFollowXform()) bv.GetPosition() = xform.GetTranslate();				\
 		} break;
 
 		switch (col.GetPrimitiveType())
@@ -39,12 +39,12 @@ void TransformSystem::Update(float dt)
 		}
 #undef _RX_X
 
-#define _RX_X(Klass)													\
-	case Primitive::Klass:														\
-	{																	\
-		/*Should check ensure that get<BV> exists*/						\
+#define _RX_X(Klass)																	\
+	case Primitive::Klass:																\
+	{																					\
+		/*Should check ensure that get<BV> exists*/										\
 		Klass##Primitive& bv = EntityManager::GetComponent<Klass##Primitive>(handle);	\
-		bv.UpdateXform();												\
+		bv.UpdateXform();																\
 	} break;
 
 		switch (col.GetPrimitiveType())
