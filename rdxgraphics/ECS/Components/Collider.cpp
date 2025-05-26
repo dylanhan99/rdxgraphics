@@ -8,22 +8,22 @@ void Collider::SetPrimitiveType(Primitive primType)
 	if (m_PrimitiveType == primType)
 		return;
 
-	glm::vec3 prevPos = RemovePrimitive(); // Remove the existing BV first
+	glm::vec3 offset = RemovePrimitive(); // Remove the existing BV first
 	m_PrimitiveType = primType;
 	if (primType == Primitive::NIL)
 		return;
 
-	SetupPrimitive(prevPos);
+	SetupPrimitive(offset);
 }
 
-void Collider::SetupPrimitive(glm::vec3 pos) const
+void Collider::SetupPrimitive(glm::vec3 offset) const
 {
 	entt::entity const handle = GetEntityHandle();
 #define _RX_X(Klass)															\
 	case Primitive::Klass:														\
 		EntityManager::AddComponent<Klass##Primitive>(handle);					\
 		RX_ASSERT(EntityManager::HasComponent<Klass##Primitive>(handle));		\
-		EntityManager::GetComponent<Klass##Primitive>(handle).SetPosition(pos);	\
+		EntityManager::GetComponent<Klass##Primitive>(handle).SetOffset(offset);\
 		break;
 
 	switch (m_PrimitiveType)
@@ -42,12 +42,12 @@ glm::vec3 Collider::RemovePrimitive()
 		return {};
 
 	entt::entity const handle = GetEntityHandle();
-	glm::vec3 pos{};
-#define _RX_X(Klass)																\
-	case Primitive::Klass:															\
-		RX_ASSERT(EntityManager::HasComponent<Klass##Primitive>(handle));			\
-		pos = EntityManager::GetComponent<Klass##Primitive>(handle).GetPosition();	\
-		EntityManager::RemoveComponent<Klass##Primitive>(handle);					\
+	glm::vec3 o{};
+#define _RX_X(Klass)															 \
+	case Primitive::Klass:														 \
+		RX_ASSERT(EntityManager::HasComponent<Klass##Primitive>(handle));		 \
+		o = EntityManager::GetComponent<Klass##Primitive>(handle).GetOffset();	 \
+		EntityManager::RemoveComponent<Klass##Primitive>(handle);				 \
 		break;
 
 	switch (m_PrimitiveType)
@@ -60,5 +60,17 @@ glm::vec3 Collider::RemovePrimitive()
 #undef _RX_X
 
 	m_PrimitiveType = Primitive::NIL;
-	return pos;
+	return o;
+}
+
+glm::vec3 BasePrimitive::GetPosition() const
+{
+	return EntityManager::GetComponent<const Xform>(GetEntityHandle()).GetTranslate() + m_Offset;
+}
+
+void BasePrimitive::SetPosition(glm::vec3 pos)
+{
+	SetDirty();
+	glm::vec3 position = EntityManager::GetComponent<const Xform>(GetEntityHandle()).GetTranslate();
+	m_Offset = pos - position;
 }

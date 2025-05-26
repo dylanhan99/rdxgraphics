@@ -115,7 +115,7 @@ void AABBXAABBScene::StartImpl()
 		EntityManager::AddComponent<Xform>(handle, glm::vec3{ 0.f }, glm::vec3{ 0.5f });
 		EntityManager::AddComponent<Model>(handle, Shape::Cube);
 		EntityManager::AddComponent<Material>(handle, glm::vec3{ 0.f, 0.f, 1.f });
-		EntityManager::AddComponent<Collider>(handle, Primitive::Sphere);
+		EntityManager::AddComponent<Collider>(handle, Primitive::AABB);
 		EntityManager::GetComponent<AABBPrimitive>(handle).GetHalfExtents() = glm::vec3{ 1.5f };
 
 		GUI::SetSelectedEntity(handle);

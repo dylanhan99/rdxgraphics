@@ -10,6 +10,10 @@ bool EntityManager::Init()
 	Camera::Init(g.m_Registry);
 	Collider::Init(g.m_Registry);
 
+#define _RX_X(Klass) Klass##Primitive::Init(g.m_Registry);
+	RX_DO_ALL_BV_ENUM;
+#undef _RX_X
+
 	return true;
 }
 

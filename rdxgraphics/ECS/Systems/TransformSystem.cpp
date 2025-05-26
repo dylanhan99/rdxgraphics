@@ -33,7 +33,7 @@ void TransformSystem::Update(float dt)
 
 		switch (col.GetPrimitiveType())
 		{
-			RX_DO_ALL_BV_ENUM;
+			//RX_DO_ALL_BV_ENUM;
 		default:
 			break;
 		}
