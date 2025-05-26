@@ -76,7 +76,7 @@ public:
 
 private:
 	inline void OnConstructImpl() { SetDirty(); }
-	void SetDirty(); // Indicates this xform to be dirty and m_Xform MUST be updated.
+	void SetDirty() const; // Indicates this xform to be dirty and m_Xform MUST be updated.
 
 private:
 	glm::vec3 m_Translate{ 0.f }, m_Scale{ 1.f }, m_Rotate{ 0.f };

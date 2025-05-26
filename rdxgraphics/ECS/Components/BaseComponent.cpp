@@ -43,7 +43,7 @@ void Xform::SetEulerOrientation(glm::vec3 r)
 	m_Rotate = std::move(r);
 }
 
-void Xform::SetDirty()
+void Xform::SetDirty() const
 {
 	auto const& handle = GetEntityHandle();
 	if (EntityManager::HasComponent<Xform::Dirty>(handle))

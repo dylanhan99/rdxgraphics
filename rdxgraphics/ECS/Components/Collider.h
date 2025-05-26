@@ -47,7 +47,7 @@ public:
 	inline bool const& IsCollide() const { return m_IsCollide; }
 	inline bool& IsCollide() { return m_IsCollide; }
 
-	void SetDirty() const {};
+	void SetDirty() const;
 
 protected:
 	glm::mat4 m_Xform{};

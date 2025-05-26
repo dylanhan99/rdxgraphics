@@ -7,52 +7,48 @@ RX_SINGLETON_EXPLICIT(TransformSystem);
 
 void TransformSystem::Update(float dt)
 {
-	auto xformView = EntityManager::View<Xform, Xform::Dirty, Metadata>();
-	int i = 0;
-	for (auto [handle, xform, dirty, meta] : xformView.each())
+#define _RX_X(Klass)													 \
+case Primitive::Klass:													 \
+{																		 \
+	/*Should check ensure that get<BV> exists*/							 \
+	RX_ASSERT(EntityManager::HasComponent<Klass##Primitive>(handle));	 \
+	EntityManager::GetComponent<Klass##Primitive>(handle).UpdateXform(); \
+} break;
+
+	// Handles a mix of dirty xform and dirty colliders
+	auto xformView = EntityManager::View<Xform::Dirty, Xform>();
+	for (auto [handle, _, xform] : xformView.each())
 	{
 		xform.UpdateXform();
 		EntityManager::RemoveComponent<Xform::Dirty>(handle);
-		RX_INFO("{}, {}", i, meta.GetName());
-		++i;
-	}
 
-	auto colView = EntityManager::View<const Xform, const Collider>();
-	for (auto [handle, xform, col] : colView.each())
-	{
-		if (col.GetPrimitiveType() == Primitive::NIL)
+		if (!EntityManager::HasComponent<Collider>(handle))
 			continue;
 
-		Xform const& xform = EntityManager::GetComponent<const Xform>(handle);
-#define _RX_X(Klass)																		\
-		case Primitive::Klass:																\
-		{																					\
-			Klass##Primitive& bv = EntityManager::GetComponent<Klass##Primitive>(handle);	\
-			if (bv.IsFollowXform()) bv.GetPosition() = xform.GetTranslate();				\
-		} break;
-
-		switch (col.GetPrimitiveType())
-		{
-			//RX_DO_ALL_BV_ENUM;
-		default:
-			break;
-		}
-#undef _RX_X
-
-#define _RX_X(Klass)																	\
-	case Primitive::Klass:																\
-	{																					\
-		/*Should check ensure that get<BV> exists*/										\
-		Klass##Primitive& bv = EntityManager::GetComponent<Klass##Primitive>(handle);	\
-		bv.UpdateXform();																\
-	} break;
-
+		auto const& col = EntityManager::GetComponent<const Collider>(handle);
 		switch (col.GetPrimitiveType())
 		{
 			RX_DO_ALL_BV_ENUM;
 		default:
 			break;
 		}
-#undef _RX_X
+		EntityManager::RemoveComponent<Collider::Dirty>(handle);
 	}
+
+	// Handles dirty colliders if somehow not handled above already.
+	{
+		auto v = EntityManager::View<Collider::Dirty, Xform, Collider>();
+		for (auto [handle, _, xform, col] : v.each())
+		{
+			auto [xform, col] = EntityManager::GetComponent<const Xform, const Collider>(handle);
+			switch (col.GetPrimitiveType())
+			{
+				RX_DO_ALL_BV_ENUM;
+			default:
+				break;
+			}
+			EntityManager::RemoveComponent<Collider::Dirty>(handle);
+		}
+	}
+#undef _RX_X
 }
