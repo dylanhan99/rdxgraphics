@@ -9,14 +9,6 @@
 class RenderSystem : public BaseSingleton<RenderSystem>
 {
 	RX_SINGLETON_DECLARATION(RenderSystem);
-private:
-#define _RX_X(Klass, ...) typename Klass::container_type,
-	using ObjectParams = std::tuple<Shape, GLenum, std::vector<GLuint>, 
-		RX_VERTEX_BASIC_ATTRIBS_M_NOINSTANCED(_RX_X)
-		void* // Hack to overcome the trailing comma
-	>;
-#undef _RX_X
-
 public:
 	static bool Init();
 	static void Terminate();
@@ -42,20 +34,8 @@ public:
 
 	inline static RenderPass& GetScreenPass() { return g.m_ScreenPass; }
 
-	inline static bool& IsIcosphere() { return g.m_IsIcosphere; }
-
 private:
 	static void CreateShapes();
-
-	static void CreateObjekt(ObjectParams const& objParams);
-	static ObjectParams CreatePoint();
-	static ObjectParams CreateLine();
-	static ObjectParams CreateTriangle();
-	static ObjectParams CreateQuad();
-	static ObjectParams CreatePlane();
-	static ObjectParams CreateCube();
-	static ObjectParams CreateSphere_Ico(int refinement = 3);
-	static ObjectParams CreateSphere_UV(int stacks = 32, int sectors = 24);
 
 private:
 	glm::vec3 m_BackColor{ 0.2f, 0.3f, 0.3f };
@@ -70,6 +50,4 @@ private:
 	entt::entity m_MinimapCamera{};
 
 	RenderPass m_ScreenPass{};
-
-	bool m_IsIcosphere{ false };
 };

@@ -30,4 +30,10 @@ public:
 	static ObjectParams_VertexBasic LoadModelBuffer(std::string const& buffer);
 
 	static ObjectParams_VertexBasic SetupPoint();
+	static ObjectParams_VertexBasic SetupLine();
+	static ObjectParams_VertexBasic SetupTriangle();
+	static ObjectParams_VertexBasic SetupQuad();
+	static ObjectParams_VertexBasic SetupPlane();
+	static ObjectParams_VertexBasic SetupCube();
+	static ObjectParams_VertexBasic SetupSphere(int stacks = 32, int sectors = 24);
 };
