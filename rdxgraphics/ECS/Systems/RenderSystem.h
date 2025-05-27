@@ -22,6 +22,7 @@ public:
 	template <Shape S, typename U>
 	static void Submit(typename U::value_type val) { GetObjekt(S).Submit<U>(val); }
 
+	inline static std::map<Rxuid, Object<VertexBasic>> const& GetObjekts() { return g.m_Objects; }
 	static Object<VertexBasic>& GetObjekt(Rxuid uid);
 	static Object<VertexBasic>& GetObjekt(Shape shape);
 	static Object<VertexBasic>& GetObjekt(Primitive bv);

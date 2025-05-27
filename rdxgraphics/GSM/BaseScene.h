@@ -34,6 +34,13 @@ public:
 		std::erase(m_Handles, handle);
 	}
 
+	inline entt::entity CloneEntity(entt::entity handle)
+	{
+		entt::entity clone = EntityManager::CloneEntity(handle);
+		m_Handles.push_back(clone);
+		return clone;
+	}
+
 	inline void Start()
 	{
 		StartImpl();

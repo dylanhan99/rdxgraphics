@@ -25,6 +25,9 @@ public:
 		return handle;
 	}
 
+	// Ensure that the components have copy ctor enabled.
+	static entt::entity CloneEntity(entt::entity handle);
+
 	template <typename T, typename ...Args>
 	static std::enable_if_t<
 		std::is_base_of_v<BaseComponent, T> &&

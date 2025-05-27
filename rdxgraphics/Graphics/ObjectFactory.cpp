@@ -103,7 +103,6 @@ ObjectParams_VertexBasic ObjectFactory::LoadModelBuffer(std::string const& buffe
 			{
 				uint32_t meshID = pNode->mMeshes[i];
 				aiMesh* pMesh = pScene->mMeshes[meshID];
-				std::cout << "asd";
 
 				int numVertices = pMesh->mNumVertices;
 				positions.resize(numVertices);
@@ -124,8 +123,6 @@ ObjectParams_VertexBasic ObjectFactory::LoadModelBuffer(std::string const& buffe
 				//	normals.emplace_back(nor);
 				//	texCoords.emplace_back(glm::vec2{}); // later
 				//}
-
-				std::cout << "asd";
 
 				// Assuming all are trianlges. Lazy and bad
 				for (int k = 0; k < pMesh->mNumFaces; ++k)

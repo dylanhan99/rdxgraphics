@@ -481,6 +481,5 @@ void RenderSystem::CreateShapes()
 	_RX_X(bunny_high_poly);
 	_RX_X(cup);
 	_RX_X(head);
-	_RX_X(rhino);
 	_RX_X(starwars1);
 }

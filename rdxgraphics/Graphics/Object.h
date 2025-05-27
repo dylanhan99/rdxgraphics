@@ -161,6 +161,9 @@ public:
 	inline GLsizei GetPrimCount() const { return m_PrimCount; }
 	inline bool IsIndexedMesh() const { return !m_Indices.empty(); }
 
+	inline std::string const& GetName() const { return m_Name; }
+	inline void SetName(std::string name) { m_Name = std::move(name); }
+
 private:
 	std::string m_Name{};
 	GLuint m_VAO{};

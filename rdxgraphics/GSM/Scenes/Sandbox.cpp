@@ -7,27 +7,29 @@
 
 void Sandbox::StartImpl()
 {
+	entt::entity test{};
 	{
-		auto handle = BaseScene::CreateDefaultEntity<NoDelete>();
+		auto handle = test = BaseScene::CreateDefaultEntity<NoDelete>();
 		EntityManager::AddComponent<Metadata>(handle, "L");
 		EntityManager::AddComponent<Xform>(handle, glm::vec3{ 1.f, 1.f, 1.f }, glm::vec3{ 1.f }, glm::vec3{ glm::quarter_pi<float>() });
-		EntityManager::AddComponent<Model>(handle, Rxuid("ogre"));
+		EntityManager::AddComponent<Model>(handle, Rxuid("cup"));
 		EntityManager::AddComponent<Material>(handle, glm::vec3{ 0.f,1.f,0.f });
 	}
 	{
-		auto handle = BaseScene::CreateDefaultEntity<NoDelete>();
-		EntityManager::AddComponent<Metadata>(handle, "L");
-		EntityManager::AddComponent<Xform>(handle, glm::vec3{ 0.f, 0.f, 0.f }, glm::vec3{ 1.f }, glm::vec3{ glm::quarter_pi<float>() });
-		EntityManager::AddComponent<Model>(handle, Rxuid("starwars1"));
-		EntityManager::AddComponent<Material>(handle, glm::vec3{ 0.f,0.f,1.f });
+		auto clone = BaseScene::CloneEntity(test);
+		EntityManager::GetComponent<Xform>(clone)
+			.SetTranslate({-2.f, 0.f, -2.f});
+		EntityManager::GetComponent<Model>(clone)
+			.SetMesh(Rxuid{ "bunny_high_poly" });
 	}
 	{
-		auto handle = BaseScene::CreateDefaultEntity<NoDelete>();
-		EntityManager::AddComponent<Metadata>(handle, "L");
-		EntityManager::AddComponent<Xform>(handle, glm::vec3{ 5.f, 5.f, 5.f }, glm::vec3{ 1.f }, glm::vec3{ glm::quarter_pi<float>() });
-		EntityManager::AddComponent<Model>(handle, Rxuid("head"));
-		EntityManager::AddComponent<Material>(handle, glm::vec3{ 0.f,0.f,1.f });
+		auto clone = BaseScene::CloneEntity(test);
+		EntityManager::GetComponent<Xform>(clone)
+			.SetTranslate({2.f, 0.f, 2.f});
+		EntityManager::GetComponent<Model>(clone)
+			.SetMesh(Rxuid{ "bunny" });
 	}
+	entt::entity clone = EntityManager::CloneEntity(test);
 }
 
 void Sandbox::UpdateImpl(float dt)

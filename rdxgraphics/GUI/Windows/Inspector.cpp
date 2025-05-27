@@ -95,7 +95,34 @@ void Inspector::UpdateCompCamera(std::string const& strHandle, Camera& comp)
 
 void Inspector::UpdateCompModel(std::string const& strHandle, Model& comp)
 {
-	
+	auto const& objs = RenderSystem::GetObjekts();
+	std::string preview{};
+	if (comp.GetMesh() != RX_INVALID_ID)
+	{
+		auto const& obj = objs.at(comp.GetMesh());
+		preview = obj.GetName();
+	}
+
+	int i = 0;
+	if (ImGui::BeginCombo("Choose Model", preview.c_str()))
+	{
+		for (auto const& obj : objs)
+		{
+			std::string name = obj.second.GetName() + "##" + std::to_string(i);
+			bool isSelected = obj.first == comp.GetMesh();
+			ImGuiSelectableFlags flags{};
+			if (isSelected)
+				flags |= ImGuiSelectableFlags_Highlight;
+
+			if (ImGui::Selectable(name.c_str(), &isSelected, flags))
+			{
+				comp.SetMesh(obj.first);
+			}
+
+			++i;
+		}
+		ImGui::EndCombo();
+	}
 }
 
 void Inspector::UpdateCompDirectionalLight(std::string const& strHandle, DirectionalLight& comp)
