@@ -493,4 +493,11 @@ void RenderSystem::CreateShapes()
 	_RX_X(Cube);
 	_RX_X(Sphere);
 #undef _RX_X
+
+	{
+		auto ogre = ObjectFactory::CreateObjekt<VertexBasic, ObjectParams_VertexBasic>(
+			ObjectFactory::LoadModelFile(RX_MODEL_PREFIX"ogre.obj")
+		);
+		g.m_Objects[Rxuid{ "ogre" }] = std::move(ogre);
+	}
 }

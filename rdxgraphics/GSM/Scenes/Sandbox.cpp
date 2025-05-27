@@ -11,7 +11,7 @@ void Sandbox::StartImpl()
 		auto handle = BaseScene::CreateDefaultEntity<NoDelete>();
 		EntityManager::AddComponent<Metadata>(handle, "Collidable A");
 		EntityManager::AddComponent<Xform>(handle, glm::vec3{ 1.f, 1.f, 1.f }, glm::vec3{ 1.f }, glm::vec3{ glm::quarter_pi<float>() });
-		EntityManager::AddComponent<Model>(handle, Shape::Sphere);
+		EntityManager::AddComponent<Model>(handle, Rxuid("ogre"));
 		EntityManager::AddComponent<Collider>(handle, Primitive::Ray);
 		EntityManager::AddComponent<Material>(handle, glm::vec3{ 0.f,1.f,0.f });
 	}

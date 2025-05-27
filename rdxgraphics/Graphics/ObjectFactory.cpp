@@ -75,9 +75,87 @@ ObjectParams_VertexBasic ObjectFactory::LoadModelFile(std::filesystem::path cons
 ObjectParams_VertexBasic ObjectFactory::LoadModelBuffer(std::string const& buffer)
 {
 	Assimp::Importer importer{};
-	const aiscene* scene = importer.ReadFileBuffer(buffer)
+	uint32_t importFlags =
+		aiProcess_CalcTangentSpace		|
+		aiProcess_Triangulate			|
+		aiProcess_JoinIdenticalVertices |
+		aiProcess_GenNormals;
 
-	return ObjectParams_VertexBasic();
+	const aiScene* pScene =
+		importer.ReadFileFromMemory(buffer.data(), buffer.length(), importFlags);
+	if (!pScene)
+	{
+		RX_ERROR("Failed to read buffer - {}", importer.GetErrorString());
+		return ObjectParams_VertexBasic{};
+	}
+
+	std::vector<GLuint> indices{};
+	VertexBasic::Position::container_type positions{};
+	VertexBasic::Normal::container_type normals{};
+	VertexBasic::TexCoord::container_type texCoords{};
+
+	auto asd = std::function<void(aiNode*)>{};
+	asd =
+		[&](aiNode* pNode)
+		{
+			RX_ASSERT(pNode, "???");
+			for (int i = 0; i < pNode->mNumMeshes; ++i)
+			{
+				uint32_t meshID = pNode->mMeshes[i];
+				aiMesh* pMesh = pScene->mMeshes[meshID];
+				std::cout << "asd";
+
+				int numVertices = pMesh->mNumVertices;
+				positions.resize(numVertices);
+				normals.resize(numVertices);
+				texCoords.resize(numVertices);
+				std::memcpy(positions.data(), pMesh->mVertices, numVertices * sizeof(glm::vec3));
+				std::memcpy(normals.data(), pMesh->mNormals, numVertices * sizeof(glm::vec3));
+
+				//for (int j = 0; j < pMesh->mNumVertices; ++j)
+				//{
+				//	aiVector3D const& vert = pMesh->mVertices[j];
+				//	aiVector3D const& norm = pMesh->mNormals[j];
+				//	//aiVector3D const& cord = pMesh->mTextureCoords[j];
+				//
+				//	glm::vec3 pos{ vert.x, vert.y, vert.z };
+				//	glm::vec3 nor{ norm.x, norm.y, norm.z };
+				//	positions.emplace_back(pos);
+				//	normals.emplace_back(nor);
+				//	texCoords.emplace_back(glm::vec2{}); // later
+				//}
+
+				std::cout << "asd";
+
+				// Assuming all are trianlges. Lazy and bad
+				for (int k = 0; k < pMesh->mNumFaces; ++k)
+				{
+					indices.push_back(pMesh->mFaces[k].mIndices[0]);
+					indices.push_back(pMesh->mFaces[k].mIndices[1]);
+					indices.push_back(pMesh->mFaces[k].mIndices[2]);
+				}
+			}
+
+			for (int i = 0; i < pNode->mNumChildren; ++i)
+			{
+				aiNode* pChild = pNode->mChildren[i];
+				asd(pChild);
+			}
+		};
+
+	//RX_ASSERT(pScene->HasMeshes(), "This object buffer has no meshes");
+	// node -> multiple children -> multiple meshes 
+	aiNode* node = pScene->mRootNode;
+	asd(node);
+
+	return ObjectParams_VertexBasic{
+		GL_TRIANGLES,
+		indices,
+		positions,
+		texCoords,
+		normals,
+		nullptr
+	};
 }
 
 ObjectParams_VertexBasic ObjectFactory::SetupPoint()
