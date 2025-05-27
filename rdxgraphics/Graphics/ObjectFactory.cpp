@@ -158,6 +158,34 @@ ObjectParams_VertexBasic ObjectFactory::LoadModelBuffer(std::string const& buffe
 	};
 }
 
+ObjectParams_VertexFBO ObjectFactory::CreateScreenQuad()
+{
+	std::vector<GLuint> indices{
+		0, 1, 2,
+		2, 3, 0
+	};
+	std::vector<glm::vec2> positions{
+		{ -1.0f,  1.0f },
+		{ -1.0f, -1.0f },
+		{  1.0f, -1.0f },
+		{  1.0f,  1.0f }
+	};
+	std::vector<glm::vec2> texCoords{
+		{ 0.f, 1.f },
+		{ 0.f, 0.f },
+		{ 1.f, 0.f },
+		{ 1.f, 1.f }
+	};
+
+	return ObjectParams_VertexFBO{
+		GL_TRIANGLES,
+		indices,
+		positions,
+		texCoords,
+		nullptr
+	};
+}
+
 ObjectParams_VertexBasic ObjectFactory::SetupPoint()
 {
 	std::vector<GLuint> indices{

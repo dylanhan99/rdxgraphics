@@ -458,31 +458,7 @@ Object<VertexBasic>& RenderSystem::GetObjekt(Primitive bv)
 
 void RenderSystem::CreateShapes()
 {
-	// Screen Quad
-	{
-		std::vector<GLuint> indices{
-			0, 1, 2,
-			2, 3, 0 
-		};
-		std::vector<glm::vec2> positions{
-			{ -1.0f,  1.0f },
-			{ -1.0f, -1.0f },
-			{  1.0f, -1.0f },
-			{  1.0f,  1.0f }
-		};
-		std::vector<glm::vec2> texCoords{
-			{ 0.f, 1.f },
-			{ 0.f, 0.f },
-			{ 1.f, 0.f },
-			{ 1.f, 1.f }
-		};
-
-		g.m_FBOObject.BeginObject(GL_TRIANGLES)
-			.PushIndices(indices)
-			.Push<VertexFBO::Position>(positions)
-			.Push<VertexFBO::TexCoord>(texCoords)
-			.EndObject();
-	}
+	g.m_FBOObject = std::move(ObjectFactory::CreateObjekt<VertexFBO, ObjectParams_VertexFBO>(ObjectFactory::CreateScreenQuad()));
 
 #define _RX_X(Klass) GetObjekt(Shape::Klass) = ObjectFactory::CreateObjekt<VertexBasic, ObjectParams_VertexBasic>(ObjectFactory::Setup##Klass());
 	_RX_X(Point);
@@ -494,10 +470,17 @@ void RenderSystem::CreateShapes()
 	_RX_X(Sphere);
 #undef _RX_X
 
-	{
-		auto ogre = ObjectFactory::CreateObjekt<VertexBasic, ObjectParams_VertexBasic>(
-			ObjectFactory::LoadModelFile(RX_MODEL_PREFIX"ogre.obj")
-		);
-		g.m_Objects[Rxuid{ "ogre" }] = std::move(ogre);
+#define _RX_X(obj)																															\
+	{																																		\
+	auto obj = ObjectFactory::CreateObjekt<VertexBasic, ObjectParams_VertexBasic>(ObjectFactory::LoadModelFile(RX_MODEL_PREFIX#obj".obj"));	\
+		g.m_Objects[Rxuid{ #obj }] = std::move(obj);																						\
 	}
+
+	_RX_X(ogre);
+	_RX_X(bunny);
+	_RX_X(bunny_high_poly);
+	_RX_X(cup);
+	_RX_X(head);
+	_RX_X(rhino);
+	_RX_X(starwars1);
 }

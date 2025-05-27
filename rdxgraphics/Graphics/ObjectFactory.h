@@ -29,6 +29,8 @@ public:
 	static ObjectParams_VertexBasic LoadModelFile(std::filesystem::path const& path);
 	static ObjectParams_VertexBasic LoadModelBuffer(std::string const& buffer);
 
+	static ObjectParams_VertexFBO CreateScreenQuad();
+
 	static ObjectParams_VertexBasic SetupPoint();
 	static ObjectParams_VertexBasic SetupLine();
 	static ObjectParams_VertexBasic SetupTriangle();
