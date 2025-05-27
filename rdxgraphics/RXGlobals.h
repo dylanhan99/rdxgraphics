@@ -24,12 +24,15 @@ const std::filesystem::path g_WorkingDir{
 #ifdef USE_CSD3151_AUTOMATION
 #if USE_CSD3151_AUTOMATION == 1
 #define RX_SHADER_PREFIX "../shaders/"
+#define RX_MODEL_PREFIX "../models/"
 #else
 #define RX_SHADER_PREFIX "../../projects/project-1/shaders/"
+#define RX_MODEL_PREFIX "../../projects/project-1/models/"
 #endif
 #else
 #ifdef RX_IS_IDE
 #define RX_SHADER_PREFIX RX_WORKING_DIR"/""shaders/"
+#define RX_MODEL_PREFIX RX_WORKING_DIR"/""models/"
 #endif
 #endif
 
@@ -46,9 +49,7 @@ enum class Shape
 	Plane,
 	Cube,
 	Sphere,
-	Sphere_Ico,
-	Sphere_UV,
-
+	
 	//MAX
 };
 
