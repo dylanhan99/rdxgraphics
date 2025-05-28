@@ -10,7 +10,6 @@ extern bool hasDefault;
 extern bool hasWireframe;
 extern bool hasMinimap;
 extern int renderOption;
-extern RenderPass minimapPass;
 
 void Settings::UpdateImpl(float dt)
 {
@@ -46,7 +45,8 @@ void Settings::UpdateImpl(float dt)
 		ImGui::Checkbox("Base", &hasDefault);
 		ImGui::Checkbox("Wireframe", &hasWireframe);
 		ImGui::Checkbox("Minimap", &hasMinimap);
-		//ImGui::ColorEdit3("Minimap Color", glm::value_ptr(minimapPass.GetBackbufferColor())); dosnt work as i expected
+		ImGui::ColorEdit3("Global Ambience", glm::value_ptr(RenderSystem::GetGlobalIllumination()));
+		ImGui::DragFloat("Ambiance Factor", &RenderSystem::GetGlobalIllumination().w, 0.05f, 0.f, 1.f, "%.2f");
 	}
 
 	ImGui::SeparatorText("Window");

@@ -35,11 +35,14 @@ public:
 
 	inline static RenderPass& GetScreenPass() { return g.m_ScreenPass; }
 
+	inline static glm::vec4& GetGlobalIllumination() { return g.m_GlobalIllumination; }
+
 private:
 	static void CreateShapes();
 
 private:
 	glm::vec3 m_BackColor{ 0.2f, 0.3f, 0.3f };
+	glm::vec4 m_GlobalIllumination{ 0.f,0.f,1.f,0.2f }; // w is the scale factor, [0.f,1.f]
 	Shader m_Shader{};
 	Shader m_FBOShader{};
 

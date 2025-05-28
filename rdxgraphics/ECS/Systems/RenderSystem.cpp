@@ -175,17 +175,14 @@ void RenderSystem::Draw()
 				Object<VertexBasic>& o = GetObjekt(meshID);
 				o.Submit<VertexBasic::Xform>(xform.GetXform());
 
-				// Temporary preprocessing to submit
 				if (EntityManager::HasComponent<const Material>(handle))
 				{
 					Material const& mat = EntityManager::GetComponent<const Material>(handle);
-					o.Submit<VertexBasic::MatID>(1.f);
-					o.Submit<VertexBasic::Material>(static_cast<glm::mat4>(mat));
+					o.Submit<VertexBasic::Color>(static_cast<glm::vec4>(mat));
 				}
 				else
 				{
-					o.Submit<VertexBasic::MatID>(false);
-					o.Submit<VertexBasic::Material>(glm::mat4{});
+					o.Submit<VertexBasic::Color>(glm::vec4{1.f, 0.063f, 0.941f, 1.f});
 				}
 			}
 
@@ -195,6 +192,7 @@ void RenderSystem::Draw()
 			g.m_Shader.Bind();
 			g.m_Shader.SetUniform1i("uIsWireframe", 0);
 			g.m_Shader.SetUniform1i("uCam", camera);
+			g.m_Shader.SetUniform4f("uAmbientLight", g.m_GlobalIllumination);
 
 			{ // directional light hardcode
 				auto view = EntityManager::View<DirectionalLight>();
@@ -219,8 +217,7 @@ void RenderSystem::Draw()
 					count = glm::min<size_t>(maxVal - offset, RX_MAX_INSTANCES);
 					object.BindInstancedData<VertexBasic::Xform>(offset, count);
 					object.BindInstancedData<VertexBasic::IsCollide>(offset, count);
-					object.BindInstancedData<VertexBasic::MatID>(offset, count);
-					object.BindInstancedData<VertexBasic::Material>(offset, count);
+					object.BindInstancedData<VertexBasic::Color>(offset, count);
 					// more binds...
 					object.Draw(count);
 				}
@@ -352,7 +349,6 @@ void RenderSystem::Draw()
 
 			g.m_Shader.Bind();
 			g.m_Shader.SetUniform1i("uIsWireframe", 1);
-			g.m_Shader.SetUniform3f("uWireframeColor", glm::vec3{ 0.f,1.f,0.f });
 			g.m_Shader.SetUniform1i("uCam", 0);
 
 			// First pass: Draw actual filled mesh

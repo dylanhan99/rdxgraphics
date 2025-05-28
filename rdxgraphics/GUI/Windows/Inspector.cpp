@@ -132,8 +132,8 @@ void Inspector::UpdateCompDirectionalLight(std::string const& strHandle, Directi
 
 void Inspector::UpdateCompMaterial(std::string const& strHandle, Material& comp)
 {
-	//ImGui::ColorPicker3(("AmbientColor##" + strHandle).c_str(), glm::value_ptr(comp.GetAmbientColor()));
-	//ImGui::DragFloat(("AmbientIntensity##" + strHandle).c_str(), &comp.GetAmbientIntensity());
+	ImGui::ColorPicker3(("Object Color##" + strHandle).c_str(), glm::value_ptr(comp.GetDiffuseColor()));
+	ImGui::DragFloat(("Intensity##" + strHandle).c_str(), &comp.GetDiffuseIntensity(), 0.05f, 0.f, 1.f, "%.2f");
 	//ImGui::ColorPicker3(("DiffuseColor##" + strHandle).c_str(), glm::value_ptr(comp.GetDiffuseColor()));
 	//ImGui::DragFloat(("DiffuseIntensity##" + strHandle).c_str(), &comp.GetDiffuseIntensity());
 	//ImGui::ColorPicker3(("SpecularColor##" + strHandle).c_str(), glm::value_ptr(comp.GetSpecularColor()));

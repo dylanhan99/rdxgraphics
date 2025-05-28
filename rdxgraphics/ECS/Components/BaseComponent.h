@@ -118,43 +118,20 @@ public:
 
 public:
 	Material() = default;
-	inline Material(glm::vec3 ambientColor) : m_AmbientColor(ambientColor) {}
-
-	inline glm::vec3 const& GetAmbientColor() const { return m_AmbientColor; }
-	inline glm::vec3& GetAmbientColor() { return m_AmbientColor; }
-	inline float const& GetAmbientIntensity() const { return m_AmbientIntensity; }
-	inline float& GetAmbientIntensity() { return m_AmbientIntensity; }
+	inline Material(glm::vec3 diffuseColor, float diffuseIntensity = 1.f) 
+		: m_DiffuseColor(diffuseColor), m_DiffuseIntensity(diffuseIntensity) {}
 
 	inline glm::vec3 const& GetDiffuseColor() const { return m_DiffuseColor; }
 	inline glm::vec3& GetDiffuseColor() { return m_DiffuseColor; }
 	inline float const& GetDiffuseIntensity() const { return m_DiffuseIntensity; }
 	inline float& GetDiffuseIntensity() { return m_DiffuseIntensity; }
 
-	inline glm::vec3 const& GetSpecularColor() const { return m_SpecularColor; }
-	inline glm::vec3& GetSpecularColor() { return m_SpecularColor; }
-	inline float const& GetSpecularIntensity() const { return m_SpecularIntensity; }
-	inline float& GetSpecularIntensity() { return m_SpecularIntensity; }
-
-	inline float const& GetShininess() const { return m_Shininess; }
-	inline float& GetShininess() { return m_Shininess; }
-
-	inline operator glm::mat4() const
+	inline operator glm::vec4() const
 	{
-		return glm::mat4{
-			glm::vec4 {m_AmbientColor, m_AmbientIntensity},
-			glm::vec4 {m_DiffuseColor, m_DiffuseIntensity},
-			glm::vec4 {m_SpecularColor, m_SpecularIntensity},
-			glm::vec4 {m_Shininess, 0.f,0.f,0.f} // Padding used by UBO's std140 formatting
-		};
+		return glm::vec4{ m_DiffuseColor.x, m_DiffuseColor.y, m_DiffuseColor.z, m_DiffuseIntensity };
 	}
 
 private:
-	glm::vec3 m_AmbientColor{ 0.f };
-	float m_AmbientIntensity{ 0.f };
 	glm::vec3 m_DiffuseColor{ 0.f };
 	float m_DiffuseIntensity{ 0.f };
-	glm::vec3 m_SpecularColor{ 0.f };
-	float m_SpecularIntensity{ 0.f };
-	float m_Shininess{ 0.f };
-	// glm::vec3 padding{}; on shader end (std140)
 };
