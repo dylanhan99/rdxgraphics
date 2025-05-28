@@ -11,6 +11,6 @@ public:
 #undef _RX_X
 
 #define _RX_X(Klass) void UpdateComp##Klass##Primitive(std::string const& strHandle, Klass##Primitive& comp);
-	RX_DO_ALL_BV_ENUM;
+	RX_DO_ALL_PRIMITIVE_ENUM;
 #undef _RX_X
 };

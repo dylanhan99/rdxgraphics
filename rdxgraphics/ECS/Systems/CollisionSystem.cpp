@@ -12,7 +12,7 @@ void CollisionSystem::Update(float dt)
 		for (auto [handle, prim] : primView.each()) { prim.IsCollide() = false; } \
 	}
 
-	RX_DO_ALL_BV_ENUM;
+	RX_DO_ALL_PRIMITIVE_ENUM;
 #undef _RX_X
 
 	auto colView = EntityManager::View<Collider>();
@@ -45,14 +45,14 @@ void CollisionSystem::Update(float dt)
 	{											   \
 		switch (rPType)							   \
 		{										   \
-			RX_DO_ALL_BV_ENUM_M_(_RX_C_C, LKlass); \
+			RX_DO_ALL_PRIMITIVE_ENUM_M_(_RX_C_C, LKlass); \
 			default: RX_ASSERT(false); break;      \
 		}										   \
 	} break;
 
 			switch (lPType)
 			{
-				RX_DO_ALL_BV_ENUM_M(_RX_C_X);
+				RX_DO_ALL_PRIMITIVE_ENUM_M(_RX_C_X);
 			default: RX_ASSERT(false); break;
 			}
 #undef _RX_C_C

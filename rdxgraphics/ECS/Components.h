@@ -3,3 +3,4 @@
 #include "Components/RandomComponents.h"
 #include "Components/Camera.h"
 #include "Components/Collider.h"
+#include "Components/BoundingVolume.h"

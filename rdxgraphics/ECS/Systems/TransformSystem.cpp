@@ -28,7 +28,7 @@ case Primitive::Klass:													 \
 		auto const& col = EntityManager::GetComponent<const Collider>(handle);
 		switch (col.GetPrimitiveType())
 		{
-			RX_DO_ALL_BV_ENUM;
+			RX_DO_ALL_PRIMITIVE_ENUM;
 		default:
 			break;
 		}
@@ -43,7 +43,7 @@ case Primitive::Klass:													 \
 			auto [xform, col] = EntityManager::GetComponent<const Xform, const Collider>(handle);
 			switch (col.GetPrimitiveType())
 			{
-				RX_DO_ALL_BV_ENUM;
+				RX_DO_ALL_PRIMITIVE_ENUM;
 			default:
 				break;
 			}

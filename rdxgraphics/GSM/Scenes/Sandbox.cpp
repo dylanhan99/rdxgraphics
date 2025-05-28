@@ -12,8 +12,10 @@ void Sandbox::StartImpl()
 		auto handle = test = BaseScene::CreateDefaultEntity<NoDelete>();
 		EntityManager::AddComponent<Metadata>(handle, "L");
 		EntityManager::AddComponent<Xform>(handle, glm::vec3{ 1.f, 1.f, 1.f }, glm::vec3{ 1.f }, glm::vec3{ glm::quarter_pi<float>() });
-		EntityManager::AddComponent<Model>(handle, Rxuid("cup"));
+		EntityManager::AddComponent<Model>(handle, Shape::Sphere);
 		EntityManager::AddComponent<Material>(handle, glm::vec3{ 0.f,1.f,0.f });
+		EntityManager::AddComponent<BoundingVolume>(handle, BV::AABB);
+		return;
 	}
 	{
 		auto clone = BaseScene::CloneEntity(test);
@@ -29,7 +31,7 @@ void Sandbox::StartImpl()
 		EntityManager::GetComponent<Model>(clone)
 			.SetMesh(Rxuid{ "bunny" });
 	}
-	entt::entity clone = EntityManager::CloneEntity(test);
+	//entt::entity clone = EntityManager::CloneEntity(test);
 }
 
 void Sandbox::UpdateImpl(float dt)

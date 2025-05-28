@@ -10,7 +10,8 @@
 	F_O_O(Model, ##__VA_ARGS__);		   \
 	F_O_O(DirectionalLight, ##__VA_ARGS__);\
 	F_O_O(Material, ##__VA_ARGS__);		   \
-	F_O_O(Collider, ##__VA_ARGS__);
+	F_O_O(Collider, ##__VA_ARGS__);		   \
+	F_O_O(BoundingVolume, ##__VA_ARGS__);
 
 #define RX_DO_MAIN_COMPONENTS RX_DO_MAIN_COMPONENTS_M(_RX_X)
 

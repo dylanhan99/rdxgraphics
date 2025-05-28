@@ -294,7 +294,7 @@ void RenderSystem::Draw()
 					o.Submit<VertexBasic::Xform>(prim.GetXform());					\
 					o.Submit<VertexBasic::IsCollide>(prim.IsCollide());				\
 				}
-				RX_DO_ALL_BV_ENUM;
+				RX_DO_ALL_PRIMITIVE_ENUM;
 #undef _RX_X
 			}
 
@@ -474,8 +474,8 @@ void RenderSystem::CreateShapes()
 
 	_RX_X(ogre);
 	_RX_X(bunny);
-	_RX_X(bunny_high_poly);
-	_RX_X(cup);
-	_RX_X(head);
-	_RX_X(starwars1);
+	//_RX_X(bunny_high_poly);
+	//_RX_X(cup);
+	//_RX_X(head);
+	//_RX_X(starwars1);
 }

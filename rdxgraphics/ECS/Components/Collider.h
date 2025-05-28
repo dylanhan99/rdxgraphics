@@ -15,8 +15,8 @@ public:
 	void SetPrimitiveType(Primitive primType);
 
 private:
-	void SetupPrimitive(glm::vec3 pos = glm::vec3{0.f}) const;
-	glm::vec3 RemovePrimitive(); // returns position of removed BV
+	void SetupPrimitive(glm::vec3 offset = glm::vec3{0.f}) const;
+	glm::vec3 RemovePrimitive(); // returns offset of previous primitive
 
 private:
 	Primitive m_PrimitiveType{ Primitive::NIL };
@@ -47,6 +47,7 @@ public:
 	inline bool const& IsCollide() const { return m_IsCollide; }
 	inline bool& IsCollide() { return m_IsCollide; }
 
+private:
 	void SetDirty() const;
 
 protected:
@@ -57,7 +58,7 @@ private:
 	bool m_IsCollide{ false };
 };
 
-class PointPrimitive : public BasePrimitive
+class PointPrimitive : public virtual BasePrimitive
 {
 	RX_COMPONENT_DEF_HANDLE(PointPrimitive);
 public:
@@ -71,7 +72,7 @@ public:
 	}
 };
 
-class RayPrimitive : public BasePrimitive
+class RayPrimitive : public virtual BasePrimitive
 {
 	RX_COMPONENT_DEF_HANDLE(RayPrimitive);
 public:
@@ -101,7 +102,7 @@ private:
 };
 
 // Must be CCW orientation
-class TrianglePrimitive : public BasePrimitive
+class TrianglePrimitive : public virtual BasePrimitive
 {
 	RX_COMPONENT_DEF_HANDLE(TrianglePrimitive);
 public:
@@ -160,7 +161,7 @@ private: // These points are OFFSETS from the centroid (position)
 	glm::vec3 m_P2{ DefaultP2 };
 };
 
-class PlanePrimitive : public BasePrimitive
+class PlanePrimitive : public virtual BasePrimitive
 {
 	RX_COMPONENT_DEF_HANDLE(PlanePrimitive);
 public:
@@ -192,7 +193,7 @@ private:
 	inline static glm::vec3 s_Scale{ 2.f };
 };
 
-class AABBPrimitive : public BasePrimitive
+class AABBPrimitive : public virtual BasePrimitive
 {
 	RX_COMPONENT_DEF_HANDLE(AABBPrimitive);
 public:
@@ -211,7 +212,7 @@ private:
 	glm::vec3 m_HalfExtents{ 0.5f };
 };
 
-class SpherePrimitive : public BasePrimitive
+class SpherePrimitive : public virtual BasePrimitive
 {
 	RX_COMPONENT_DEF_HANDLE(SpherePrimitive);
 public:

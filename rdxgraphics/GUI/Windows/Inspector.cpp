@@ -148,7 +148,7 @@ void Inspector::UpdateCompCollider(std::string const& strHandle, Collider& comp)
 
 #define _RX_X(Klass) #Klass,
 	std::vector<std::string> bvOptions{
-		RX_DO_ALL_BV_ENUM_AND_NIL
+		RX_DO_ALL_PRIMITIVE_ENUM_AND_NIL
 	};
 #undef _RX_X
 
@@ -180,7 +180,7 @@ void Inspector::UpdateCompCollider(std::string const& strHandle, Collider& comp)
 	} break;
 	switch (comp.GetPrimitiveType())
 	{
-		RX_DO_ALL_BV_ENUM;
+		RX_DO_ALL_PRIMITIVE_ENUM;
 	default:
 		break;
 	}
@@ -244,4 +244,9 @@ void Inspector::UpdateCompAABBPrimitive(std::string const& strHandle, AABBPrimit
 void Inspector::UpdateCompSpherePrimitive(std::string const& strHandle, SpherePrimitive& comp)
 {
 	Draggy("Radius", strHandle, &comp.GetRadius(), 1);
+}
+
+void Inspector::UpdateCompBoundingVolume(std::string const& strHandle, BoundingVolume& comp)
+{
+
 }

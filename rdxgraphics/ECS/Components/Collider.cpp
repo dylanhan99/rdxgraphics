@@ -28,7 +28,7 @@ void Collider::SetupPrimitive(glm::vec3 offset) const
 
 	switch (m_PrimitiveType)
 	{
-		RX_DO_ALL_BV_ENUM;
+		RX_DO_ALL_PRIMITIVE_ENUM;
 	default:
 		RX_ASSERT(false, "How did you get here");
 		break;
@@ -52,7 +52,7 @@ glm::vec3 Collider::RemovePrimitive()
 
 	switch (m_PrimitiveType)
 	{
-		RX_DO_ALL_BV_ENUM;
+		RX_DO_ALL_PRIMITIVE_ENUM;
 	default:
 		RX_ASSERT(false, "How did you get here");
 		break;
