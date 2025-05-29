@@ -6,7 +6,7 @@ class BoundingVolume : public BaseComponent
 {
 	RX_COMPONENT_HAS_HANDLE(BoundingVolume);
 public:
-	class Dirty : public BaseComponent { char _{}; };
+	//class Dirty : public BaseComponent { char _{}; };
 
 public:
 	inline BoundingVolume(BV bvType = BV::NIL) : m_BVType(bvType) {}
@@ -26,7 +26,7 @@ private:
 class BaseBV : public virtual BasePrimitive
 {
 public:
-	void OnConstructImpl() override { RX_WARN("BaseBV"); SetDirty(); }
+	void OnConstructImpl() override { SetDirty(); }
 
 private:
 	void SetDirty() const override;

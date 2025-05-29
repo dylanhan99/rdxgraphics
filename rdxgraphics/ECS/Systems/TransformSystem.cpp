@@ -19,20 +19,37 @@ case Primitive::Klass:													 \
 	auto xformView = EntityManager::View<Xform::Dirty, Xform>();
 	for (auto [handle, _, xform] : xformView.each())
 	{
+		if (EntityManager::HasComponent<BoundingVolume>(handle))
+		{
+			auto const& boundingVolume = EntityManager::GetComponent<BoundingVolume>(handle);
+			switch (boundingVolume.GetBVType())
+			{
+			case BV::AABB:
+			{
+				AABBBV& bv = EntityManager::GetComponent<AABBBV>(handle);
+				bv.RecalculateBV();
+				bv.UpdateXform();
+				break;
+			}
+			default:
+				break;
+			}
+		}
+
 		xform.UpdateXform();
 		EntityManager::RemoveComponent<Xform::Dirty>(handle);
 
-		if (!EntityManager::HasComponent<Collider>(handle))
-			continue;
-
-		auto const& col = EntityManager::GetComponent<const Collider>(handle);
-		switch (col.GetPrimitiveType())
+		if (EntityManager::HasComponent<Collider>(handle))
 		{
-			RX_DO_ALL_PRIMITIVE_ENUM;
-		default:
-			break;
+			auto const& col = EntityManager::GetComponent<const Collider>(handle);
+			switch (col.GetPrimitiveType())
+			{
+				RX_DO_ALL_PRIMITIVE_ENUM;
+			default:
+				break;
+			}
+			EntityManager::RemoveComponent<Collider::Dirty>(handle);
 		}
-		EntityManager::RemoveComponent<Collider::Dirty>(handle);
 	}
 
 	// Handles dirty colliders if somehow not handled above already.
@@ -53,25 +70,25 @@ case Primitive::Klass:													 \
 #undef _RX_X
 
 	// handling dirty BVs
-	{
-		auto v = EntityManager::View<BoundingVolume::Dirty>();
-		for (auto [handle, _] : v.each())
-		{
-			auto& boundingVolume = EntityManager::GetComponent<BoundingVolume>(handle);
-			switch (boundingVolume.GetBVType())
-			{
-			case BV::AABB:
-			{
-				AABBBV& bv = EntityManager::GetComponent<AABBBV>(handle);
-				bv.RecalculateBV();
-				bv.UpdateXform();
-				break;
-			}
-			default:
-				break;
-			}
-
-			EntityManager::RemoveComponent<BoundingVolume::Dirty>(handle);
-		}
-	}
+	//{
+	//	auto v = EntityManager::View<BoundingVolume::Dirty>();
+	//	for (auto [handle, _] : v.each())
+	//	{
+	//		auto& boundingVolume = EntityManager::GetComponent<BoundingVolume>(handle);
+	//		switch (boundingVolume.GetBVType())
+	//		{
+	//		case BV::AABB:
+	//		{
+	//			AABBBV& bv = EntityManager::GetComponent<AABBBV>(handle);
+	//			bv.RecalculateBV();
+	//			bv.UpdateXform();
+	//			break;
+	//		}
+	//		default:
+	//			break;
+	//		}
+	//
+	//		EntityManager::RemoveComponent<BoundingVolume::Dirty>(handle);
+	//	}
+	//}
 }

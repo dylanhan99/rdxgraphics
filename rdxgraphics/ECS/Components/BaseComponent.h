@@ -68,6 +68,7 @@ public:
 	inline glm::vec3 const& GetTranslate() const { return m_Translate; }
 	inline glm::vec3 const& GetScale() const { return m_Scale; }
 	inline glm::vec3 const& GetEulerOrientation() const { return m_Rotate; }
+	inline glm::mat4 GetRotationMatrix() const { return static_cast<glm::mat4>(glm::quat(m_Rotate)); }
 	glm::vec3& GetTranslate();
 	glm::vec3& GetScale();
 	glm::vec3& GetEulerOrientation();
