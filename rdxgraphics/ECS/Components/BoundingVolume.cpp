@@ -60,5 +60,18 @@ void AABBBV::RecalculateBV()
 	auto& object = RenderSystem::GetObjekt(model.GetMesh());
 	auto& vertexPositions = object.GetVBData<VertexBasic::Position>();
 
+	VertexBasic::Position::attrib_type min{std::numeric_limits<float>::max()}, max{ std::numeric_limits<float>::min() };
+	for (VertexBasic::Position::attrib_type const& pos : vertexPositions)
+	{
+		min.x = (pos.x < min.x) ? pos.x : min.x;
+		min.y = (pos.y < min.y) ? pos.y : min.y;
+		min.z = (pos.z < min.z) ? pos.z : min.z;
 
+		max.x = (pos.x > max.x) ? pos.x : max.x;
+		max.y = (pos.y > max.y) ? pos.y : max.y;
+		max.z = (pos.z > max.z) ? pos.z : max.z;
+	}
+
+	SetOffset((max + min) * 0.5f);
+	GetHalfExtents() = glm::abs((max - min) * 0.5f);
 }

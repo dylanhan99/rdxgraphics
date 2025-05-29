@@ -48,7 +48,7 @@ public:
 	inline bool& IsCollide() { return m_IsCollide; }
 
 private:
-	void SetDirty() const;
+	virtual void SetDirty() const;
 
 protected:
 	glm::mat4 m_Xform{};
@@ -200,13 +200,13 @@ public:
 	AABBPrimitive() = default;
 	inline void UpdateXform() override
 	{
-		m_Xform = glm::translate(GetPosition()) * glm::scale(m_HalfExtents);
+		m_Xform = glm::translate(GetPosition()) * glm::scale(2.f * m_HalfExtents);
 	}
 
 	inline glm::vec3 const& GetHalfExtents() const { return m_HalfExtents; }
 	inline glm::vec3& GetHalfExtents() { return m_HalfExtents; }
-	inline glm::vec3 GetMinPoint() const { return GetPosition() - 0.5f * m_HalfExtents; }
-	inline glm::vec3 GetMaxPoint() const { return GetPosition() + 0.5f * m_HalfExtents; }
+	inline glm::vec3 GetMinPoint() const { return GetPosition() - m_HalfExtents; }
+	inline glm::vec3 GetMaxPoint() const { return GetPosition() + m_HalfExtents; }
 
 private:
 	glm::vec3 m_HalfExtents{ 0.5f };

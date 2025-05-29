@@ -339,6 +339,16 @@ void RenderSystem::Draw()
 				}
 			}
 
+			{
+				auto bvView = EntityManager::View<AABBBV>();
+				for (auto [handle, bv] : bvView.each())
+				{
+					auto& obj = GetObjekt(Shape::Cube);
+					obj.Submit<VertexBasic::Xform>(bv.GetXform());
+					obj.Submit<VertexBasic::IsCollide>(false);
+				}
+			}
+
 			//glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 			//glClear(GL_COLOR_BUFFER_BIT);
 			//glDisable(GL_DEPTH_TEST); // (optional, just for debugging visibility)

@@ -51,4 +51,27 @@ case Primitive::Klass:													 \
 		}
 	}
 #undef _RX_X
+
+	// handling dirty BVs
+	{
+		auto v = EntityManager::View<BoundingVolume::Dirty>();
+		for (auto [handle, _] : v.each())
+		{
+			auto& boundingVolume = EntityManager::GetComponent<BoundingVolume>(handle);
+			switch (boundingVolume.GetBVType())
+			{
+			case BV::AABB:
+			{
+				AABBBV& bv = EntityManager::GetComponent<AABBBV>(handle);
+				bv.RecalculateBV();
+				bv.UpdateXform();
+				break;
+			}
+			default:
+				break;
+			}
+
+			EntityManager::RemoveComponent<BoundingVolume::Dirty>(handle);
+		}
+	}
 }

@@ -8,6 +8,15 @@
 void Sandbox::StartImpl()
 {
 	entt::entity test{};
+	//{
+	//	auto handle = BaseScene::CreateDefaultEntity<NoDelete>();
+	//	EntityManager::AddComponent<Metadata>(handle, "L");
+	//	EntityManager::AddComponent<Xform>(handle, glm::vec3{ 1.f, 1.f, 1.f }, glm::vec3{ 1.f }, glm::vec3{ glm::quarter_pi<float>() });
+	//	EntityManager::AddComponent<Model>(handle, Shape::Sphere);
+	//	EntityManager::AddComponent<Material>(handle, glm::vec3{ 0.f,1.f,0.f });
+	//	EntityManager::AddComponent<Collider>(handle, Primitive::AABB);
+	//	return;
+	//}
 	{
 		auto handle = test = BaseScene::CreateDefaultEntity<NoDelete>();
 		EntityManager::AddComponent<Metadata>(handle, "L");

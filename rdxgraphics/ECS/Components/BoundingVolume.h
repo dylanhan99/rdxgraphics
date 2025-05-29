@@ -29,7 +29,7 @@ public:
 	void OnConstructImpl() override { RX_WARN("BaseBV"); SetDirty(); }
 
 private:
-	void SetDirty() const;
+	void SetDirty() const override;
 	virtual void RecalculateBV() = 0;
 
 private:
@@ -38,6 +38,7 @@ private:
 
 class AABBBV : public BaseBV, public AABBPrimitive
 {
+	RX_COMPONENT_DEF_HANDLE(AABBBV);
 public:
 	AABBBV() = default;
 	void RecalculateBV() override;

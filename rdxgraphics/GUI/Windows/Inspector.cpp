@@ -248,5 +248,18 @@ void Inspector::UpdateCompSpherePrimitive(std::string const& strHandle, SpherePr
 
 void Inspector::UpdateCompBoundingVolume(std::string const& strHandle, BoundingVolume& comp)
 {
-
+	switch (comp.GetBVType())
+	{
+	case BV::AABB:
+	{
+		AABBBV& bv = EntityManager::GetComponent<AABBBV>(comp.GetEntityHandle());
+		ImGui::BeginDisabled();
+		Draggy("Offset", strHandle, &bv.GetOffset()[0], 3);
+		Draggy("Half Extent", strHandle, &bv.GetHalfExtents()[0], 3);
+		ImGui::EndDisabled();
+		break;
+	}
+	default:
+		break;
+	}
 }
