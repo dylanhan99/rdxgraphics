@@ -4,7 +4,7 @@
 #define _RX_X(Klass, ...) typename Klass::container_type,
 	using ObjectParams_VertexBasic = std::tuple<GLenum, std::vector<GLuint>,
 	RX_VERTEX_BASIC_ATTRIBS_M_NOINSTANCED(_RX_X)
-	void* // Hack to overcome the trailing comma
+	std::vector<glm::vec3> // Container of precalculated AABB points from assimp (if applicable)
 	>;
 #undef _RX_X
 #define _RX_X(Klass, ...) typename Klass::container_type,

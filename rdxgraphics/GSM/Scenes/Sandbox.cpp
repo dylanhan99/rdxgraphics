@@ -4,6 +4,7 @@
 #include "ECS/Systems/RenderSystem.h"
 #include "ECS/EntityManager.h"
 #include "ECS/Components/Camera.h"
+#include "GUI/GUI.h"
 
 void Sandbox::StartImpl()
 {
@@ -20,10 +21,11 @@ void Sandbox::StartImpl()
 	{
 		auto handle = test = BaseScene::CreateDefaultEntity<NoDelete>();
 		EntityManager::AddComponent<Metadata>(handle, "L");
-		EntityManager::AddComponent<Xform>(handle, glm::vec3{ 1.f, 1.f, 1.f }, glm::vec3{ 1.f }, glm::vec3{ glm::quarter_pi<float>() });
-		EntityManager::AddComponent<Model>(handle, Shape::Sphere);
+		EntityManager::AddComponent<Xform>(handle, glm::vec3{ 1.f, 1.f, 1.f }, glm::vec3{ 1.f }, glm::vec3{ 0.f });
+		EntityManager::AddComponent<Model>(handle, Rxuid("bunny"));
 		EntityManager::AddComponent<Material>(handle, glm::vec3{ 0.f,1.f,0.f });
 		EntityManager::AddComponent<BoundingVolume>(handle, BV::AABB);
+		GUI::SetSelectedEntity(handle);
 		return;
 	}
 	{

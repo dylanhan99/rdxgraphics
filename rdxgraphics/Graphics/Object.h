@@ -1,5 +1,6 @@
 #pragma once
 #include "GraphicsCommon.h"
+#include "ECS/Components/BoundingVolume.h"
 #define RX_MAX_INSTANCES 1000
 
 //////////////////////////////////////////////////
@@ -162,6 +163,9 @@ public:
 	inline std::string const& GetName() const { return m_Name; }
 	inline void SetName(std::string name) { m_Name = std::move(name); }
 
+	inline AABBBV const& GetDefaultAABBBV() const { return m_DefaultAABBBV; }
+	inline AABBBV& GetDefaultAABBBV() { return m_DefaultAABBBV; }
+
 private:
 	std::string m_Name{};
 	GLuint m_VAO{};
@@ -173,6 +177,9 @@ private:
 	GLsizei m_PrimCount{ 0 };
 	std::vector<GLuint> m_Indices{};
 	std::vector<std::shared_ptr<typename vertex_type::BaseAttribute>> m_VBData{};
+
+	// Pre-calculated default BVs
+	AABBBV m_DefaultAABBBV{}; 
 };
 //////////////////////////////////////////////////
 

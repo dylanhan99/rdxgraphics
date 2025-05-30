@@ -488,4 +488,5 @@ void RenderSystem::CreateShapes()
 	//_RX_X(cup);
 	//_RX_X(head);
 	//_RX_X(starwars1);
+#undef _RX_X
 }
