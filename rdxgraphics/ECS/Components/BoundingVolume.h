@@ -16,7 +16,7 @@ public:
 	void SetBVType(BV bvType);
 
 private:
-	void SetupBV(glm::vec3 offset = glm::vec3{ 0.f });
+	void SetupBV(glm::vec3 offset = glm::vec3{ 0.f }) const;
 	glm::vec3 RemoveBV(); // returns offset of previous BV
 
 private:
@@ -36,6 +36,17 @@ private:
 
 };
 
+class FrustumBV : public BaseBV
+{
+	RX_COMPONENT_DEF_HANDLE(FrustumBV);
+public:
+	FrustumBV() = default;
+	inline void UpdateXform() override {}; // Must have it's own beacuse of BasePrimitive
+	inline void RecalculateBV() override {};
+
+private:
+};
+
 class AABBBV : public BaseBV, public AABBPrimitive
 {
 	RX_COMPONENT_DEF_HANDLE(AABBBV);
@@ -45,4 +56,25 @@ public:
 
 private:
 
+};
+
+class OBBBV : public BaseBV
+{
+	RX_COMPONENT_DEF_HANDLE(OBBBV);
+public:
+	OBBBV() = default;
+	inline void UpdateXform() override {}; // Must have it's own beacuse of BasePrimitive
+	inline void RecalculateBV() override {};
+
+private:
+};
+
+class SphereBV : public BaseBV, public SpherePrimitive
+{
+	RX_COMPONENT_DEF_HANDLE(SphereBV);
+public:
+	SphereBV() = default;
+	inline void RecalculateBV() override;
+
+private:
 };

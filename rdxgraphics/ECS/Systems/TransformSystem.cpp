@@ -19,22 +19,26 @@ case Primitive::Klass:													 \
 	auto xformView = EntityManager::View<Xform::Dirty, Xform>();
 	for (auto [handle, _, xform] : xformView.each())
 	{
+#define _RX_XX(Klass)											 \
+	case BV::Klass:												 \
+	{															 \
+		Klass##BV& bv = EntityManager::GetComponent<Klass##BV>(handle);\
+		bv.RecalculateBV();										 \
+		bv.UpdateXform();										 \
+		break;													 \
+	}
+
 		if (EntityManager::HasComponent<BoundingVolume>(handle))
 		{
 			auto const& boundingVolume = EntityManager::GetComponent<BoundingVolume>(handle);
 			switch (boundingVolume.GetBVType())
 			{
-			case BV::AABB:
-			{
-				AABBBV& bv = EntityManager::GetComponent<AABBBV>(handle);
-				bv.RecalculateBV();
-				bv.UpdateXform();
-				break;
-			}
+				RX_DO_ALL_BV_ENUM_M(_RX_XX)
 			default:
 				break;
 			}
 		}
+#undef _RX_XX
 
 		xform.UpdateXform();
 		EntityManager::RemoveComponent<Xform::Dirty>(handle);

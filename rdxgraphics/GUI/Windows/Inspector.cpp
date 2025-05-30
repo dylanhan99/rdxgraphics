@@ -250,6 +250,9 @@ void Inspector::UpdateCompBoundingVolume(std::string const& strHandle, BoundingV
 {
 	switch (comp.GetBVType())
 	{
+	case BV::Frustum:
+		ImGui::Text("Frusttum");
+		break;
 	case BV::AABB:
 	{
 		AABBBV& bv = EntityManager::GetComponent<AABBBV>(comp.GetEntityHandle());
@@ -257,6 +260,16 @@ void Inspector::UpdateCompBoundingVolume(std::string const& strHandle, BoundingV
 		Draggy("Offset", strHandle, &bv.GetOffset()[0], 3);
 		Draggy("Half Extent", strHandle, &bv.GetHalfExtents()[0], 3);
 		ImGui::EndDisabled();
+		break;
+	}
+	case BV::OBB:
+		ImGui::Text("OBB");
+		break;
+	case BV::Sphere:
+	{
+		SphereBV& bv = EntityManager::GetComponent<SphereBV>(comp.GetEntityHandle());
+		Draggy("Offset", strHandle, &bv.GetOffset()[0], 3);
+		Draggy("Radius", strHandle, &bv.GetRadius(), 1);
 		break;
 	}
 	default:

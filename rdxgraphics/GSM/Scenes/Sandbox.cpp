@@ -24,7 +24,7 @@ void Sandbox::StartImpl()
 		EntityManager::AddComponent<Xform>(handle, glm::vec3{ 1.f, 1.f, 1.f }, glm::vec3{ 1.f }, glm::vec3{ 0.f });
 		EntityManager::AddComponent<Model>(handle, Rxuid("bunny"));
 		EntityManager::AddComponent<Material>(handle, glm::vec3{ 0.f,1.f,0.f });
-		EntityManager::AddComponent<BoundingVolume>(handle, BV::AABB);
+		EntityManager::AddComponent<BoundingVolume>(handle, BV::Sphere);
 		GUI::SetSelectedEntity(handle);
 		return;
 	}

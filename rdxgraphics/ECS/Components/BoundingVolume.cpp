@@ -16,18 +16,14 @@ void BoundingVolume::SetBVType(BV bvType)
 	SetupBV(offset);
 }
 
-void BoundingVolume::SetupBV(glm::vec3 offset)
+void BoundingVolume::SetupBV(glm::vec3 offset) const
 {
 	// Get the BV& component and 
 	entt::entity const handle = GetEntityHandle();
-#define _RX_X(Klass)
+#define _RX_X(Klass) case BV::Klass: { EntityManager::AddComponent<Klass##BV>(handle); break; }
 	switch (m_BVType)
 	{
-	case BV::AABB:
-		EntityManager::AddComponent<AABBBV>(handle);
-		RX_ASSERT(EntityManager::HasComponent<AABBBV>(handle));
-		//EntityManager::GetComponent<AABBBV
-		break;
+		RX_DO_ALL_BV_ENUM;
 	default:
 		RX_ASSERT(false, "How did you get here");
 		break;
@@ -78,5 +74,40 @@ void AABBBV::RecalculateBV()
 	}
 
 	GetHalfExtents() = newHalfSize;
+	GetOffset() = newCenter;
+}
+
+void SphereBV::RecalculateBV()
+{
+	// "Original"
+	Model const& model = EntityManager::GetComponent<const Model>(GetEntityHandle());
+	auto& obj = RenderSystem::GetObjekt(model.GetMesh());
+	AABBBV const& defaultBV = obj.GetDefaultAABBBV();
+
+	glm::vec3 const& defaultCenter = defaultBV.GetOffset();
+	glm::vec3 const& defaultHalfExtents = defaultBV.GetHalfExtents();
+
+	Xform const& xform = EntityManager::GetComponent<const Xform>(GetEntityHandle());
+	glm::vec3 const& scl = xform.GetScale();
+	glm::mat4 const rot = xform.GetRotationMatrix();
+
+	glm::vec3 newCenter{ 0.f };
+	if (defaultCenter != glm::vec3{ 0.f })
+		newCenter = /*glm::translate(xform.GetTranslate()) **/ rot * glm::scale(scl) * glm::vec4{ defaultCenter, 1.f };
+
+	glm::vec3 newHalfSize{};
+	for (int i = 0; i < 3; ++i)
+	{
+		newHalfSize[i] =
+			glm::abs(rot[i][0]) * defaultHalfExtents[0] * scl[0] +
+			glm::abs(rot[i][1]) * defaultHalfExtents[1] * scl[1] +
+			glm::abs(rot[i][2]) * defaultHalfExtents[2] * scl[2];
+	}
+
+	//GetHalfExtents() = newHalfSize;
+	GetRadius() =
+		newHalfSize.x * newHalfSize.x * newHalfSize.x +
+		newHalfSize.y * newHalfSize.y * newHalfSize.y +
+		newHalfSize.z * newHalfSize.z * newHalfSize.z;
 	GetOffset() = newCenter;
 }

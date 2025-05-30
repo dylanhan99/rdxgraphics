@@ -348,6 +348,15 @@ void RenderSystem::Draw()
 					obj.Submit<VertexBasic::IsCollide>(false);
 				}
 			}
+			{
+				auto bvView = EntityManager::View<SphereBV>();
+				for (auto [handle, bv] : bvView.each())
+				{
+					auto& obj = GetObjekt(Shape::Sphere);
+					obj.Submit<VertexBasic::Xform>(bv.GetXform());
+					obj.Submit<VertexBasic::IsCollide>(false);
+				}
+			}
 
 			//glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 			//glClear(GL_COLOR_BUFFER_BIT);
