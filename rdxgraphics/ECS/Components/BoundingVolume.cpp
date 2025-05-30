@@ -52,15 +52,14 @@ void BaseBV::SetDirty() const
 // Ok actually we use this to cache all 8 line edges' xforms
 void FrustumBV::UpdateXform() 
 {
-	Xform& xform = EntityManager::GetComponent<Xform>(GetEntityHandle());
 	auto CalcXform = 
-		[pos = xform.GetTranslate()](glm::vec3 const& A, glm::vec3 const& B) -> glm::mat4
+		[](glm::vec3 const& A, glm::vec3 const& B) -> glm::mat4
 		{
 			glm::vec3 from = RayPrimitive::DefaultDirection;
 			glm::vec3 to = B - A;
 
 			glm::quat quat = glm::rotation(from, glm::normalize(to));
-			return glm::translate(pos + A) * glm::scale(glm::vec3(glm::length(to))) * glm::mat4_cast(quat);
+			return glm::translate(A) * glm::scale(glm::vec3(glm::length(to))) * glm::mat4_cast(quat);
 		};
 
 	// Near plane, TL > BL > BR > TR
