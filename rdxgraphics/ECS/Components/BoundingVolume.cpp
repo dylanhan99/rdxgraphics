@@ -2,6 +2,7 @@
 #include "BoundingVolume.h"
 #include "ECS/EntityManager.h"
 #include "ECS/Systems/RenderSystem.h"
+#include "ECS/Components/Camera.h"
 
 void BoundingVolume::SetBVType(BV bvType)
 {
@@ -44,6 +45,55 @@ void BaseBV::SetDirty() const
 	//	return;
 	//
 	//EntityManager::AddComponent<BoundingVolume::Dirty>(handle);
+}
+
+// Actually i dont think we even need to bother with this 
+// because m_Points are all in world space
+// Ok actually we use this to cache all 8 line edges' xforms
+void FrustumBV::UpdateXform() 
+{
+	Xform& xform = EntityManager::GetComponent<Xform>(GetEntityHandle());
+	auto CalcXform = 
+		[pos = xform.GetTranslate()](glm::vec3 const& A, glm::vec3 const& B) -> glm::mat4
+		{
+			glm::vec3 from = RayPrimitive::DefaultDirection;
+			glm::vec3 to = B - A;
+
+			glm::quat quat = glm::rotation(from, glm::normalize(to));
+			return glm::translate(pos + A) * glm::scale(glm::vec3(glm::length(to))) * glm::mat4_cast(quat);
+		};
+
+	// Near plane, TL > BL > BR > TR
+	// Far plane,  TL > BL > BR > TR
+	// m_Points
+	m_Xforms[0] = CalcXform(m_Points[0], m_Points[4]); // TL
+	m_Xforms[1] = CalcXform(m_Points[1], m_Points[5]); // BL
+	m_Xforms[2] = CalcXform(m_Points[2], m_Points[6]); // BR
+	m_Xforms[3] = CalcXform(m_Points[3], m_Points[7]); // TR
+	m_Xforms[4] = CalcXform(m_Points[0], m_Points[3]); // NT
+	m_Xforms[5] = CalcXform(m_Points[1], m_Points[2]); // NB
+	m_Xforms[6] = CalcXform(m_Points[4], m_Points[7]); // FT
+	m_Xforms[7] = CalcXform(m_Points[5], m_Points[6]); // FB
+}
+
+void FrustumBV::RecalculateBV()
+{
+	entt::entity const handle = GetEntityHandle();
+	if (!EntityManager::HasComponent<Camera>(handle))
+	{
+		RX_WARN("FrustumBV is lacking a Camera component - entt::{}", (uint32_t)handle);
+		return;
+	}
+
+	Camera& camera = EntityManager::GetComponent<Camera>(handle);
+	glm::mat4 const invViewMatrix = glm::inverse(camera.GetViewMatrix());
+
+	for (uint32_t i = 0; i < 8; ++i)
+	{
+		glm::vec4& curr = m_Points[i];
+		curr = invViewMatrix * NDCPoints[i];
+		curr /= curr.w; // perspective division
+	}
 }
 
 void AABBBV::RecalculateBV()

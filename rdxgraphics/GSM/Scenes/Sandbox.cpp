@@ -18,6 +18,7 @@ void Sandbox::StartImpl()
 	//	EntityManager::AddComponent<Collider>(handle, Primitive::AABB);
 	//	return;
 	//}
+	return;
 	{
 		auto handle = test = BaseScene::CreateDefaultEntity<NoDelete>();
 		EntityManager::AddComponent<Metadata>(handle, "L");

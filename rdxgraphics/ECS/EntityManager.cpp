@@ -15,8 +15,7 @@ bool EntityManager::Init()
 	RX_DO_ALL_PRIMITIVE_ENUM;
 #undef _RX_X
 #define _RX_X(Klass) Klass##BV::Init(g.m_Registry);
-	//RX_DO_ALL_BV_ENUM;
-	AABBBV::Init(g.m_Registry);
+	RX_DO_ALL_BV_ENUM;
 #undef _RX_X
 
 	return true;

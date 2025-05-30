@@ -4,6 +4,7 @@
 #include "Utils/Input.h"
 #include "GLFWWindow/GLFWWindow.h"
 #include "ECS/EntityManager.h"
+#include "BoundingVolume.h"
 
 Camera::Camera(
 	Mode camMode,
@@ -27,6 +28,9 @@ void Camera::OnConstructImpl()
 	{ // Add an xform if not found
 		EntityManager::AddComponent<Xform>(handle, glm::vec3{}, glm::vec3{ 1.f }, DefaultFront);
 	}
+
+	// Overrides the existing one if need be
+	EntityManager::AddComponent<BoundingVolume>(handle, BV::Frustum);
 
 	UpdateCameraVectors();
 }

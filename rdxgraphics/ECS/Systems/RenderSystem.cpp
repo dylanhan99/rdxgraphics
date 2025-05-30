@@ -340,6 +340,18 @@ void RenderSystem::Draw()
 			}
 
 			{
+				auto bvView = EntityManager::View<const FrustumBV>();
+				for (auto [handle, bv] : bvView.each())
+				{
+					auto& obj = GetObjekt(Shape::Line);
+					for (glm::mat4 const& edge : bv.GetEdgeXforms())
+					{
+						obj.Submit<VertexBasic::Xform>(edge);
+						obj.Submit<VertexBasic::IsCollide>(false);
+					}
+				}
+			}
+			{
 				auto bvView = EntityManager::View<AABBBV>();
 				for (auto [handle, bv] : bvView.each())
 				{

@@ -36,15 +36,28 @@ private:
 
 };
 
+// Get inversed view matrix > apply to NDC points to get your 8 world points
+// https://gamedev.stackexchange.com/questions/69749/get-the-8-corners-of-camera-frustrum
 class FrustumBV : public BaseBV
 {
 	RX_COMPONENT_DEF_HANDLE(FrustumBV);
 public:
+	inline static const std::array<glm::vec4, 8> NDCPoints{
+		// Near plane, TL > BL > BR > TR
+		glm::vec4{-1.f, 1.f, 1.f, 1.f}, glm::vec4{-1.f, -1.f, 1.f, 1.f}, glm::vec4{1.f, -1.f, 1.f, 1.f}, glm::vec4{1.f, 1.f, 1.f, 1.f},
+		// Far plane, TL > BL > BR > TR
+		glm::vec4{-1.f, 1.f, -1.f, 1.f}, glm::vec4{-1.f, -1.f, -1.f, 1.f}, glm::vec4{1.f, -1.f, -1.f, 1.f}, glm::vec4{1.f, 1.f, -1.f, 1.f}
+	};
+public:
 	FrustumBV() = default;
-	inline void UpdateXform() override {}; // Must have it's own beacuse of BasePrimitive
-	inline void RecalculateBV() override {};
+	void UpdateXform() override; // Must have it's own beacuse of BasePrimitive
+	void RecalculateBV() override;
+
+	inline std::array<glm::mat4, 8> const& GetEdgeXforms() const { return m_Xforms; }
 
 private:
+	std::array<glm::vec4, 8> m_Points{};
+	std::array<glm::mat4, 8> m_Xforms{}; // TL, BL, BR, TR, NT, NB, FT, FB
 };
 
 class AABBBV : public BaseBV, public AABBPrimitive
