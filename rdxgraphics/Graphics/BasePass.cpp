@@ -1,8 +1,8 @@
 #include <pch.h>
-#include "RenderPass.h"
+#include "BasePass.h"
 #include "GLFWWindow/GLFWWindow.h"
 
-bool RenderPass::Init(void*)
+bool BasePass::Init(void*)
 {
 	Terminate();
 	
@@ -14,7 +14,7 @@ bool RenderPass::Init(void*)
 	return true;
 }
 
-bool RenderPass::Init(int x, int y, int width, int height)
+bool BasePass::Init(int x, int y, int width, int height)
 {
 	Terminate();
 
@@ -45,7 +45,7 @@ bool RenderPass::Init(int x, int y, int width, int height)
 	return true;
 }
 
-void RenderPass::Terminate()
+void BasePass::Terminate()
 {
 	glDeleteFramebuffers(1, &m_FBO);
 	glDeleteTextures(1, &m_TextureBuffer);
@@ -53,9 +53,9 @@ void RenderPass::Terminate()
 	m_FBO = m_TextureBuffer = m_DepthBuffer = 0;
 }
 
-void RenderPass::DrawThis(std::function<void()> drawStuff) const
+void BasePass::Draw() const
 {
-	glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);	
+	glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
 	glBindTexture(GL_TEXTURE_2D, m_TextureBuffer);
 	glViewport(m_ViewportPos.x, m_ViewportPos.y, m_ViewportDims.x, m_ViewportDims.y);
 
@@ -65,7 +65,7 @@ void RenderPass::DrawThis(std::function<void()> drawStuff) const
 	glClearColor(m_BackbufferColor.r, m_BackbufferColor.g, m_BackbufferColor.b, m_BackbufferColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	drawStuff();
+	DrawImpl();
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0); // back to default
 }

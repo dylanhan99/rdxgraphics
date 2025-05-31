@@ -2,6 +2,7 @@
 #include "Viewport.h"
 #include "ECS/Systems/RenderSystem.h"
 #include "GSM/SceneManager.h"
+#include "Graphics/Passes/Passes.h"
 
 void Viewport::UpdateImpl(float dt)
 {
@@ -15,7 +16,7 @@ void Viewport::UpdateImpl(float dt)
 	ImGui::TableNextColumn();
 
 	ImVec2 currPos = ImGui::GetCursorPos();
-	auto& pass = RenderSystem::GetScreenPass();
+	auto& pass = RenderSystem::GetRenderPass<ScreenPass>();
 	ImVec2 winDims{
 		ImGui::GetWindowContentRegionMax().x - currPos.x,
 		ImGui::GetWindowContentRegionMax().y - currPos.y

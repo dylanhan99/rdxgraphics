@@ -2,9 +2,9 @@
 #include "Graphics/GraphicsCommon.h"
 #include "Graphics/Object.h"
 #include "Graphics/Shader.h"
-#include "Graphics/RenderPass.h"
 #include "Graphics/UniformBuffer.h"
 #include "ECS/EntityManager.h"
+#include "Graphics/BasePass.h"
 
 class RenderSystem : public BaseSingleton<RenderSystem>
 {
@@ -22,7 +22,7 @@ public:
 	template <Shape S, typename U>
 	static void Submit(typename U::value_type val) { GetObjekt(S).Submit<U>(val); }
 
-	inline static std::map<Rxuid, Object<VertexBasic>> const& GetObjekts() { return g.m_Objects; }
+	inline static std::map<Rxuid, Object<VertexBasic>>& GetObjekts() { return g.m_Objects; }
 	static Object<VertexBasic>& GetObjekt(Rxuid uid);
 	static Object<VertexBasic>& GetObjekt(Shape shape);
 	static Object<VertexBasic>& GetObjekt(Primitive bv);
@@ -33,14 +33,37 @@ public:
 	inline static entt::entity GetMinimapCamera() { return g.m_MinimapCamera; }
 	inline static void SetMinimapCamera(entt::entity handle) { g.m_MinimapCamera = handle; }
 
-	inline static RenderPass& GetScreenPass() { return g.m_ScreenPass; }
+	template <typename T>
+	inline static T& GetRenderPass() { return *std::dynamic_pointer_cast<T>(g.m_RenderPasses[GetPassID<T>()]); }
 
 	inline static glm::vec4& GetGlobalIllumination() { return g.m_GlobalIllumination; }
 
 private:
 	static void CreateShapes();
 
-private:
+	template <typename T, typename ...Args>
+	//static std::enable_if<
+	//	std::is_base_of_v<BasePass, T> && std::is_constructible_v<T, Args...>, std::unique_ptr<BasePass>&> 
+	static std::shared_ptr<BasePass>& RegisterPass(Args&& ...args)
+	{
+		RX_INFO("Registered new scene - ", GetPassID<T>());
+		return g.m_RenderPasses.emplace_back(std::move(std::make_shared<T>(std::forward<Args>(args)...)));
+	}
+
+	inline static uint32_t GetPassID()
+	{
+		static uint32_t id = 0;
+		return id++;
+	}
+
+	template <typename T>
+	static uint32_t GetPassID()
+	{
+		static uint32_t id = GetPassID();
+		return id;
+	}
+
+public:
 	glm::vec3 m_BackColor{ 0.2f, 0.3f, 0.3f };
 	glm::vec4 m_GlobalIllumination{ 0.f,0.f,1.f,0.2f }; // w is the scale factor, [0.f,1.f]
 	Shader m_Shader{};
@@ -53,5 +76,6 @@ private:
 	entt::entity m_ActiveCamera{};
 	entt::entity m_MinimapCamera{};
 
-	RenderPass m_ScreenPass{};
+	// This is rendered in register order.
+	std::vector<std::shared_ptr<BasePass>> m_RenderPasses{};
 };

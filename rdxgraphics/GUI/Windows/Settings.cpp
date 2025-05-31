@@ -3,7 +3,6 @@
 #include "GUI/GUI.h"
 #include "GSM/SceneManager.h"
 #include "GLFWWindow/GLFWWindow.h"
-#include "Graphics/RenderPass.h"
 #include "ECS/Systems/RenderSystem.h"
 
 extern bool hasDefault;
