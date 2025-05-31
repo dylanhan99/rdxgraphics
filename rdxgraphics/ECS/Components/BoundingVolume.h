@@ -53,11 +53,11 @@ public:
 	void UpdateXform() override; // Must have it's own beacuse of BasePrimitive
 	void RecalculateBV() override;
 
-	inline std::array<glm::mat4, 8> const& GetEdgeXforms() const { return m_Xforms; }
+	inline std::array<glm::mat4, 12> const& GetEdgeXforms() const { return m_Xforms; }
 
 private:
 	std::array<glm::vec4, 8> m_Points{};
-	std::array<glm::mat4, 8> m_Xforms{}; // TL, BL, BR, TR, NT, NB, FT, FB
+	std::array<glm::mat4, 12> m_Xforms{};
 };
 
 class AABBBV : public BaseBV, public AABBPrimitive

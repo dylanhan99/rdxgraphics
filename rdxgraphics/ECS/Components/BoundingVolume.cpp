@@ -65,14 +65,24 @@ void FrustumBV::UpdateXform()
 	// Near plane, TL > BL > BR > TR
 	// Far plane,  TL > BL > BR > TR
 	// m_Points
+
+	// Forward edges
 	m_Xforms[0] = CalcXform(m_Points[0], m_Points[4]); // TL
 	m_Xforms[1] = CalcXform(m_Points[1], m_Points[5]); // BL
 	m_Xforms[2] = CalcXform(m_Points[2], m_Points[6]); // BR
 	m_Xforms[3] = CalcXform(m_Points[3], m_Points[7]); // TR
-	m_Xforms[4] = CalcXform(m_Points[0], m_Points[3]); // NT
+
+	// Near plane
+	m_Xforms[4] = CalcXform(m_Points[0], m_Points[1]); // NL
 	m_Xforms[5] = CalcXform(m_Points[1], m_Points[2]); // NB
-	m_Xforms[6] = CalcXform(m_Points[4], m_Points[7]); // FT
-	m_Xforms[7] = CalcXform(m_Points[5], m_Points[6]); // FB
+	m_Xforms[6] = CalcXform(m_Points[2], m_Points[3]); // NR
+	m_Xforms[7] = CalcXform(m_Points[3], m_Points[0]); // NT
+
+	// Far plane
+	m_Xforms[8]  = CalcXform(m_Points[4], m_Points[5]); // FL
+	m_Xforms[9]  = CalcXform(m_Points[5], m_Points[6]); // FB
+	m_Xforms[10] = CalcXform(m_Points[6], m_Points[7]); // FR
+	m_Xforms[11] = CalcXform(m_Points[7], m_Points[4]); // FT
 }
 
 void FrustumBV::RecalculateBV()
@@ -85,12 +95,12 @@ void FrustumBV::RecalculateBV()
 	}
 
 	Camera& camera = EntityManager::GetComponent<Camera>(handle);
-	glm::mat4 const invViewMatrix = glm::inverse(camera.GetViewMatrix());
+	glm::mat4 const invMatrix = glm::inverse(camera.GetProjMatrix() * camera.GetViewMatrix());
 
 	for (uint32_t i = 0; i < 8; ++i)
 	{
 		glm::vec4& curr = m_Points[i];
-		curr = invViewMatrix * NDCPoints[i];
+		curr = invMatrix * NDCPoints[i];
 		curr /= curr.w; // perspective division
 	}
 }

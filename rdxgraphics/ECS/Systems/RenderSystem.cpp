@@ -341,9 +341,12 @@ void RenderSystem::Draw()
 
 			{
 				auto bvView = EntityManager::View<const FrustumBV>();
+				auto& obj = GetObjekt(Shape::Line);
 				for (auto [handle, bv] : bvView.each())
 				{
-					auto& obj = GetObjekt(Shape::Line);
+					if (handle != RenderSystem::GetActiveCamera())
+						continue;
+
 					for (glm::mat4 const& edge : bv.GetEdgeXforms())
 					{
 						obj.Submit<VertexBasic::Xform>(edge);
