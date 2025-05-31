@@ -21,7 +21,6 @@ in VS_OUT
 	vec3 Position;
 	vec2 TexCoords;
 	vec3 Normal;
-	flat float IsCollide;
 	flat float MatID;
 	flat vec4 DiffuseColor;
 } fs_in;
@@ -77,9 +76,6 @@ void main()
 	}
 	else
 	{
-		if (fs_in.IsCollide < 0.5)
-			oFragColor = vec4(0.0, 1.0, 0.0, 1.0);
-		else
-			oFragColor = vec4(1.0, 0.0, 0.0, 1.0);
+		oFragColor = fs_in.DiffuseColor;
 	}
 }

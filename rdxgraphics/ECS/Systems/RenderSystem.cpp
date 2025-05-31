@@ -216,7 +216,6 @@ void RenderSystem::Draw()
 				{
 					count = glm::min<size_t>(maxVal - offset, RX_MAX_INSTANCES);
 					object.BindInstancedData<VertexBasic::Xform>(offset, count);
-					object.BindInstancedData<VertexBasic::IsCollide>(offset, count);
 					object.BindInstancedData<VertexBasic::Color>(offset, count);
 					// more binds...
 					object.Draw(count);
@@ -276,7 +275,7 @@ void RenderSystem::Draw()
 						glm::mat4 scale = glm::scale(glm::vec3(glm::length(t)));	\
 						glm::mat4 rotate = glm::mat4_cast(glm::rotation(from, glm::normalize(t)));	\
 						o.Submit<VertexBasic::Xform>(translate * scale * rotate);	\
-						o.Submit<VertexBasic::IsCollide>(prim.IsCollide());			\
+						o.Submit<VertexBasic::Color>(prim.IsCollide() ? glm::vec4{1.f,0.f,0.f,1.f} : glm::vec4{0.f,1.f,0.f,1.f});\
 					}
 					_RX_X(p0, to0);
 					_RX_X(p1, to1);
@@ -292,7 +291,7 @@ void RenderSystem::Draw()
 					Klass##Primitive& prim = EntityManager::GetComponent<Klass##Primitive>(handle);	\
 					Object<VertexBasic>& o = GetObjekt(primType);					\
 					o.Submit<VertexBasic::Xform>(prim.GetXform());					\
-					o.Submit<VertexBasic::IsCollide>(prim.IsCollide());				\
+					o.Submit<VertexBasic::Color>(prim.IsCollide() ? glm::vec4{1.f,0.f,0.f,1.f} : glm::vec4{0.f,1.f,0.f,1.f});\
 				}
 				RX_DO_ALL_PRIMITIVE_ENUM;
 #undef _RX_X
@@ -308,7 +307,7 @@ void RenderSystem::Draw()
 					//obj.Submit<VertexBasic::Xform>(glm::translate(bv.GetP1_W()));
 					//obj.Submit<VertexBasic::Xform>(glm::translate(bv.GetP2_W()));
 					obj.Submit<VertexBasic::Xform>(glm::translate(bv.GetPosition()));
-					obj.Submit<VertexBasic::IsCollide>(false);
+					obj.Submit<VertexBasic::Color>(glm::vec4{0.f,1.f,0.f,1.f});
 				}
 				{
 					auto& obj = GetObjekt(Primitive::Ray);
@@ -317,7 +316,7 @@ void RenderSystem::Draw()
 
 					glm::quat quat = glm::rotation(from, to);
 					obj.Submit<VertexBasic::Xform>(glm::translate(bv.GetPosition()) * glm::mat4_cast(quat));
-					obj.Submit<VertexBasic::IsCollide>(false);
+					obj.Submit<VertexBasic::Color>(glm::vec4{ 0.f,1.f,0.f,1.f });
 				}
 			}
 
@@ -335,7 +334,7 @@ void RenderSystem::Draw()
 
 					glm::quat quat = glm::rotation(from, to);
 					obj.Submit<VertexBasic::Xform>(glm::translate(bv.GetPosition()) * glm::mat4_cast(quat));
-					obj.Submit<VertexBasic::IsCollide>(false);
+					obj.Submit<VertexBasic::Color>(glm::vec4{ 0.f,1.f,0.f,1.f });
 				}
 			}
 
@@ -350,7 +349,7 @@ void RenderSystem::Draw()
 					for (glm::mat4 const& edge : bv.GetEdgeXforms())
 					{
 						obj.Submit<VertexBasic::Xform>(edge);
-						obj.Submit<VertexBasic::IsCollide>(false);
+						obj.Submit<VertexBasic::Color>(glm::vec4{ 0.f,1.f,0.f,1.f });
 					}
 				}
 			}
@@ -360,7 +359,7 @@ void RenderSystem::Draw()
 				{
 					auto& obj = GetObjekt(Shape::Cube);
 					obj.Submit<VertexBasic::Xform>(bv.GetXform());
-					obj.Submit<VertexBasic::IsCollide>(false);
+					obj.Submit<VertexBasic::Color>(glm::vec4{ 0.f,1.f,0.f,1.f });
 				}
 			}
 			{
@@ -369,7 +368,7 @@ void RenderSystem::Draw()
 				{
 					auto& obj = GetObjekt(Shape::Sphere);
 					obj.Submit<VertexBasic::Xform>(bv.GetXform());
-					obj.Submit<VertexBasic::IsCollide>(false);
+					obj.Submit<VertexBasic::Color>(glm::vec4{ 0.f,1.f,0.f,1.f });
 				}
 			}
 
@@ -400,14 +399,9 @@ void RenderSystem::Draw()
 				{
 					count = glm::min<size_t>(maxVal - offset, RX_MAX_INSTANCES);
 					object.BindInstancedData<VertexBasic::Xform>(offset, count);
-					object.BindInstancedData<VertexBasic::IsCollide>(offset, count);
-					// more binds...
-
-					if (object.GetPrimitive() == GL_POINTS)
-						glPointSize(10.f);
+					object.BindInstancedData<VertexBasic::Color>(offset, count);
 
 					object.Draw(count);
-					glPointSize(1.f);
 				}
 
 				object.Flush();
