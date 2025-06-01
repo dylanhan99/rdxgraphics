@@ -14,23 +14,20 @@ void ScreenPass::DrawImpl() const
 
 	RenderSystem::GetInstance().m_FBOShader.Bind();
 
-	auto& basePass = RenderSystem::GetRenderPass<ModelPass>();
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, basePass.GetTextureBuffer());
-	RenderSystem::GetInstance().m_FBOShader.SetUniform1i("uBaseTex", 0);
-	RenderSystem::GetInstance().m_FBOShader.SetUniform1i("uHasBaseTex", hasDefault);
-	
-	auto& wireframePass = RenderSystem::GetRenderPass<ColliderWireframePass>();
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, wireframePass.GetTextureBuffer());
-	RenderSystem::GetInstance().m_FBOShader.SetUniform1i("uWireframeTex", 1);
-	RenderSystem::GetInstance().m_FBOShader.SetUniform1i("uHasWireframeTex", hasWireframe);
+	auto& passes = RenderSystem::GetRenderPasses();
+	for (int i = 0; i < passes.size() - 1; ++i) // size - 1 hardcode, assuming that screenpass is the LAST registered one.
+	{
+		int glTextureSlot = GL_TEXTURE0 + i;
+		std::shared_ptr<BasePass> pass = passes[i];
 
-	//auto& wireframePass = RenderSystem::GetRenderPass<ColliderWireframePass>();
-	//glActiveTexture(GL_TEXTURE2);
-	//glBindTexture(GL_TEXTURE_2D, minimapPass.GetTextureBuffer());
-	//g.m_FBOShader.SetUniform1i("uMinimapTex", 2);
-	RenderSystem::GetInstance().m_FBOShader.SetUniform1i("uHasMinimapTex", false/*hasMinimap*/);
+		// Only have 32 texture slots don't mess up lmao
+		RX_ASSERT(glTextureSlot <= GL_TEXTURE31);
+
+		glActiveTexture(glTextureSlot);
+		glBindTexture(GL_TEXTURE_2D, pass->GetTextureBuffer());
+		RenderSystem::GetInstance().m_FBOShader.SetUniform1i(pass->GetHandleTexName().c_str(), i);
+		RenderSystem::GetInstance().m_FBOShader.SetUniform1i(pass->GetHasHandleName().c_str(), pass->IsEnabled());
+	}
 
 	RenderSystem::GetInstance().m_FBOObject.Bind();
 	RenderSystem::GetInstance().m_FBOObject.Draw(1);

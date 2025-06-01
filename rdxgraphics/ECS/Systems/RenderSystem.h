@@ -33,8 +33,10 @@ public:
 	inline static entt::entity GetMinimapCamera() { return g.m_MinimapCamera; }
 	inline static void SetMinimapCamera(entt::entity handle) { g.m_MinimapCamera = handle; }
 
-	template <typename T>
-	inline static T& GetRenderPass() { return *std::dynamic_pointer_cast<T>(g.m_RenderPasses[GetPassID<T>()]); }
+	//template <typename T>
+	//inline static T& GetRenderPass() { return *std::dynamic_pointer_cast<T>(g.m_RenderPasses[GetPassID<T>()]); }
+	inline static std::vector<std::shared_ptr<BasePass>>& GetRenderPasses() { return g.m_RenderPasses; }
+	inline static std::shared_ptr<BasePass> GetScreenPass() { return g.m_RenderPasses.back(); } // We assume that screenpass is the final
 
 	inline static glm::vec4& GetGlobalIllumination() { return g.m_GlobalIllumination; }
 
@@ -46,26 +48,12 @@ private:
 	//	std::is_base_of_v<BasePass, T> && std::is_constructible_v<T, Args...>, std::unique_ptr<BasePass>&> 
 	static std::shared_ptr<BasePass>& RegisterPass(Args&& ...args)
 	{
-		RX_INFO("Registered new scene - ", GetPassID<T>());
 		return g.m_RenderPasses.emplace_back(std::move(std::make_shared<T>(std::forward<Args>(args)...)));
-	}
-
-	inline static uint32_t GetPassID()
-	{
-		static uint32_t id = 0;
-		return id++;
-	}
-
-	template <typename T>
-	static uint32_t GetPassID()
-	{
-		static uint32_t id = GetPassID();
-		return id;
 	}
 
 public:
 	glm::vec3 m_BackColor{ 0.2f, 0.3f, 0.3f };
-	glm::vec4 m_GlobalIllumination{ 0.f,0.f,1.f,0.2f }; // w is the scale factor, [0.f,1.f]
+	glm::vec4 m_GlobalIllumination{ 1.f,0.0627f,0.941f,0.7f }; // w is the scale factor, [0.f,1.f]
 	Shader m_Shader{};
 	Shader m_FBOShader{};
 

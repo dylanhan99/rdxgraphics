@@ -1,9 +1,9 @@
 #include <pch.h>
-#include "ModelPass.h"
+#include "ModelsPass.h"
 #include "ECS/EntityManager.h"
 #include "ECS/Systems/RenderSystem.h"
 
-void ModelPass::DrawImpl() const
+void ModelsPass::DrawImpl() const
 {
 	auto view = EntityManager::View<const Xform, const Model>();
 	for (auto [handle, xform, model] : view.each())

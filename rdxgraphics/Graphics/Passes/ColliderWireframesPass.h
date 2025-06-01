@@ -1,9 +1,9 @@
 #pragma once
 #include "Graphics/BasePass.h"
 
-class ScreenPass : public BasePass
+class ColliderWireframesPass : public BasePass
 {
-	_RX_DEF_RENDER_PASS(ScreenPass);
+	_RX_DEF_RENDER_PASS(ColliderWireframesPass);
 public:
 	void DrawImpl() const override;
 

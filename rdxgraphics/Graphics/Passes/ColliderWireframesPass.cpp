@@ -1,11 +1,11 @@
 #include <pch.h>
-#include "ColliderWireframePass.h"
+#include "ColliderWireframesPass.h"
 #include "ECS/EntityManager.h"
 #include "ECS/Systems/RenderSystem.h"
 #include "ECS/Components.h"
 #include "Graphics/Object.h"
 
-void ColliderWireframePass::DrawImpl() const
+void ColliderWireframesPass::DrawImpl() const
 {
 	auto view = EntityManager::View<Collider>();
 	for (auto [handle, collider] : view.each())

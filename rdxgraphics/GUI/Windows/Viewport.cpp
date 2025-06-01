@@ -16,12 +16,12 @@ void Viewport::UpdateImpl(float dt)
 	ImGui::TableNextColumn();
 
 	ImVec2 currPos = ImGui::GetCursorPos();
-	auto& pass = RenderSystem::GetRenderPass<ScreenPass>();
+	std::shared_ptr<BasePass> pass = RenderSystem::GetScreenPass();
 	ImVec2 winDims{
 		ImGui::GetWindowContentRegionMax().x - currPos.x,
 		ImGui::GetWindowContentRegionMax().y - currPos.y
 	};
-	glm::vec2 bufDims = pass.GetBufferDims();
+	glm::vec2 bufDims = pass->GetBufferDims();
 	float ar = bufDims.x / bufDims.y;
 	glm::vec2 vpSize{};
 
@@ -44,7 +44,7 @@ void Viewport::UpdateImpl(float dt)
 		}
 	}
 
-	GLuint const frameHandle = pass.GetTextureBuffer();
+	GLuint const frameHandle = pass->GetTextureBuffer();
 	ImGui::Image(frameHandle, 
 		ImVec2{ vpSize.x, vpSize.y },
 		{ 0.f, 1.f }, { 1.f, 0.f }); // It's flipped vertically

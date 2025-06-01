@@ -55,6 +55,9 @@ void BasePass::Terminate()
 
 void BasePass::Draw() const
 {
+	if (!IsEnabled())
+		return;
+
 	glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
 	glBindTexture(GL_TEXTURE_2D, m_TextureBuffer);
 	glViewport(m_ViewportPos.x, m_ViewportPos.y, m_ViewportDims.x, m_ViewportDims.y);

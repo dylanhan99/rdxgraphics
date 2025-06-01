@@ -88,9 +88,17 @@ bool RenderSystem::Init()
 
 	glm::ivec2 dims = GLFWWindow::GetWindowDims();
 
-	RegisterPass<ModelPass>("Model & Lighting")->Init(0, 0, dims.x, dims.y);
-	RegisterPass<ColliderWireframePass>("Collider Wireframes")->Init(0, 0, dims.x, dims.y);
-	RegisterPass<ScreenPass>("Screen")->Init(0, 0, dims.x, dims.y);
+	// screenpass will foreach the Passes, and automatically slurp according to data provided
+	//RegisterPass<Type>("display name", "shader boolean (uHas_)", default_enabled = true_or_false).Init(dims);
+
+	RegisterPass<ModelsPass>("Models & Lighting", "Models")->Init(0, 0, dims.x, dims.y);
+	RegisterPass<ColliderWireframesPass>("Collider Wireframes", "Colliders")->Init(0, 0, dims.x, dims.y);
+	RegisterPass<BVWireframesPass>("BV Wireframes", "BVs")->Init(0, 0, dims.x, dims.y);
+	RegisterPass<ModelsPass>("PiP Models & Lighting", "PiPModels")->Init(dims.x - 400, dims.y - 400, 400, 400);
+	RegisterPass<BVWireframesPass>("PiP BV Wireframes", "PiPBVs")-> Init(dims.x - 400, dims.y - 400, 400, 400);
+
+	// Must be the final pass
+	RegisterPass<ScreenPass>("Screen", "Screen")->Init(0, 0, dims.x, dims.y);
 	//basePass.Init(0, 0, dims.x, dims.y);
 	//minimapPass.Init(dims.x - 400, dims.y - 400, 400, 400);
 	//wireframePass.Init(0, 0, dims.x, dims.y);
@@ -211,6 +219,7 @@ void RenderSystem::CreateShapes()
 	//_RX_X(bunny_high_poly);
 	//_RX_X(cup);
 	//_RX_X(head);
+	//_RX_X(rhino);
 	//_RX_X(starwars1);
 #undef _RX_X
 }

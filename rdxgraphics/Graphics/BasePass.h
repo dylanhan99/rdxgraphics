@@ -1,12 +1,28 @@
 #pragma once
 #include "GraphicsCommon.h"
 
+#define _RX_DEF_RENDER_PASS(Klass)								\
+public:															\
+	inline Klass(												\
+		std::string const& displayName,							\
+		std::string const& handleName,							\
+		bool defaultEnabled = true)								\
+		: BasePass(displayName, handleName, defaultEnabled) {}	\
+private:
+
 class BasePass
 {
 public:
-	BasePass() = default;
+	BasePass() = delete;
 	~BasePass() = default;
-	inline BasePass(std::string const& name) : m_Name(name) {}
+
+	// handleName => "Wireframe", then in screenfrag shader, it would look for
+	// the appended "uHas___" => "uHasWireframe" for example. This is the boolean to draw this frame or not
+	inline BasePass(std::string const& displayName, std::string const& handleName, bool defaultEnabled)
+		: m_DisplayName(displayName), 
+		m_HandleTexName("u" + handleName + "Tex"),
+		m_HasHandleName("uHas" + handleName),
+		m_Enabled(defaultEnabled) {}
 
 	bool Init(void*); // For final pass, no fbo, direct to screen.
 	bool Init(int x, int y, int width, int height);
@@ -20,10 +36,17 @@ public:
 	inline glm::ivec2 GetBufferDims() const { return m_BufferDims; }
 	inline glm::vec4& GetBackbufferColor() { return m_BackbufferColor; }
 
-	inline std::string const& GetName() const { return m_Name; }
+	inline std::string const& GetDisplayName() const { return m_DisplayName; }
+	inline std::string const& GetHandleTexName() const { return m_HandleTexName; }
+	inline std::string const& GetHasHandleName() const { return m_HasHandleName; }
+
+	inline bool IsEnabled() const { return m_Enabled; }
+	inline bool& IsEnabled() { return m_Enabled; }
 
 private:
-	std::string m_Name{};
+	std::string const m_DisplayName{};
+	std::string const m_HandleTexName{}, m_HasHandleName{};
+	bool m_Enabled{};
 
 	GLuint m_FBO{};
 	GLuint m_TextureBuffer{};

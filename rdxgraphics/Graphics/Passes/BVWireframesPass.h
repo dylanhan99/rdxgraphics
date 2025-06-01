@@ -1,10 +1,10 @@
 #pragma once
 #include "Graphics/BasePass.h"
 
-class ModelPass : public BasePass
+class BVWireframesPass : public BasePass
 {
+	_RX_DEF_RENDER_PASS(BVWireframesPass);
 public:
-	inline ModelPass(std::string const& name) : BasePass(name) {}
 	void DrawImpl() const override;
 
 private:

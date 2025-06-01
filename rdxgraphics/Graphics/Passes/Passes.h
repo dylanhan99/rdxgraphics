@@ -1,5 +1,5 @@
 #pragma once
 #include "ScreenPass.h"
-#include "ModelPass.h"
-#include "PiPPass.h"
-#include "ColliderWireframePass.h"
+#include "ModelsPass.h"
+#include "ColliderWireframesPass.h"
+#include "BVWireframesPass.h"

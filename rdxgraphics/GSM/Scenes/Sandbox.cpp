@@ -18,32 +18,33 @@ void Sandbox::StartImpl()
 	//	EntityManager::AddComponent<Collider>(handle, Primitive::AABB);
 	//	return;
 	//}
-	return;
 	{
 		auto handle = test = BaseScene::CreateDefaultEntity<NoDelete>();
 		EntityManager::AddComponent<Metadata>(handle, "L");
 		EntityManager::AddComponent<Xform>(handle, glm::vec3{ 1.f, 1.f, 1.f }, glm::vec3{ 1.f }, glm::vec3{ 0.f });
-		EntityManager::AddComponent<Model>(handle, Rxuid("bunny"));
+		EntityManager::AddComponent<Model>(handle, Rxuid("ogre"));
 		EntityManager::AddComponent<Material>(handle, glm::vec3{ 0.f,1.f,0.f });
-		EntityManager::AddComponent<BoundingVolume>(handle, BV::Sphere);
+		//EntityManager::AddComponent<BoundingVolume>(handle, BV::Sphere);
+		//EntityManager::AddComponent<Collider>(handle, Primitive::Plane);
 		GUI::SetSelectedEntity(handle);
-		return;
 	}
 	{
 		auto clone = BaseScene::CloneEntity(test);
 		EntityManager::GetComponent<Xform>(clone)
 			.SetTranslate({-2.f, 0.f, -2.f});
 		EntityManager::GetComponent<Model>(clone)
-			.SetMesh(Rxuid{ "bunny_high_poly" });
+			.SetMesh(Shape::Cube);
+		EntityManager::AddComponent<Collider>(clone, Primitive::AABB);
 	}
 	{
 		auto clone = BaseScene::CloneEntity(test);
 		EntityManager::GetComponent<Xform>(clone)
 			.SetTranslate({2.f, 0.f, 2.f});
 		EntityManager::GetComponent<Model>(clone)
-			.SetMesh(Rxuid{ "bunny" });
+			.SetMesh(Rxuid{ "ogre" });
+		EntityManager::AddComponent<Collider>(clone, Primitive::Plane);
+		EntityManager::AddComponent<BoundingVolume>(clone, BV::AABB);
 	}
-	//entt::entity clone = EntityManager::CloneEntity(test);
 }
 
 void Sandbox::UpdateImpl(float dt)
