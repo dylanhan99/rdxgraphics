@@ -5,20 +5,12 @@
 #include "GLFWWindow/GLFWWindow.h"
 #include "ECS/Systems/RenderSystem.h"
 
-extern bool hasDefault;
-extern bool hasWireframe;
-extern bool hasMinimap;
-extern int renderOption;
-
 void Settings::UpdateImpl(float dt)
 {
 	ImGui::SeparatorText("GSM");
 	{
-
 		if (ImGui::Button("Restart Scene"))
-		{
 			SceneManager::Restart();
-		}
 
 		auto const& scenes = SceneManager::GetScenes();
 		if (ImGui::BeginCombo("Select Scene", scenes[SceneManager::GetCurrScene()]->GetSceneName().c_str()))
@@ -41,9 +33,11 @@ void Settings::UpdateImpl(float dt)
 
 	ImGui::SeparatorText("Graphics");
 	{
-		ImGui::Checkbox("Base", &hasDefault);
-		ImGui::Checkbox("Wireframe", &hasWireframe);
-		ImGui::Checkbox("Minimap", &hasMinimap);
+		for (auto& pass : RenderSystem::GetRenderPasses())
+		{
+			ImGui::Checkbox(pass->GetDisplayName().c_str(), &pass->IsEnabled());
+		}
+
 		ImGui::ColorEdit3("Global Ambience", glm::value_ptr(RenderSystem::GetGlobalIllumination()));
 		ImGui::DragFloat("Ambiance Factor", &RenderSystem::GetGlobalIllumination().w, 0.05f, 0.f, 1.f, "%.2f");
 	}

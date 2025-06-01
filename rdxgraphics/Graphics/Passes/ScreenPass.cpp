@@ -4,10 +4,6 @@
 #include "ECS/Systems/RenderSystem.h"
 #include "Graphics/Passes/Passes.h"
 
-bool hasDefault = true;
-bool hasWireframe = true;
-bool hasMinimap = true;
-
 void ScreenPass::DrawImpl() const
 {
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);

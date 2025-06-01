@@ -92,10 +92,10 @@ bool RenderSystem::Init()
 	//RegisterPass<Type>("display name", "shader boolean (uHas_)", default_enabled = true_or_false).Init(dims);
 
 	RegisterPass<ModelsPass>("Models & Lighting", "Models")->Init(0, 0, dims.x, dims.y);
-	RegisterPass<ColliderWireframesPass>("Collider Wireframes", "Colliders")->Init(0, 0, dims.x, dims.y);
+	RegisterPass<ColliderWireframesPass>("Collider Wireframes", "Colliders", false)->Init(0, 0, dims.x, dims.y);
 	RegisterPass<BVWireframesPass>("BV Wireframes", "BVs")->Init(0, 0, dims.x, dims.y);
-	RegisterPass<ModelsPass>("PiP Models & Lighting", "PiPModels")->Init(dims.x - 400, dims.y - 400, 400, 400);
-	RegisterPass<BVWireframesPass>("PiP BV Wireframes", "PiPBVs")-> Init(dims.x - 400, dims.y - 400, 400, 400);
+	RegisterPass<ModelsPass>("PiP Models & Lighting", "PiPModels", false)->Init(dims.x - 400, dims.y - 400, 400, 400);
+	RegisterPass<BVWireframesPass>("PiP BV Wireframes", "PiPBVs", false)-> Init(dims.x - 400, dims.y - 400, 400, 400);
 
 	// Must be the final pass
 	RegisterPass<ScreenPass>("Screen", "Screen")->Init(0, 0, dims.x, dims.y);
