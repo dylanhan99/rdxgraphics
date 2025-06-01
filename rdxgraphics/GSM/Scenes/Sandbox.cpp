@@ -35,6 +35,7 @@ void Sandbox::StartImpl()
 		EntityManager::GetComponent<Model>(clone)
 			.SetMesh(Shape::Cube);
 		EntityManager::AddComponent<Collider>(clone, Primitive::AABB);
+		EntityManager::AddComponent<BoundingVolume>(clone, BV::Sphere);
 	}
 	{
 		auto clone = BaseScene::CloneEntity(test);
@@ -43,7 +44,7 @@ void Sandbox::StartImpl()
 		EntityManager::GetComponent<Model>(clone)
 			.SetMesh(Rxuid{ "ogre" });
 		EntityManager::AddComponent<Collider>(clone, Primitive::Plane);
-		EntityManager::AddComponent<BoundingVolume>(clone, BV::AABB);
+		EntityManager::AddComponent<BoundingVolume>(clone, BV::Sphere);
 	}
 }
 

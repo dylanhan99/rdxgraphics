@@ -29,12 +29,12 @@ void CollisionSystem::Update(float dt)
 
 			auto const& fPoints = cameraFrustum.GetPoints();
 #define _RX_X(A, B, C) planeEquations.emplace_back(MakePlaneEquation(fPoints[A], fPoints[B], fPoints[C]))
-			_RX_X(0, 1, 2);
-			_RX_X(0, 1, 2);
-			_RX_X(0, 1, 2);
-			_RX_X(0, 1, 2);
-			_RX_X(0, 1, 2);
-			_RX_X(0, 1, 2);
+			_RX_X(4, 5, 6);
+			_RX_X(3, 2, 1);
+			_RX_X(0, 1, 5);
+			_RX_X(7, 2, 6);
+			_RX_X(3, 0, 4);
+			_RX_X(2, 1, 5);
 #undef _RX_X
 		}
 
