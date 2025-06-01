@@ -18,3 +18,12 @@ void Intersection::CalculateAABBBV(std::vector<glm::vec3> const& positions, glm:
 	outCenter = (max + min) * 0.5f;
 	outHalfExtents = glm::abs((max - min) * 0.5f);
 }
+
+int Intersection::PlaneSphereTest(glm::vec3 aPos, float aRadius, glm::vec4 bEquation)
+{
+	float dist = glm::dot(aPos, glm::vec3{bEquation}) - bEquation.w;
+	dist = glm::abs(dist);
+	if		(dist <= aRadius)  return 0;
+	else if (dist < -aRadius)  return -1;
+	else  /*(dist < aRadius)*/ return 1;
+}

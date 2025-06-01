@@ -2,6 +2,13 @@
 #include "BaseComponent.h"
 #include "Collider.h"
 
+enum class BVState
+{
+	In,
+	Out,
+	On
+};
+
 class BoundingVolume : public BaseComponent
 {
 	RX_COMPONENT_HAS_HANDLE(BoundingVolume);
@@ -28,12 +35,15 @@ class BaseBV : public virtual BasePrimitive
 public:
 	void OnConstructImpl() override { SetDirty(); }
 
+	inline BVState GetBVState() const { return m_BVState; }
+	inline void SetBVState(BVState state) { m_BVState = state; }
+
 private:
 	void SetDirty() const override;
 	virtual void RecalculateBV() = 0;
 
 private:
-
+	BVState m_BVState{BVState::Out};
 };
 
 // Get inversed view matrix > apply to NDC points to get your 8 world points
@@ -53,6 +63,7 @@ public:
 	void UpdateXform() override; // Must have it's own beacuse of BasePrimitive
 	void RecalculateBV() override;
 
+	inline std::array<glm::vec4, 8> const& GetPoints() const { return m_Points; }
 	inline std::array<glm::mat4, 12> const& GetEdgeXforms() const { return m_Xforms; }
 
 private:

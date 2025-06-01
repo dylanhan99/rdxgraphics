@@ -2,9 +2,67 @@
 #include "CollisionSystem.h"
 #include "ECS/EntityManager.h"
 #include "Utils/Input.h"
+#include "ECS/Components/BoundingVolume.h"
+#include "ECS/Systems/RenderSystem.h"
+#include "Utils/IntersectionTests.h"
 
 void CollisionSystem::Update(float dt)
 {
+	// Frustum X other checks
+	{
+		// This is assuming theres an active camera. Dangerous
+		FrustumBV& cameraFrustum = EntityManager::GetComponent<FrustumBV>(RenderSystem::GetActiveCamera());
+
+		// 6 planes, generated via 8 points > frustum.
+		std::vector<glm::vec4> planeEquations{};
+		{
+			// 3 points and normal are obvious, 
+			// but get the D via normalized normal DOT P0 (any of the points)
+			auto MakePlaneEquation =
+				[](glm::vec3 const& A, glm::vec3 const& B, glm::vec3 const& C) -> glm::vec4
+				{
+					glm::vec3 normal = glm::normalize(glm::cross(B - A, C - A));
+					float d = glm::dot(normal, C);
+
+					return glm::vec4{ normal, d };
+				};
+
+			auto const& fPoints = cameraFrustum.GetPoints();
+#define _RX_X(A, B, C) planeEquations.emplace_back(MakePlaneEquation(fPoints[A], fPoints[B], fPoints[C]))
+			_RX_X(0, 1, 2);
+			_RX_X(0, 1, 2);
+			_RX_X(0, 1, 2);
+			_RX_X(0, 1, 2);
+			_RX_X(0, 1, 2);
+			_RX_X(0, 1, 2);
+#undef _RX_X
+		}
+
+		auto bvView = EntityManager::View<SphereBV>();
+		for (auto [handle, bv] : bvView.each())
+		{
+			// for each plane in cameraFrustum, test against bv.
+			// 1 ON, break
+			// 1 OUT, break
+			// 6 in, draw
+
+			int res{};
+			for (glm::vec4 const& plane : planeEquations)
+			{
+				res = Intersection::PlaneSphereTest(bv.GetPosition(), bv.GetRadius(), plane);
+				if (res <= 0) break;
+			}
+			if (res < 0) bv.SetBVState(BVState::Out);
+			else if (res > 0) bv.SetBVState(BVState::In);
+			else bv.SetBVState(BVState::On);
+		}
+		//auto bvView = EntityManager::View<BoundingVolume>();
+		//for (auto [handle, boundingVolume] : bvView.each())
+		//{
+		//	
+		//}
+	}
+
 	// Hardcoding here to un-set it for the next frame for now
 	// Maybe do some colliding pairs system in the future for efficiency if needed
 #define _RX_X(Klass){															  \
@@ -207,8 +265,7 @@ bool CollisionSystem::CheckCollision(PlanePrimitive const& lhs, AABBPrimitive co
 
 bool CollisionSystem::CheckCollision(PlanePrimitive const& lhs, SpherePrimitive const& rhs)
 { // Orange book page 161 (200 in the pdf)
-	float dist = glm::dot(rhs.GetPosition(), lhs.GetNormal()) - lhs.GetD();
-	return glm::abs(dist) <= rhs.GetRadius();
+	return Intersection::PlaneSphereTest(rhs.GetPosition(), rhs.GetRadius(), glm::vec4{lhs.GetNormal(), lhs.GetD()}) == 0;
 }
 
 bool CollisionSystem::CheckCollision(AABBPrimitive const& lhs, PointPrimitive const& rhs) { return CheckCollision(rhs, lhs); }
