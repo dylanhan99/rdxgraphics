@@ -35,7 +35,7 @@ void BVWireframesPass::DrawImpl() const
 			for (glm::mat4 const& edge : bv.GetEdgeXforms())
 			{
 				obj.Submit<VertexBasic::Xform>(edge);
-				obj.Submit<VertexBasic::Color>(GetBVColor(bv.GetBVState()));
+				obj.Submit<VertexBasic::Color>(glm::vec4{ 1.f, 0.063f, 0.941f, 1.f });
 			}
 		}
 	}
