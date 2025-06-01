@@ -98,7 +98,6 @@ void ColliderWireframesPass::DrawImpl() const
 
 	RenderSystem::GetInstance().m_Shader.Bind();
 	RenderSystem::GetInstance().m_Shader.SetUniform1i("uIsWireframe", 1);
-	RenderSystem::GetInstance().m_Shader.SetUniform1i("uCam", 0);
 
 	glDisable(GL_CULL_FACE);
 	//glCullFace(GL_BACK);

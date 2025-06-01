@@ -5,7 +5,7 @@ layout (location = 2) in vec3 aNormal;
 layout (location = 3) in mat4 aXform;
 layout (location = 7) in vec4 aDiffuseColor;
 
-struct Camera
+struct CameraDS
 {
 	mat4 ViewMatrix;
 	mat4 ProjMatrix;
@@ -15,12 +15,10 @@ struct Camera
 	vec2 ClipPadding;
 };
 
-layout (std140, binding=2) uniform MainCamera 
+layout (std140, binding=2) uniform uCamera 
 {
-	Camera Cameras[2];
+	CameraDS Camera;
 };
-
-uniform int uCam;
 
 out VS_OUT
 {
@@ -33,7 +31,6 @@ out VS_OUT
 
 void main()
 {
-	Camera cam = Cameras[uCam];
 	vec4 model = aXform * vec4(aPos, 1.0);
 
 	vs_out.Position	 = model.xyz;
@@ -41,5 +38,5 @@ void main()
 	vs_out.Normal	 = mat3(transpose(inverse(aXform))) * aNormal;
 	vs_out.DiffuseColor = aDiffuseColor;
 
-	gl_Position = cam.ProjMatrix * cam.ViewMatrix * model;
+	gl_Position = Camera.ProjMatrix * Camera.ViewMatrix * model;
 }

@@ -38,6 +38,9 @@ public:
 	inline static std::vector<std::shared_ptr<BasePass>>& GetRenderPasses() { return g.m_RenderPasses; }
 	inline static std::shared_ptr<BasePass> GetScreenPass() { return g.m_RenderPasses.back(); } // We assume that screenpass is the final
 
+	// Returns nullptr if not found
+	inline static std::shared_ptr<BaseUniformBuffer> GetUBO(std::string const& name) { auto it = g.m_UBOs.find(name); return it != g.m_UBOs.end() ? it->second : nullptr; }
+
 	inline static glm::vec4& GetGlobalIllumination() { return g.m_GlobalIllumination; }
 
 private:
@@ -49,6 +52,16 @@ private:
 	static std::shared_ptr<BasePass>& RegisterPass(Args&& ...args)
 	{
 		return g.m_RenderPasses.emplace_back(std::move(std::make_shared<T>(std::forward<Args>(args)...)));
+	}
+
+	template <typename T>
+	static void RegisterUBO(std::string const& name, size_t count, GLuint slot)
+	{
+		RX_ASSERT(g.m_UBOs.find(name) == g.m_UBOs.end(), "Cannot have duplicate UBO names");
+
+		std::shared_ptr<UniformBuffer<T>> ubo = std::make_shared<UniformBuffer<T>>();
+		ubo->Init(count, slot);
+		g.m_UBOs.emplace(name, ubo);
 	}
 
 public:
@@ -66,4 +79,19 @@ public:
 
 	// This is rendered in register order.
 	std::vector<std::shared_ptr<BasePass>> m_RenderPasses{};
+	std::map <std::string, std::shared_ptr<BaseUniformBuffer>> m_UBOs{};
 };
+
+namespace ShaderUniform
+{
+	struct Camera {
+		glm::mat4 ViewMatrix{};
+		glm::mat4 ProjMatrix{};
+		glm::vec4 Position{};
+		glm::vec4 Direction{}; // Normalized
+		glm::vec2 Clip{};
+		glm::vec2 ClipPadding{};
+	};
+
+
+}

@@ -43,6 +43,8 @@ public:
 	inline bool IsEnabled() const { return m_Enabled; }
 	inline bool& IsEnabled() { return m_Enabled; }
 
+	inline void RegisterUBOBind(std::function<void()>&& func) { m_UBOBinds.emplace_back(std::move(func)); }
+
 private:
 	std::string const m_DisplayName{};
 	std::string const m_HandleTexName{}, m_HasHandleName{};
@@ -56,4 +58,6 @@ private:
 	glm::ivec2 m_BufferPos{}, m_BufferDims{};
 
 	glm::vec4 m_BackbufferColor{ 0.2f, 0.3f, 0.3f, 0.f };
+
+	std::vector<std::function<void()>> m_UBOBinds{};
 };

@@ -26,16 +26,6 @@ std::string const fbo_fs = {
 RX_SINGLETON_EXPLICIT(RenderSystem);
 namespace fs = std::filesystem;
 
-struct CameraUniform {
-	glm::mat4 ViewMatrix{};
-	glm::mat4 ProjMatrix{};
-	glm::vec4 Position{};
-	glm::vec4 Direction{}; // Normalized
-	glm::vec2 Clip{};
-	glm::vec2 ClipPadding{};
-};
-UniformBuffer<CameraUniform> testUBO{};
-
 bool RenderSystem::Init()
 {
 	GLenum succ = glewInit();
@@ -91,30 +81,41 @@ bool RenderSystem::Init()
 	// screenpass will foreach the Passes, and automatically slurp according to data provided
 	//RegisterPass<Type>("display name", "shader boolean (uHas_)", default_enabled = true_or_false).Init(dims);
 
-	RegisterPass<ModelsPass>("Models & Lighting", "Models")->Init(0, 0, dims.x, dims.y);
-	RegisterPass<ColliderWireframesPass>("Collider Wireframes", "Colliders", false)->Init(0, 0, dims.x, dims.y);
-	RegisterPass<BVWireframesPass>("BV Wireframes", "BVs")->Init(0, 0, dims.x, dims.y);
-	RegisterPass<ModelsPass>("PiP Models & Lighting", "PiPModels", false)->Init(dims.x - 400, dims.y - 400, 400, 400);
-	RegisterPass<BVWireframesPass>("PiP BV Wireframes", "PiPBVs", false)-> Init(dims.x - 400, dims.y - 400, 400, 400);
+	auto pModelsPass = RegisterPass<ModelsPass>("Models & Lighting", "Models");
+	auto pColliderWireframesPass = RegisterPass<ColliderWireframesPass>("Collider Wireframes", "Colliders", false);
+	auto pBVWireframesPass = RegisterPass<BVWireframesPass>("BV Wireframes", "BVs");
+	auto pPiPModelsPass = RegisterPass<ModelsPass>("PiP Models & Lighting", "PiPModels", false);
+	auto pPiPBVWireframesPass = RegisterPass<BVWireframesPass>("PiP BV Wireframes", "PiPBVs", false);
+
+	pModelsPass->Init(0, 0, dims.x, dims.y);
+	pColliderWireframesPass->Init(0, 0, dims.x, dims.y);
+	pBVWireframesPass->Init(0, 0, dims.x, dims.y);
+	pPiPModelsPass->Init(dims.x - 400, dims.y - 400, 400, 400);
+	pPiPBVWireframesPass->Init(dims.x - 400, dims.y - 400, 400, 400);
 
 	// Must be the final pass
 	RegisterPass<ScreenPass>("Screen", "Screen")->Init(0, 0, dims.x, dims.y);
-	//basePass.Init(0, 0, dims.x, dims.y);
-	//minimapPass.Init(dims.x - 400, dims.y - 400, 400, 400);
-	//wireframePass.Init(0, 0, dims.x, dims.y);
-	//g.m_ScreenPass.Init(nullptr);
-	//g.m_ScreenPass.Init(0, 0, dims.x, dims.y);
 
-	{
-		testUBO.Init(2);
-		testUBO.BindBuffer(2);
-	}
+
+#define _RX_X(name) std::bind(static_cast<void(BaseUniformBuffer::*)()const>(&BaseUniformBuffer::BindBuffer), GetUBO(name))
+	RegisterUBO<ShaderUniform::Camera>("ActiveCam", 1, 2);
+	RegisterUBO<ShaderUniform::Camera>("PiPCam", 1, 2);
+
+	pModelsPass->RegisterUBOBind(_RX_X("ActiveCam"));
+	pColliderWireframesPass->RegisterUBOBind(_RX_X("ActiveCam"));
+	pBVWireframesPass->RegisterUBOBind(_RX_X("ActiveCam"));
+	pPiPModelsPass->RegisterUBOBind(_RX_X("PiPCam"));
+	pPiPBVWireframesPass->RegisterUBOBind(_RX_X("PiPCam"));
+#undef _RX_X
 
 	return true;
 }
 
 void RenderSystem::Terminate()
 {
+	for (auto& ubo : g.m_UBOs)
+		ubo.second->Terminate();
+
 	for (auto& [uid, object] : g.m_Objects)
 		object.Terminate();
 
@@ -131,23 +132,25 @@ void RenderSystem::Draw()
 	Camera& minimapCamera = EntityManager::GetComponent<Camera>(miniEnt);
 
 	{
-		CameraUniform u[2]{
-			{
-				.ViewMatrix	= activeCamera.GetViewMatrix(),
-				.ProjMatrix	= activeCamera.GetProjMatrix(),
-				.Position	= { activeCamera.GetPosition(), 0.f},
-				.Direction	= { activeCamera.GetDirection(), 1.f},
-				.Clip		= activeCamera.GetClipPlanes(),
-			},
-			{
-				.ViewMatrix	= minimapCamera.GetViewMatrix(),
-				.ProjMatrix	= minimapCamera.GetProjMatrix(),
-				.Position	= { minimapCamera.GetPosition(), 0.f},
-				.Direction	= { minimapCamera.GetDirection(), 1.f},
-				.Clip		= minimapCamera.GetClipPlanes(),
-			} 
+		ShaderUniform::Camera activeCam
+		{
+			.ViewMatrix = activeCamera.GetViewMatrix(),
+			.ProjMatrix = activeCamera.GetProjMatrix(),
+			.Position = { activeCamera.GetPosition(), 0.f},
+			.Direction = { activeCamera.GetDirection(), 1.f},
+			.Clip = activeCamera.GetClipPlanes(),
 		};
-		testUBO.Submit(2, u);
+		GetUBO("ActiveCam")->Submit(1, &activeCam);
+
+		ShaderUniform::Camera pipCam
+		{
+			.ViewMatrix = minimapCamera.GetViewMatrix(),
+			.ProjMatrix = minimapCamera.GetProjMatrix(),
+			.Position = { minimapCamera.GetPosition(), 0.f},
+			.Direction = { minimapCamera.GetDirection(), 1.f},
+			.Clip = minimapCamera.GetClipPlanes(),
+		};
+		GetUBO("PiPCam")->Submit(1, &pipCam);
 	}
 
 	for (auto& pass : g.m_RenderPasses)

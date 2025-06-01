@@ -47,9 +47,9 @@ bool BasePass::Init(int x, int y, int width, int height)
 
 void BasePass::Terminate()
 {
-	glDeleteFramebuffers(1, &m_FBO);
-	glDeleteTextures(1, &m_TextureBuffer);
-	glDeleteRenderbuffers(1, &m_DepthBuffer);
+	if (m_FBO) glDeleteFramebuffers(1, &m_FBO);
+	if (m_TextureBuffer) glDeleteTextures(1, &m_TextureBuffer);
+	if (m_DepthBuffer) glDeleteRenderbuffers(1, &m_DepthBuffer);
 	m_FBO = m_TextureBuffer = m_DepthBuffer = 0;
 }
 
@@ -57,6 +57,9 @@ void BasePass::Draw() const
 {
 	if (!IsEnabled())
 		return;
+
+	for (auto& func : m_UBOBinds)
+		if (func) func();
 
 	glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
 	glBindTexture(GL_TEXTURE_2D, m_TextureBuffer);

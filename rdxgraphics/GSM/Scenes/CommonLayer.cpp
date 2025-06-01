@@ -38,8 +38,11 @@ void CommonLayer::StartImpl()
 		EntityManager::AddComponent<Model>(handle, Shape::Cube);
 		EntityManager::AddComponent<Material>(handle, glm::vec3{ 1.f,1.f,0.f });
 		EntityManager::AddComponent<Camera>(handle,
-			Camera::Mode::Orthorgonal,
+			Camera::Mode::Perspective,
 			glm::vec2{ 16.f, 9.f }, 90.f);
+		//EntityManager::AddComponent<Camera>(handle,
+		//	Camera::Mode::Orthorgonal,
+		//	glm::vec2{ 16.f, 9.f }, 90.f);
 	}
 
 	m_ActiveCamera = m_MainCamera;

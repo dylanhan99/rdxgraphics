@@ -1,5 +1,6 @@
 #version 450 core
-struct Camera
+
+struct CameraDS
 {
 	mat4 ViewMatrix;
 	mat4 ProjMatrix;
@@ -9,12 +10,10 @@ struct Camera
 	vec2 ClipPadding;
 };
 
-layout (std140, binding=2) uniform MainCamera 
+layout (std140, binding=2) uniform uCamera 
 {
-	Camera Cameras[2];
+	CameraDS Camera;
 };
-
-uniform int uCam;
 
 in VS_OUT
 {
@@ -45,8 +44,6 @@ float LinearizeDepth(float depth, float near, float far)
 
 void main()
 {
-	Camera cam = Cameras[uCam];
-
 	if (uIsWireframe == 0)
 	{
 		vec3 fragPos	= fs_in.Position;

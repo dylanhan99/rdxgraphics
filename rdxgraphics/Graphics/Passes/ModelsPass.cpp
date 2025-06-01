@@ -28,7 +28,6 @@ void ModelsPass::DrawImpl() const
 
 	RenderSystem::GetInstance().m_Shader.Bind();
 	RenderSystem::GetInstance().m_Shader.SetUniform1i("uIsWireframe", 0);
-	RenderSystem::GetInstance().m_Shader.SetUniform1i("uCam", 0); // Should simply have its own camera UBO to bind to layout
 	RenderSystem::GetInstance().m_Shader.SetUniform4f("uAmbientLight", RenderSystem::GetGlobalIllumination());
 
 	{ // directional light hardcode
