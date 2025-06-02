@@ -32,9 +32,9 @@ void CollisionSystem::Update(float dt)
 			_RX_X(4, 5, 6);
 			_RX_X(3, 2, 1);
 			_RX_X(0, 1, 5);
-			_RX_X(7, 2, 6);
+			_RX_X(7, 6, 2);
 			_RX_X(3, 0, 4);
-			_RX_X(2, 1, 5);
+			_RX_X(1, 2, 6);
 #undef _RX_X
 		}
 
