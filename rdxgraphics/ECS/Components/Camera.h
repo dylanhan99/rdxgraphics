@@ -31,6 +31,7 @@ public:
 	//inline glm::vec3& GetPosition() { return m_Position; }
 
 	inline float& GetFOV() { return m_FOV; }
+	inline glm::vec3 GetFront() { return m_Front; }
 	inline glm::vec2& GetClipPlanes() { return m_Clip; }
 	inline float& GetMovementSpeed() { return m_MovementSpeed; }
 	inline float& GetPitchSpeed() { return m_PitchSpeed; }
