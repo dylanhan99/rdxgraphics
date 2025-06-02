@@ -65,10 +65,16 @@ public:
 
 	inline std::array<glm::vec4, 8> const& GetPoints() const { return m_Points; }
 	inline std::array<glm::mat4, 12> const& GetEdgeXforms() const { return m_Xforms; }
+	inline std::array<glm::vec4, 6> const& GetPlaneEquations() const { return m_PlaneEquations; }
+	inline std::array<glm::vec4, 6>& GetPlaneEquations() { return m_PlaneEquations; }
 
 private:
 	std::array<glm::vec4, 8> m_Points{};
 	std::array<glm::mat4, 12> m_Xforms{};
+
+	// 6 planes, generated via 8 points > frustum.
+	std::array<glm::vec4, 6> m_PlaneEquations{};
+
 };
 
 class AABBBV : public BaseBV, public AABBPrimitive

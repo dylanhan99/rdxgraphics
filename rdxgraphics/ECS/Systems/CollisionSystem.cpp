@@ -13,31 +13,6 @@ void CollisionSystem::Update(float dt)
 		// This is assuming theres an active camera. Dangerous
 		FrustumBV& cameraFrustum = EntityManager::GetComponent<FrustumBV>(RenderSystem::GetActiveCamera());
 
-		// 6 planes, generated via 8 points > frustum.
-		std::vector<glm::vec4> planeEquations{};
-		{
-			// 3 points and normal are obvious, 
-			// but get the D via normalized normal DOT P0 (any of the points)
-			auto MakePlaneEquation =
-				[](glm::vec3 const& A, glm::vec3 const& B, glm::vec3 const& C) -> glm::vec4
-				{
-					glm::vec3 normal = glm::normalize(glm::cross(B - A, C - A));
-					float d = glm::dot(normal, C);
-
-					return glm::vec4{ normal, d };
-				};
-
-			auto const& fPoints = cameraFrustum.GetPoints();
-#define _RX_X(A, B, C) planeEquations.emplace_back(MakePlaneEquation(fPoints[A], fPoints[B], fPoints[C]))
-			_RX_X(4, 5, 6);
-			_RX_X(3, 2, 1);
-			_RX_X(0, 1, 5);
-			_RX_X(7, 6, 2);
-			_RX_X(3, 0, 4);
-			_RX_X(1, 2, 6);
-#undef _RX_X
-		}
-
 		auto bvView = EntityManager::View<SphereBV>();
 		for (auto [handle, bv] : bvView.each())
 		{
@@ -46,14 +21,17 @@ void CollisionSystem::Update(float dt)
 			// 1 OUT, break
 			// 6 in, draw
 
+			auto const& planeEquations = cameraFrustum.GetPlaneEquations();
 			int res{};
+			int i = 0;
 			for (glm::vec4 const& plane : planeEquations)
 			{
+				i++;
 				res = Intersection::PlaneSphereTest(bv.GetPosition(), bv.GetRadius(), plane);
 				if (res <= 0) break;
 			}
-			if (res < 0) bv.SetBVState(BVState::Out);
-			else if (res > 0) bv.SetBVState(BVState::In);
+			if (res > 0) bv.SetBVState(BVState::In);
+			else if (res < 0) bv.SetBVState(BVState::Out);
 			else bv.SetBVState(BVState::On);
 		}
 		//auto bvView = EntityManager::View<BoundingVolume>();

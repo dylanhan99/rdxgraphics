@@ -40,6 +40,37 @@ case Primitive::Klass:													 \
 		}
 #undef _RX_XX
 
+		//
+		if (EntityManager::HasComponent<FrustumBV>(handle))
+		{
+			FrustumBV& bv = EntityManager::GetComponent<FrustumBV>(handle);
+
+			{
+				// 3 points and normal are obvious, 
+				// but get the D via normalized normal DOT P0 (any of the points)
+				auto MakePlaneEquation =
+					[](glm::vec3 const& A, glm::vec3 const& B, glm::vec3 const& C) -> glm::vec4
+					{
+						glm::vec3 normal = glm::normalize(glm::cross(B - A, C - A));
+						float d = glm::dot(normal, C);
+
+						return glm::vec4{ normal, d };
+					};
+
+				auto& planeEquations = bv.GetPlaneEquations();
+				auto const& fPoints = bv.GetPoints();
+#define _RX_XXX(i, A, B, C) planeEquations[i] = MakePlaneEquation(fPoints[A], fPoints[B], fPoints[C])
+				_RX_XXX(0, 4, 5, 6);
+				_RX_XXX(1, 3, 2, 1);
+				_RX_XXX(2, 0, 1, 5);
+				_RX_XXX(3, 7, 6, 2);
+				_RX_XXX(4, 3, 0, 4);
+				_RX_XXX(5, 1, 2, 6);
+#undef _RX_XXX
+			}
+		}
+		//
+
 		xform.UpdateXform();
 		EntityManager::RemoveComponent<Xform::Dirty>(handle);
 

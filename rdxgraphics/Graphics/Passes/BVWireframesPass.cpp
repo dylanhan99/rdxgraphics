@@ -37,6 +37,22 @@ void BVWireframesPass::DrawImpl() const
 				obj.Submit<VertexBasic::Xform>(edge);
 				obj.Submit<VertexBasic::Color>(glm::vec4{ 1.f, 0.063f, 0.941f, 1.f });
 			}
+
+			// Where is the point? 
+			auto const& points = bv.GetPoints();
+			std::vector<glm::vec3> planePositions{};
+			//planePositions.emplace_back(glm::vec3(points[4] + 0.5f * (points[4] - points[6])));
+			//planePositions.emplace_back(glm::vec3(points[3] + 0.5f * (points[3] - points[1])));
+			//planePositions.emplace_back(glm::vec3(points[0] + 0.5f * (points[0] - points[5])));
+			//planePositions.emplace_back(glm::vec3(points[7] + 0.5f * (points[7] - points[2])));
+			//planePositions.emplace_back(glm::vec3(points[3] + 0.5f * (points[3] - points[4])));
+			//planePositions.emplace_back(glm::vec3(points[1] + 0.5f * (points[1] - points[6])));
+
+			for (auto& p : points)
+			{
+				RenderSystem::GetObjekt(Shape::Point).Submit<VertexBasic::Xform>(glm::translate(glm::vec3(p)));
+				RenderSystem::GetObjekt(Shape::Point).Submit<VertexBasic::Color>(glm::vec4{ 1.f,1.f,1.f,1.f });
+			}
 		}
 	}
 	{
