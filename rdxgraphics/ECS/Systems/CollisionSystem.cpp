@@ -35,8 +35,6 @@ void CollisionSystem::Update(float dt)
 			switch (boundingVolume.GetBVType())
 			{
 				RX_DO_ALL_BV_ENUM;
-			default:
-				break;
 			}
 		}
 #undef _RX_X
@@ -294,17 +292,17 @@ bool CollisionSystem::CheckCollision(SpherePrimitive const& lhs, SpherePrimitive
 		rhs.GetPosition(), lhs.GetRadius() + rhs.GetRadius());
 }
 
-bool CollisionSystem::CheckCollision(glm::vec4 const& plane, AABBBV const& bv)
+int CollisionSystem::CheckCollision(glm::vec4 const& plane, AABBBV const& bv)
 {
 	return Intersection::PlaneAABBTest(bv.GetPosition(), bv.GetHalfExtents(), plane);
 }
 
-bool CollisionSystem::CheckCollision(glm::vec4 const& plane, OBBBV const& bv)
+int CollisionSystem::CheckCollision(glm::vec4 const& plane, OBBBV const& bv)
 {
 	return false;
 }
 
-bool CollisionSystem::CheckCollision(glm::vec4 const& plane, SphereBV const& bv)
+int CollisionSystem::CheckCollision(glm::vec4 const& plane, SphereBV const& bv)
 {
 	return Intersection::PlaneSphereTest(bv.GetPosition(), bv.GetRadius(), plane);
 }
