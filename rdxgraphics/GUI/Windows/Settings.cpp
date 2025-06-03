@@ -7,7 +7,32 @@
 
 void Settings::UpdateImpl(float dt)
 {
-	ImGui::SeparatorText("GSM");
+	ImGuiTreeNodeFlags scnFlags =
+		ImGuiTreeNodeFlags_OpenOnArrow |
+		ImGuiTreeNodeFlags_SpanFullWidth;
+
+	if (ImGui::TreeNodeEx("Bounding Volumes", scnFlags | ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		int* algorithm = static_cast<int*>(&SphereBV::Algorithm);
+		ImGui::SeparatorText("SphereBV Options");
+		bool isRadiod = false;
+		isRadiod |= ImGui::RadioButton("Ritter",  algorithm, static_cast<int>(SphereBV::Algo::Ritter));
+		isRadiod |= ImGui::RadioButton("Larsson", algorithm, static_cast<int>(SphereBV::Algo::Larsson));
+		isRadiod |= ImGui::RadioButton("PCA",	  algorithm, static_cast<int>(SphereBV::Algo::PCA));
+
+		if (isRadiod) // Set ALL spheres to be dirty, to be updated with new algorithm
+		{
+			auto view = EntityManager::View<BoundingVolume, const SphereBV>();
+			for (auto [handle, boundingVolume, bv] : view.each())
+			{
+				boundingVolume.SetDirty();
+			}
+		}
+
+		ImGui::TreePop();
+	}
+
+	if (ImGui::TreeNodeEx("GSM", scnFlags | ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		if (ImGui::Button("Restart Scene"))
 			SceneManager::Restart();
@@ -29,9 +54,11 @@ void Settings::UpdateImpl(float dt)
 			}
 			ImGui::EndCombo();
 		}
+
+		ImGui::TreePop();
 	}
 
-	ImGui::SeparatorText("Graphics");
+	if (ImGui::TreeNodeEx("Graphics", scnFlags))
 	{
 		for (auto& pass : RenderSystem::GetRenderPasses())
 		{
@@ -40,9 +67,11 @@ void Settings::UpdateImpl(float dt)
 
 		ImGui::ColorEdit3("Global Ambience", glm::value_ptr(RenderSystem::GetGlobalIllumination()));
 		ImGui::DragFloat("Ambiance Factor", &RenderSystem::GetGlobalIllumination().w, 0.05f, 0.f, 1.f, "%.2f");
+
+		ImGui::TreePop();
 	}
 
-	ImGui::SeparatorText("Window");
+	if (ImGui::TreeNodeEx("Window", scnFlags))
 	{
 		static int s_FPSIndex = 0; // Defaults at 30
 		static std::array<const char*, 6> s_FPSs{ "30", "60", "120", "144", "240", "No Lim." };
@@ -54,5 +83,7 @@ void Settings::UpdateImpl(float dt)
 		if (ImGui::Checkbox("VSync", &GLFWWindow::IsVSync()))
 			GLFWWindow::SetIsVSync(GLFWWindow::IsVSync());
 		ImGui::EndDisabled();
+
+		ImGui::TreePop();
 	}
 }

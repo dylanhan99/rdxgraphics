@@ -103,6 +103,16 @@ class SphereBV : public BaseBV, public SpherePrimitive
 {
 	RX_COMPONENT_DEF_HANDLE(SphereBV);
 public:
+	enum class Algo
+	{
+		Ritter,
+		Larsson,
+		PCA
+	};
+
+	inline static Algo Algorithm{ Algo::Ritter };
+
+public:
 	SphereBV() = default;
 	inline void RecalculateBV() override;
 
