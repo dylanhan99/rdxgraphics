@@ -12,58 +12,58 @@ void CollisionSystem::Update(float dt)
 	{
 		// This is assuming theres an active camera. Dangerous
 		FrustumBV& cameraFrustum = EntityManager::GetComponent<FrustumBV>(RenderSystem::GetActiveCamera());
+		auto const& planeEquations = cameraFrustum.GetPlaneEquations();
 
-		auto bvView = EntityManager::View<SphereBV>();
-		for (auto [handle, bv] : bvView.each())
-		{
-			// for each plane in cameraFrustum, test against bv.
-			// 1 ON, break
-			// 1 OUT, break
-			// 6 in, draw
-
-			auto const& planeEquations = cameraFrustum.GetPlaneEquations();
-			int res{};
-			int i = 0;
-			for (glm::vec4 const& plane : planeEquations)
-			{
-				i++;
-				res = Intersection::PlaneSphereTest(bv.GetPosition(), bv.GetRadius(), plane);
-				if (res <= 0) break;
-			}
-			if (res > 0) bv.SetBVState(BVState::In);
-			else if (res < 0) bv.SetBVState(BVState::Out);
-			else bv.SetBVState(BVState::On);
-		}
-		//auto bvView = EntityManager::View<BoundingVolume>();
-		//for (auto [handle, boundingVolume] : bvView.each())
-		//{
-		//	
-		//}
+#define _RX_X(Klass) 												   \
+	case BV::Klass: 												   \
+	{																   \
+		Klass##BV& bv = EntityManager::GetComponent<Klass##BV>(handle);\
+		int res{};													   \
+		for (glm::vec4 const& plane : planeEquations)				   \
+		{															   \
+			res = CheckCollision(plane, bv);						   \
+			if (res <= 0) break;									   \
+		}															   \
+		if		(res > 0) bv.SetBVState(BVState::In);				   \
+		else if (res < 0) bv.SetBVState(BVState::Out);				   \
+		else			  bv.SetBVState(BVState::On);				   \
+		break;														   \
 	}
+		auto bvView = EntityManager::View<BoundingVolume>();
+		for (auto [handle, boundingVolume] : bvView.each())
+		{
+			switch (boundingVolume.GetBVType())
+			{
+				RX_DO_ALL_BV_ENUM;
+			default:
+				break;
+			}
+		}
+#undef _RX_X
 
-	// Hardcoding here to un-set it for the next frame for now
-	// Maybe do some colliding pairs system in the future for efficiency if needed
+		// Hardcoding here to un-set it for the next frame for now
+		// Maybe do some colliding pairs system in the future for efficiency if needed
 #define _RX_X(Klass){															  \
 		auto primView = EntityManager::View<Klass##Primitive>();				  \
 		for (auto [handle, prim] : primView.each()) { prim.IsCollide() = false; } \
 	}
 
-	RX_DO_ALL_PRIMITIVE_ENUM;
+		RX_DO_ALL_PRIMITIVE_ENUM;
 #undef _RX_X
 
-	auto colView = EntityManager::View<Collider>();
-	for (auto [lhandle, lcol] : colView.each())
-	{
-		Primitive lPType = lcol.GetPrimitiveType();
-		if (lPType == Primitive::NIL)
-			continue;
-		for (auto [rhandle, rcol] : colView.each())
+		auto colView = EntityManager::View<Collider>();
+		for (auto [lhandle, lcol] : colView.each())
 		{
-			if (lhandle == rhandle)
+			Primitive lPType = lcol.GetPrimitiveType();
+			if (lPType == Primitive::NIL)
 				continue;
-			Primitive rPType = rcol.GetPrimitiveType();
-			if (rPType == Primitive::NIL)
-				continue;
+			for (auto [rhandle, rcol] : colView.each())
+			{
+				if (lhandle == rhandle)
+					continue;
+				Primitive rPType = rcol.GetPrimitiveType();
+				if (rPType == Primitive::NIL)
+					continue;
 
 #define _RX_C_C(RKlass, LKlass)					  \
 	case Primitive::RKlass:						  \
@@ -93,6 +93,7 @@ void CollisionSystem::Update(float dt)
 			}
 #undef _RX_C_C
 #undef _RX_C_X
+			}
 		}
 	}
 }
@@ -233,12 +234,7 @@ bool CollisionSystem::CheckCollision(PlanePrimitive const& lhs, RayPrimitive con
 
 bool CollisionSystem::CheckCollision(PlanePrimitive const& lhs, AABBPrimitive const& rhs)
 { // Orange book page 164 (203 in the pdf)
-	glm::vec3 const& e = rhs.GetHalfExtents() * 0.5f;
-	glm::vec3 const& n = lhs.GetNormal();
-	float d = lhs.GetD();
-	float r = glm::dot(e, glm::abs(n));
-	float s = glm::dot(n, rhs.GetPosition()) - d;
-	return glm::abs(s) <= r;
+	return Intersection::PlaneAABBTest(rhs.GetPosition(), rhs.GetHalfExtents(), glm::vec4{ lhs.GetNormal(), lhs.GetD() }) == 0;
 }
 
 bool CollisionSystem::CheckCollision(PlanePrimitive const& lhs, SpherePrimitive const& rhs)
@@ -296,6 +292,21 @@ bool CollisionSystem::CheckCollision(SpherePrimitive const& lhs, SpherePrimitive
 	return IntersectPointSphere(
 		lhs.GetPosition(),
 		rhs.GetPosition(), lhs.GetRadius() + rhs.GetRadius());
+}
+
+bool CollisionSystem::CheckCollision(glm::vec4 const& plane, AABBBV const& bv)
+{
+	return Intersection::PlaneAABBTest(bv.GetPosition(), bv.GetHalfExtents(), plane);
+}
+
+bool CollisionSystem::CheckCollision(glm::vec4 const& plane, OBBBV const& bv)
+{
+	return false;
+}
+
+bool CollisionSystem::CheckCollision(glm::vec4 const& plane, SphereBV const& bv)
+{
+	return Intersection::PlaneSphereTest(bv.GetPosition(), bv.GetRadius(), plane);
 }
 
 bool CollisionSystem::IntersectPointTriangle(glm::vec3 const& p, glm::vec3 const& q0, glm::vec3 const& q1, glm::vec3 const& q2, glm::vec3 const& qn)

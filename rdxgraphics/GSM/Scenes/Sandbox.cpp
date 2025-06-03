@@ -35,7 +35,7 @@ void Sandbox::StartImpl()
 		EntityManager::GetComponent<Model>(clone)
 			.SetMesh(Shape::Cube);
 		EntityManager::AddComponent<Collider>(clone, Primitive::AABB);
-		EntityManager::AddComponent<BoundingVolume>(clone, BV::Sphere);
+		EntityManager::AddComponent<BoundingVolume>(clone, BV::AABB);
 	}
 	{
 		auto clone = BaseScene::CloneEntity(test);

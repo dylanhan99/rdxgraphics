@@ -1,6 +1,7 @@
 #pragma once
 #include "ECS/EntityManager.h"
 #include "ECS/Components/Collider.h"
+#include "ECS/Components/BoundingVolume.h"
 
 class CollisionSystem : public BaseSingleton<CollisionSystem>
 {
@@ -58,6 +59,10 @@ private:
 	static bool CheckCollision(SpherePrimitive const& lhs, PlanePrimitive const& rhs);
 	static bool CheckCollision(SpherePrimitive const& lhs, AABBPrimitive const& rhs);
 	static bool CheckCollision(SpherePrimitive const& lhs, SpherePrimitive const& rhs);
+
+	static bool CheckCollision(glm::vec4 const& plane, AABBBV const& bv);
+	static bool CheckCollision(glm::vec4 const& plane, OBBBV const& bv);
+	static bool CheckCollision(glm::vec4 const& plane, SphereBV const& bv);
 
 public: // Helper functions, most of these are directly from the orange textbook
 	static bool IntersectPointTriangle(glm::vec3 const& p, glm::vec3 const& q0, glm::vec3 const& q1, glm::vec3 const& q2, glm::vec3 const& qn);

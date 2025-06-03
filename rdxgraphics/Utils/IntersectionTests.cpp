@@ -22,17 +22,19 @@ void Intersection::CalculateAABBBV(std::vector<glm::vec3> const& positions, glm:
 int Intersection::PlaneSphereTest(glm::vec3 aPos, float aRadius, glm::vec4 bEquation)
 {
 	float dist = glm::dot(aPos, glm::vec3{bEquation}) - bEquation.w;
-	if (dist > aRadius) return 1;
+	if		(dist > aRadius)   return 1;
 	else if (dist >= -aRadius) return 0;
-	else return -1;
+	else					   return -1;
+}
 
-	//if		(glm::abs(dist) < -aRadius)  return -1;			// Outside
-	//else if (glm::abs(dist) <= aRadius)  return 0;	// Intersect
-	//else  /*(dist > aRadius)*/ return 1;			// Inside
-
-	//float dist = glm::dot(aPos, glm::vec3{ bEquation }) - bEquation.w;
-	//dist = glm::abs(dist);
-	//if (dist <= aRadius)  return 0;
-	//else if (dist < -aRadius)  return -1;
-	//else  /*(dist < aRadius)*/ return 1;
+int Intersection::PlaneAABBTest(glm::vec3 aPos, glm::vec3 aHalfExtents, glm::vec4 bEquation)
+{
+	glm::vec3 const& e = aHalfExtents;
+	glm::vec3 const& n = glm::vec3(bEquation);
+	float d = bEquation.w;
+	float r = glm::dot(e, glm::abs(n));
+	float s = glm::dot(n, glm::vec3(aPos)) - d;
+	if		(s > r)   return 1;
+	else if (s >= -r) return 0;
+	else			  return -1;
 }
