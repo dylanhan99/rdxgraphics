@@ -40,11 +40,13 @@ glm::vec3 BoundingVolume::RemoveBV()
 
 void BaseBV::SetDirty() const
 {
-	//auto const& handle = GetEntityHandle();
-	//if (EntityManager::HasComponent<BoundingVolume::Dirty>(handle))
-	//	return;
-	//
-	//EntityManager::AddComponent<BoundingVolume::Dirty>(handle);
+	auto const& handle = GetEntityHandle();
+	if (!EntityManager::HasEntity(handle))
+		return;
+	if (EntityManager::HasComponent<BoundingVolume::Dirty>(handle))
+		return;
+	
+	EntityManager::AddComponent<BoundingVolume::Dirty>(handle);
 }
 
 // Actually i dont think we even need to bother with this 
@@ -102,6 +104,41 @@ void FrustumBV::RecalculateBV()
 		glm::vec4& curr = m_Points[i];
 		curr = invMatrix * NDCPoints[i];
 		curr /= curr.w; // perspective division
+	}
+
+	// Setting up the plane equations now that we have the points
+	{
+		// 3 points and normal are obvious, 
+		// but get the D via normalized normal DOT P0 (any of the points)
+		auto const& fPoints = m_Points;
+		// not really a center, just figuratively a point inside the frustum
+		glm::vec3 center{};
+		for (auto const& point : fPoints)
+			center += static_cast<glm::vec3>(point);
+		center /= fPoints.size();
+		auto MakePlaneEquation =
+			[&center](glm::vec3 const& A, glm::vec3 const& B, glm::vec3 const& C) -> glm::vec4
+			{
+				glm::vec3 normal = glm::normalize(glm::cross(B - A, C - A));
+
+				// Flip the normal if it's pointing the wrong way
+				// Our standard is an inward pointing frustum
+				if (glm::dot(normal, center - A) < 0.f)
+					normal = -normal;
+
+				float d = glm::dot(normal, C);
+				return glm::vec4{ normal, d };
+			};
+
+		auto& planeEquations = GetPlaneEquations();
+#define _RX_XXX(i, A, B, C) planeEquations[i] = MakePlaneEquation(fPoints[A], fPoints[B], fPoints[C])
+		_RX_XXX(0, 4, 5, 6);
+		_RX_XXX(1, 3, 2, 1);
+		_RX_XXX(2, 0, 1, 5);
+		_RX_XXX(3, 7, 6, 2);
+		_RX_XXX(4, 3, 0, 4);
+		_RX_XXX(5, 1, 2, 6);
+#undef _RX_XXX
 	}
 }
 

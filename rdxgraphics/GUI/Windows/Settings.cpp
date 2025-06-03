@@ -13,7 +13,22 @@ void Settings::UpdateImpl(float dt)
 
 	if (ImGui::TreeNodeEx("Bounding Volumes", scnFlags | ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		int* algorithm = static_cast<int*>(&SphereBV::Algorithm);
+		if (ImGui::Button("Recalculate ALL BVs"))
+		{
+#define _RX_X(Klass) case BV::Klass: EntityManager::GetComponent<Klass##BV>(handle).SetDirty(); break;
+			for (auto [handle, boundingVolume] : EntityManager::View<BoundingVolume>().each())
+			{
+				switch (boundingVolume.GetBVType())
+				{
+					RX_DO_ALL_BV_ENUM;
+				default:
+					break;
+				}
+			}
+#undef _RX_X
+		}
+
+		int* algorithm = reinterpret_cast<int*>(&SphereBV::Algorithm);
 		ImGui::SeparatorText("SphereBV Options");
 		bool isRadiod = false;
 		isRadiod |= ImGui::RadioButton("Ritter",  algorithm, static_cast<int>(SphereBV::Algo::Ritter));
@@ -22,10 +37,10 @@ void Settings::UpdateImpl(float dt)
 
 		if (isRadiod) // Set ALL spheres to be dirty, to be updated with new algorithm
 		{
-			auto view = EntityManager::View<BoundingVolume, const SphereBV>();
+			auto view = EntityManager::View<const BoundingVolume, SphereBV>();
 			for (auto [handle, boundingVolume, bv] : view.each())
 			{
-				boundingVolume.SetDirty();
+				bv.SetDirty();
 			}
 		}
 
@@ -58,14 +73,16 @@ void Settings::UpdateImpl(float dt)
 		ImGui::TreePop();
 	}
 
-	if (ImGui::TreeNodeEx("Graphics", scnFlags))
+	if (ImGui::TreeNodeEx("Graphics", scnFlags | ImGuiTreeNodeFlags_DefaultOpen))
 	{
+		ImGui::SeparatorText("Toggle Passes");
 		for (auto& pass : RenderSystem::GetRenderPasses())
 		{
 			ImGui::Checkbox(pass->GetDisplayName().c_str(), &pass->IsEnabled());
 		}
 
-		ImGui::ColorEdit3("Global Ambience", glm::value_ptr(RenderSystem::GetGlobalIllumination()));
+		ImGui::SeparatorText("Global Lighting");
+		ImGui::ColorEdit3("Ambience", glm::value_ptr(RenderSystem::GetGlobalIllumination()));
 		ImGui::DragFloat("Ambiance Factor", &RenderSystem::GetGlobalIllumination().w, 0.05f, 0.f, 1.f, "%.2f");
 
 		ImGui::TreePop();

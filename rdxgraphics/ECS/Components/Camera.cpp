@@ -115,6 +115,8 @@ void Camera::Inputs(float dt)
 		 glm::half_pi<float>() - glm::radians(1.f));
 	eulerOrientation.y += yaw;
 
+	if (EntityManager::HasComponent<BoundingVolume>(GetEntityHandle()))
+		EntityManager::AddComponent<BoundingVolume::Dirty>(GetEntityHandle());
 	GLFWWindow::CenterCursor();
 }
 

@@ -78,6 +78,8 @@ void BasePrimitive::SetPosition(glm::vec3 pos)
 void BasePrimitive::SetDirty() const
 {
 	auto const& handle = GetEntityHandle();
+	if (!EntityManager::HasEntity(handle))
+		return;
 	if (EntityManager::HasComponent<Collider::Dirty>(handle))
 		return;
 

@@ -33,7 +33,7 @@ public:
 
 	// Can be overrided again if needed, but call BasePrimitive::OnConstructImpl() first
 	inline void OnConstructImpl() override { SetDirty(); }
-
+	virtual void SetDirty() const;
 	virtual void UpdateXform() = 0;
 
 	inline glm::mat4 const& GetXform() const { return m_Xform; }
@@ -46,9 +46,6 @@ public:
 
 	inline bool const& IsCollide() const { return m_IsCollide; }
 	inline bool& IsCollide() { return m_IsCollide; }
-
-private:
-	virtual void SetDirty() const;
 
 protected:
 	glm::mat4 m_Xform{};

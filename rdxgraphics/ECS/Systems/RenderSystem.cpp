@@ -85,7 +85,7 @@ bool RenderSystem::Init()
 	auto pColliderWireframesPass = RegisterPass<ColliderWireframesPass>("Collider Wireframes", "Colliders", false);
 	auto pBVWireframesPass = RegisterPass<BVWireframesPass>("BV Wireframes", "BVs");
 	auto pPiPModelsPass = RegisterPass<ModelsPass>("PiP Models & Lighting", "PiPModels", false);
-	auto pPiPBVWireframesPass = RegisterPass<BVWireframesPass>("PiP BV Wireframes", "PiPBVs", false);
+	auto pPiPBVWireframesPass = RegisterPass<BVWireframesPass>("PiP BV Wireframes", "PiPBVs", true);
 
 	pModelsPass->Init(0, 0, dims.x, dims.y);
 	pColliderWireframesPass->Init(0, 0, dims.x, dims.y);

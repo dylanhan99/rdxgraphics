@@ -13,7 +13,7 @@ class BoundingVolume : public BaseComponent
 {
 	RX_COMPONENT_HAS_HANDLE(BoundingVolume);
 public:
-	//class Dirty : public BaseComponent { char _{}; };
+	class Dirty : public BaseComponent { char _{}; };
 
 public:
 	inline BoundingVolume(BV bvType = BV::NIL) : m_BVType(bvType) {}
@@ -34,13 +34,11 @@ class BaseBV : public virtual BasePrimitive
 {
 public:
 	void OnConstructImpl() override { SetDirty(); }
+	void SetDirty() const override;
+	virtual void RecalculateBV() = 0;
 
 	inline BVState GetBVState() const { return m_BVState; }
 	inline void SetBVState(BVState state) { m_BVState = state; }
-
-private:
-	void SetDirty() const override;
-	virtual void RecalculateBV() = 0;
 
 private:
 	BVState m_BVState{BVState::Out};
@@ -103,7 +101,7 @@ class SphereBV : public BaseBV, public SpherePrimitive
 {
 	RX_COMPONENT_DEF_HANDLE(SphereBV);
 public:
-	enum class Algo
+	enum class Algo : int
 	{
 		Ritter,
 		Larsson,
