@@ -18,6 +18,22 @@ void BoundingVolume::SetBVType(BV bvType)
 	SetupBV(offset);
 }
 
+void BoundingVolume::SetDirty() const
+{
+#define _RX_X(Klass)										  \
+case BV::Klass: {											  \
+	EntityManager::GetComponent<Klass##BV>(GetEntityHandle()).SetDirty();\
+	break;													  \
+}
+	switch (m_BVType)
+	{
+		RX_DO_ALL_BV_ENUM;
+	default:
+		break;
+	}
+#undef _RX_X
+}
+
 void BoundingVolume::SetupBV(glm::vec3 offset) const
 {
 	// Get the BV& component and 
@@ -39,15 +55,26 @@ glm::vec3 BoundingVolume::RemoveBV()
 	return glm::vec3();
 }
 
+void BaseBV::SetDirtyXform() const
+{
+	auto const& handle = GetEntityHandle();
+	if (!EntityManager::HasEntity(handle))
+		return;
+	if (EntityManager::HasComponent<BoundingVolume::DirtyXform>(handle))
+		return;
+
+	EntityManager::AddComponent<BoundingVolume::DirtyXform>(handle);
+}
+
 void BaseBV::SetDirtyBV() const
 {
 	auto const& handle = GetEntityHandle();
 	if (!EntityManager::HasEntity(handle))
 		return;
-	if (EntityManager::HasComponent<BoundingVolume::Dirty>(handle))
+	if (EntityManager::HasComponent<BoundingVolume::DirtyBV>(handle))
 		return;
 	
-	EntityManager::AddComponent<BoundingVolume::Dirty>(handle);
+	EntityManager::AddComponent<BoundingVolume::DirtyBV>(handle);
 }
 
 // Actually i dont think we even need to bother with this 

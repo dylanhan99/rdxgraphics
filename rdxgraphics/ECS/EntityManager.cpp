@@ -50,6 +50,14 @@ entt::entity EntityManager::CloneEntity(entt::entity handle)
 	RX_DO_ALL_PRIMITIVE_ENUM;
 #undef _RX_X
 
+#define _RX_X(Klass)																				  \
+	if (EntityManager::HasComponent<Klass##BV>(handle))												  \
+	{																								  \
+		EntityManager::AddComponent<Klass##BV>(clone, EntityManager::GetComponent<Klass##BV>(handle));\
+	}
+	RX_DO_ALL_BV_ENUM;
+#undef _RX_X
+
 	return clone;
 }
 

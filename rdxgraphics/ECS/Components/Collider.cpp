@@ -80,8 +80,8 @@ void BasePrimitive::SetDirtyXform() const
 	auto const& handle = GetEntityHandle();
 	if (!EntityManager::HasEntity(handle))
 		return;
-	if (EntityManager::HasComponent<Collider::Dirty>(handle))
+	if (EntityManager::HasComponent<Collider::DirtyXform>(handle))
 		return;
 
-	EntityManager::AddComponent<Collider::Dirty>(handle);
+	EntityManager::AddComponent<Collider::DirtyXform>(handle);
 }

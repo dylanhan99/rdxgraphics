@@ -5,7 +5,7 @@ class Collider : public BaseComponent
 {
 	RX_COMPONENT_HAS_HANDLE(Collider);
 public:
-	class Dirty : public BaseComponent { char _{}; };
+	class DirtyXform : public BaseComponent { char _{}; };
 
 public:
 	inline Collider(Primitive primType = Primitive::NIL) : m_PrimitiveType(primType) { }
@@ -34,7 +34,7 @@ public:
 	// Can be overrided again if needed, but call BasePrimitive::OnConstructImpl() first
 	inline void OnConstructImpl() override { SetDirtyXform(); }
 	virtual void UpdateXform() = 0;
-	void SetDirtyXform() const;
+	virtual void SetDirtyXform() const;
 
 	inline glm::mat4 const& GetXform() const { return m_Xform; }
 	inline glm::vec3 const& GetOffset() const { return m_Offset; }

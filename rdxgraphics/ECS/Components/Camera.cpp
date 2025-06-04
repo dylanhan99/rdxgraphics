@@ -116,7 +116,7 @@ void Camera::Inputs(float dt)
 	eulerOrientation.y += yaw;
 
 	if (EntityManager::HasComponent<BoundingVolume>(GetEntityHandle()))
-		EntityManager::AddComponent<BoundingVolume::Dirty>(GetEntityHandle());
+		EntityManager::GetComponent<BoundingVolume>(GetEntityHandle()).SetDirty();
 	GLFWWindow::CenterCursor();
 }
 

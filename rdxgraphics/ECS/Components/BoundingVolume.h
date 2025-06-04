@@ -13,7 +13,8 @@ class BoundingVolume : public BaseComponent
 {
 	RX_COMPONENT_HAS_HANDLE(BoundingVolume);
 public:
-	class Dirty : public BaseComponent { char _{}; };
+	class DirtyXform : public BaseComponent { char _{}; };
+	class DirtyBV : public BaseComponent { char _{}; };
 
 public:
 	inline BoundingVolume(BV bvType = BV::NIL) : m_BVType(bvType) {}
@@ -21,6 +22,8 @@ public:
 
 	inline BV GetBVType() const { return m_BVType; }
 	void SetBVType(BV bvType);
+
+	void SetDirty() const;
 
 private:
 	void SetupBV(glm::vec3 offset = glm::vec3{ 0.f }) const;
@@ -33,9 +36,11 @@ private:
 class BaseBV : public virtual BasePrimitive
 {
 public:
-	void OnConstructImpl() override { SetDirtyXform(); SetDirtyBV(); }
+	void OnConstructImpl() override { SetDirty(); }
+	void SetDirtyXform() const override;
 	void SetDirtyBV() const;
 	virtual void RecalculateBV() = 0;
+	inline void SetDirty() const { SetDirtyXform(); SetDirtyBV(); }
 
 	inline BVState GetBVState() const { return m_BVState; }
 	inline void SetBVState(BVState state) { m_BVState = state; }
