@@ -2,7 +2,12 @@
 
 struct Intersection
 {
+	static void MostSeparatedPointsOnAABB(std::vector<glm::vec3> const& pt, size_t& oMinI, size_t& oMaxI);
 	static void CalculateAABBBV(std::vector<glm::vec3> const& positions, glm::vec3& outCenter, glm::vec3& outHalfExtents);
+
+	// -1 >> Outside
+	//  0 >> Intersect
+	static int PointSphereTest(glm::vec3 pointPos, glm::vec3 spherePos, float radius);
 
 	// -1 >> Outside
 	//  0 >> Intersect

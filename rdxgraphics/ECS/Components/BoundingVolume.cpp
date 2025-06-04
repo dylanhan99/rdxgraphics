@@ -3,6 +3,7 @@
 #include "ECS/EntityManager.h"
 #include "ECS/Systems/RenderSystem.h"
 #include "ECS/Components/Camera.h"
+#include "Utils/IntersectionTests.h"
 
 void BoundingVolume::SetBVType(BV bvType)
 {
@@ -179,7 +180,63 @@ void SphereBV::RecalculateBV()
 	{
 	case Algo::Ritter:
 	{
+		Xform& modelXform = EntityManager::GetComponent<Xform>(GetEntityHandle());
+		Rxuid const meshID = EntityManager::GetComponent<Model>(GetEntityHandle()).GetMesh();
+		auto& objekt = RenderSystem::GetObjekt(meshID);
+		auto const& points = objekt.GetVBData<VertexBasic::Position>();
 
+		// Get 6 random points and xform them
+		// Get the most min and most max x-y-z out of them, find the centroid 
+		// this will be your starting sphere
+		std::mt19937 gen(24); // Fixed seed
+		std::uniform_int_distribution<> distribution{ 0, (int)points.size() - 1 };
+		std::vector<glm::vec3> startingPoints{}; startingPoints.resize(6);
+		for (int i = 0; i < 6; ++i)
+			startingPoints[i] = glm::vec3{ modelXform.GetXform() * glm::vec4{ points[distribution(gen)], 1.f } };
+
+		glm::vec3 finalCentroid{};
+		float finalRadius{};
+		// SphereFromDistantPoints
+		{
+			size_t min{}, max{};
+			Intersection::MostSeparatedPointsOnAABB(startingPoints, min, max);
+
+			// Set up sphere to just encompass these two points
+			finalCentroid = (startingPoints[min] + startingPoints[max]) * 0.5f;
+			finalRadius = glm::dot(startingPoints[max] - finalCentroid, startingPoints[max] - finalCentroid);
+			finalRadius = glm::sqrt(finalRadius);
+		}
+
+		// Now, for every single point, xform them and compare, if it is in or out of sphere.
+		// If in, continue
+		// If out, then expand the sphere, find the new centroid and radius
+		// next point.
+		for (auto const& point : points)
+		{
+			int col = Intersection::PointSphereTest(
+				point,
+				finalCentroid, finalRadius
+			);
+
+			if (col != -1)
+				continue;
+
+			glm::vec3 d = point - finalCentroid;
+			float dist2 = glm::dot(d, d);
+
+			if (dist2 > glm::dot(finalCentroid, finalCentroid))
+			{
+				float dist = glm::sqrt(dist2);
+				float newRadius = (finalRadius + dist) * 0.5f;
+				float k = (newRadius - finalRadius) / dist;
+
+				finalRadius = newRadius;
+				finalCentroid += d * k;
+			}
+		}
+
+		GetRadius() = finalRadius;
+		SetPosition(finalCentroid);
 		break;
 	}
 	case Algo::Larsson:

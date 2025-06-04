@@ -1,6 +1,39 @@
 #include <pch.h>
 #include "IntersectionTests.h"
 
+void Intersection::MostSeparatedPointsOnAABB(std::vector<glm::vec3> const& pt, size_t& oMinI, size_t& oMaxI)
+{ // oragne book page 90 (129 in pdf)
+	// First find most extreme points along principal axes
+	int minx = 0, maxx = 0, miny = 0, maxy = 0, minz = 0, maxz = 0;
+	for (size_t i = 1; i < pt.size(); ++i) 
+	{
+		if (pt[i].x < pt[minx].x) minx = i;
+		if (pt[i].x > pt[maxx].x) maxx = i;
+		if (pt[i].y < pt[miny].y) miny = i;
+		if (pt[i].y > pt[maxy].y) maxy = i;
+		if (pt[i].z < pt[minz].z) minz = i;
+		if (pt[i].z > pt[maxz].z) maxz = i;
+	}
+
+	// Compute the squared distances for the three pairs of points
+	float dist2x = glm::dot(pt[maxx] - pt[minx], pt[maxx] - pt[minx]);
+	float dist2y = glm::dot(pt[maxy] - pt[miny], pt[maxy] - pt[miny]);
+	float dist2z = glm::dot(pt[maxz] - pt[minz], pt[maxz] - pt[minz]);
+	// Pick the pair (min,max) of points most distant
+	oMinI = minx;
+	oMaxI = maxx;
+	if (dist2y > dist2x && dist2y > dist2z) 
+	{
+		oMaxI = maxy;
+		oMinI = miny;
+	}
+	if (dist2z > dist2x && dist2z > dist2y) 
+	{
+		oMaxI = maxz;
+		oMinI = minz;
+	}
+}
+
 void Intersection::CalculateAABBBV(std::vector<glm::vec3> const& positions, glm::vec3 &outCenter, glm::vec3& outHalfExtents)
 {
 	glm::vec3 min{std::numeric_limits<float>::max()}, max{ std::numeric_limits<float>::min() };
@@ -17,6 +50,12 @@ void Intersection::CalculateAABBBV(std::vector<glm::vec3> const& positions, glm:
 	
 	outCenter = (max + min) * 0.5f;
 	outHalfExtents = glm::abs((max - min) * 0.5f);
+}
+
+int Intersection::PointSphereTest(glm::vec3 pointPos, glm::vec3 spherePos, float radius)
+{
+	float d2 = glm::distance2(pointPos, spherePos);
+	return d2 < glm::pow(radius, 2.f) ? 0 : -1;
 }
 
 int Intersection::PlaneSphereTest(glm::vec3 aPos, float aRadius, glm::vec4 bEquation)

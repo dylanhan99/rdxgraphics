@@ -125,7 +125,7 @@ bool CollisionSystem::CheckCollision(PointPrimitive const& lhs, AABBPrimitive co
 
 bool CollisionSystem::CheckCollision(PointPrimitive const& lhs, SpherePrimitive const& rhs)
 {
-	return IntersectPointSphere(lhs.GetPosition(), rhs.GetPosition(), rhs.GetRadius());
+	return Intersection::PointSphereTest(lhs.GetPosition(), rhs.GetPosition(), rhs.GetRadius()) == 0;
 }
 
 // Works for both front and back face
@@ -274,7 +274,7 @@ bool CollisionSystem::CheckCollision(AABBPrimitive const& lhs, SpherePrimitive c
 		glm::max(boxMin.z, glm::min(sphPos.z, boxMax.z))
 	};
 
-	return IntersectPointSphere(closestPoint, sphPos, rhs.GetRadius());
+	return Intersection::PointSphereTest(closestPoint, sphPos, rhs.GetRadius()) == 0;
 }
 
 bool CollisionSystem::CheckCollision(SpherePrimitive const& lhs, PointPrimitive const& rhs) { return CheckCollision(rhs, lhs); }
@@ -287,9 +287,9 @@ bool CollisionSystem::CheckCollision(SpherePrimitive const& lhs, AABBPrimitive c
 
 bool CollisionSystem::CheckCollision(SpherePrimitive const& lhs, SpherePrimitive const& rhs)
 {
-	return IntersectPointSphere(
+	return Intersection::PointSphereTest(
 		lhs.GetPosition(),
-		rhs.GetPosition(), lhs.GetRadius() + rhs.GetRadius());
+		rhs.GetPosition(), lhs.GetRadius() + rhs.GetRadius()) == 0;
 }
 
 int CollisionSystem::CheckCollision(glm::vec4 const& plane, AABBBV const& bv)
@@ -331,12 +331,6 @@ bool CollisionSystem::IntersectPointTriangle(glm::vec3 const& p, glm::vec3 const
 	float bb = glm::dot(b, b);
 	if (ab * bc - ac * bb < 0.0f) return false;
 	return true;
-}
-
-bool CollisionSystem::IntersectPointSphere(glm::vec3 const& p, glm::vec3 const& q, float radius)
-{
-	float d2 = glm::distance2(p, q);
-	return d2 < glm::pow(radius, 2.f);
 }
 
 bool CollisionSystem::IntersectSegmentPlane(RayPrimitive const& ray, PlanePrimitive const& plane, PointPrimitive* oPoint)
