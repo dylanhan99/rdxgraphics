@@ -64,7 +64,13 @@ void Inspector::UpdateImpl(float dt)
 
 void Inspector::UpdateCompMetadata(std::string const& strHandle, Metadata& comp)
 {
+	ImGui::Text("Entity ID"); 
+	ImGui::SameLine();
 
+	ImGui::BeginDisabled();
+	int id = (int)comp.GetEntityHandle();
+	ImGui::DragInt("##entityID", &id);
+	ImGui::EndDisabled();
 }
 
 void Inspector::UpdateCompXform(std::string const& strHandle, Xform& comp)

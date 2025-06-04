@@ -3,6 +3,7 @@
 
 class Metadata : public BaseComponent
 {
+	RX_COMPONENT_HAS_HANDLE(Metadata);
 public:
 	Metadata() = default;
 	inline Metadata(std::string const& name)

@@ -6,6 +6,7 @@ RX_SINGLETON_EXPLICIT(EntityManager);
 
 bool EntityManager::Init()
 {
+	Metadata::Init(g.m_Registry);
 	Xform::Init(g.m_Registry);
 	Camera::Init(g.m_Registry);
 	Collider::Init(g.m_Registry);

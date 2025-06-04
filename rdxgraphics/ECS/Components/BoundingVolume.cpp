@@ -238,8 +238,11 @@ void SphereBV::RecalculateBV()
 		// If in, continue
 		// If out, then expand the sphere, find the new centroid and radius
 		// next point.
-		for (auto const& point : points)
+		for (auto point : points)
 		{
+			auto xformsad = modelXform.GetXform();
+			point = glm::vec3{ modelXform.GetXform() * glm::vec4{ point, 1.f } };
+
 			int col = Intersection::PointSphereTest(
 				point,
 				finalCentroid, finalRadius
@@ -251,7 +254,7 @@ void SphereBV::RecalculateBV()
 			glm::vec3 d = point - finalCentroid;
 			float dist2 = glm::dot(d, d);
 
-			if (dist2 > glm::dot(finalCentroid, finalCentroid))
+			if (dist2 > glm::dot(finalRadius, finalRadius))
 			{
 				float dist = glm::sqrt(dist2);
 				float newRadius = (finalRadius + dist) * 0.5f;

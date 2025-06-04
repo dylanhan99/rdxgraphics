@@ -15,17 +15,8 @@ void Settings::UpdateImpl(float dt)
 	{
 		if (ImGui::Button("Recalculate ALL BVs"))
 		{
-#define _RX_X(Klass) case BV::Klass: EntityManager::GetComponent<Klass##BV>(handle).SetDirtyBV(); break;
 			for (auto [handle, boundingVolume] : EntityManager::View<BoundingVolume>().each())
-			{
-				switch (boundingVolume.GetBVType())
-				{
-					RX_DO_ALL_BV_ENUM;
-				default:
-					break;
-				}
-			}
-#undef _RX_X
+				boundingVolume.SetDirty();
 		}
 
 		int* algorithm = reinterpret_cast<int*>(&SphereBV::Algorithm);

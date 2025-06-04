@@ -21,7 +21,8 @@ void Sandbox::StartImpl()
 	{
 		auto handle = test = BaseScene::CreateDefaultEntity<NoDelete>();
 		EntityManager::AddComponent<Metadata>(handle, "L");
-		EntityManager::AddComponent<Xform>(handle, glm::vec3{ 0.f, 0.f, 0.f }, glm::vec3{ 1.f }, glm::vec3{ 0.f });
+		EntityManager::AddComponent<Xform>(handle, glm::vec3{ 0.f, 0.f, 0.f }, glm::vec3{ 1.f }, glm::vec3{ 0.f })
+			;
 		EntityManager::AddComponent<Model>(handle, Rxuid("ogre"));
 		EntityManager::AddComponent<Material>(handle, glm::vec3{ 0.f,1.f,0.f });
 		//EntityManager::AddComponent<BoundingVolume>(handle, BV::Sphere);
@@ -29,13 +30,13 @@ void Sandbox::StartImpl()
 		GUI::SetSelectedEntity(handle);
 	}
 	{
-		auto clone = BaseScene::CloneEntity(test);
-		EntityManager::GetComponent<Xform>(clone)
-			.SetTranslate({-2.f, 0.f, -2.f});
-		EntityManager::GetComponent<Model>(clone)
-			.SetMesh(Shape::Cube);
-		EntityManager::AddComponent<Collider>(clone, Primitive::AABB);
-		EntityManager::AddComponent<BoundingVolume>(clone, BV::AABB);
+		//auto clone = BaseScene::CloneEntity(test);
+		//EntityManager::GetComponent<Xform>(clone)
+		//	.SetTranslate({-2.f, 0.f, -2.f});
+		//EntityManager::GetComponent<Model>(clone)
+		//	.SetMesh(Shape::Cube);
+		//EntityManager::AddComponent<Collider>(clone, Primitive::AABB);
+		//EntityManager::AddComponent<BoundingVolume>(clone, BV::AABB);
 	}
 	{
 		auto clone = BaseScene::CloneEntity(test);
