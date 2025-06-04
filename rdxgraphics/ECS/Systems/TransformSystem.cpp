@@ -7,6 +7,33 @@ RX_SINGLETON_EXPLICIT(TransformSystem);
 
 void TransformSystem::Update(float dt)
 {
+	// handling dirty BVs
+	{
+		auto v = EntityManager::View<BoundingVolume::Dirty, BoundingVolume>();
+		for (auto [handle, _, boundingVolume] : v.each())
+		{
+#define _RX_XX(Klass)											 \
+	case BV::Klass:												 \
+	{															 \
+		Klass##BV& bv = EntityManager::GetComponent<Klass##BV>(handle);\
+		bv.RecalculateBV();										 \
+		bv.UpdateXform();										 \
+		break;													 \
+	}
+
+			switch (boundingVolume.GetBVType())
+			{
+				RX_DO_ALL_BV_ENUM_M(_RX_XX)
+			default:
+				break;
+			}
+#undef _RX_XX
+
+			EntityManager::RemoveComponent<BoundingVolume::Dirty>(handle);
+		}
+	}
+
+
 #define _RX_X(Klass)													 \
 case Primitive::Klass:													 \
 {																		 \
@@ -33,6 +60,25 @@ case Primitive::Klass:													 \
 			}
 			EntityManager::RemoveComponent<Collider::Dirty>(handle);
 		}
+
+		if (EntityManager::HasComponent<BoundingVolume>(handle))
+		{
+#define _RX_XX(Klass)											 \
+	case BV::Klass:												 \
+	{															 \
+		Klass##BV& bv = EntityManager::GetComponent<Klass##BV>(handle);\
+		bv.UpdateXform();										 \
+		break;													 \
+	}
+
+			switch (EntityManager::GetComponent<BoundingVolume>(handle).GetBVType())
+			{
+				RX_DO_ALL_BV_ENUM_M(_RX_XX);
+			default:
+				break;
+			}
+#undef _RX_XX
+		}
 	}
 
 	// Handles dirty colliders if somehow not handled above already.
@@ -51,30 +97,4 @@ case Primitive::Klass:													 \
 		}
 	}
 #undef _RX_X
-
-	// handling dirty BVs
-	{
-		auto v = EntityManager::View<BoundingVolume::Dirty, BoundingVolume>();
-		for (auto [handle, _, boundingVolume] : v.each())
-		{
-#define _RX_XX(Klass)											 \
-	case BV::Klass:												 \
-	{															 \
-		Klass##BV& bv = EntityManager::GetComponent<Klass##BV>(handle);\
-		bv.RecalculateBV();										 \
-		bv.UpdateXform();										 \
-		break;													 \
-	}
-
-			switch (boundingVolume.GetBVType())
-			{
-				RX_DO_ALL_BV_ENUM_M(_RX_XX)
-			default:
-				break;
-			}
-#undef _RX_XX
-
-			EntityManager::RemoveComponent<BoundingVolume::Dirty>(handle);
-		}
-	}
 }

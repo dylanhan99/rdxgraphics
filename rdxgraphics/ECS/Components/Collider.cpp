@@ -70,12 +70,12 @@ glm::vec3 BasePrimitive::GetPosition() const
 
 void BasePrimitive::SetPosition(glm::vec3 pos)
 {
-	SetDirty();
+	SetDirtyXform();
 	glm::vec3 position = EntityManager::GetComponent<const Xform>(GetEntityHandle()).GetTranslate();
 	m_Offset = pos - position;
 }
 
-void BasePrimitive::SetDirty() const
+void BasePrimitive::SetDirtyXform() const
 {
 	auto const& handle = GetEntityHandle();
 	if (!EntityManager::HasEntity(handle))

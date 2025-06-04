@@ -33,8 +33,8 @@ private:
 class BaseBV : public virtual BasePrimitive
 {
 public:
-	void OnConstructImpl() override { SetDirty(); }
-	void SetDirty() const override;
+	void OnConstructImpl() override { SetDirtyXform(); SetDirtyBV(); }
+	void SetDirtyBV() const;
 	virtual void RecalculateBV() = 0;
 
 	inline BVState GetBVState() const { return m_BVState; }

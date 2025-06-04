@@ -15,7 +15,7 @@ void Settings::UpdateImpl(float dt)
 	{
 		if (ImGui::Button("Recalculate ALL BVs"))
 		{
-#define _RX_X(Klass) case BV::Klass: EntityManager::GetComponent<Klass##BV>(handle).SetDirty(); break;
+#define _RX_X(Klass) case BV::Klass: EntityManager::GetComponent<Klass##BV>(handle).SetDirtyBV(); break;
 			for (auto [handle, boundingVolume] : EntityManager::View<BoundingVolume>().each())
 			{
 				switch (boundingVolume.GetBVType())
@@ -40,7 +40,7 @@ void Settings::UpdateImpl(float dt)
 			auto view = EntityManager::View<const BoundingVolume, SphereBV>();
 			for (auto [handle, boundingVolume, bv] : view.each())
 			{
-				bv.SetDirty();
+				bv.SetDirtyBV();
 			}
 		}
 

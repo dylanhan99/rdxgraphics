@@ -32,14 +32,14 @@ public:
 	inline BasePrimitive(float x, float y, float z) : m_Offset({ x, y, z }) {}
 
 	// Can be overrided again if needed, but call BasePrimitive::OnConstructImpl() first
-	inline void OnConstructImpl() override { SetDirty(); }
-	virtual void SetDirty() const;
+	inline void OnConstructImpl() override { SetDirtyXform(); }
 	virtual void UpdateXform() = 0;
+	void SetDirtyXform() const;
 
 	inline glm::mat4 const& GetXform() const { return m_Xform; }
 	inline glm::vec3 const& GetOffset() const { return m_Offset; }
-	inline glm::vec3& GetOffset() { SetDirty(); return m_Offset; }
-	inline void SetOffset(glm::vec3 o) { SetDirty(); m_Offset = o; }
+	inline glm::vec3& GetOffset() { SetDirtyXform(); return m_Offset; }
+	inline void SetOffset(glm::vec3 o) { SetDirtyXform(); m_Offset = o; }
 
 	glm::vec3 GetPosition() const;
 	void SetPosition(glm::vec3 pos);

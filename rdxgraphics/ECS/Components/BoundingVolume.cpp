@@ -38,7 +38,7 @@ glm::vec3 BoundingVolume::RemoveBV()
 	return glm::vec3();
 }
 
-void BaseBV::SetDirty() const
+void BaseBV::SetDirtyBV() const
 {
 	auto const& handle = GetEntityHandle();
 	if (!EntityManager::HasEntity(handle))
@@ -175,35 +175,17 @@ void AABBBV::RecalculateBV()
 
 void SphereBV::RecalculateBV()
 {
-	// "Original"
-	Model const& model = EntityManager::GetComponent<const Model>(GetEntityHandle());
-	auto& obj = RenderSystem::GetObjekt(model.GetMesh());
-	AABBBV const& defaultBV = obj.GetDefaultAABBBV();
-
-	glm::vec3 const& defaultCenter = defaultBV.GetOffset();
-	glm::vec3 const& defaultHalfExtents = defaultBV.GetHalfExtents();
-
-	Xform const& xform = EntityManager::GetComponent<const Xform>(GetEntityHandle());
-	glm::vec3 const& scl = xform.GetScale();
-	glm::mat4 const rot = xform.GetRotationMatrix();
-
-	glm::vec3 newCenter{ 0.f };
-	if (defaultCenter != glm::vec3{ 0.f })
-		newCenter = /*glm::translate(xform.GetTranslate()) **/ rot * glm::scale(scl) * glm::vec4{ defaultCenter, 1.f };
-
-	glm::vec3 newHalfSize{};
-	for (int i = 0; i < 3; ++i)
+	switch (Algorithm)
 	{
-		newHalfSize[i] =
-			glm::abs(rot[i][0]) * defaultHalfExtents[0] * scl[0] +
-			glm::abs(rot[i][1]) * defaultHalfExtents[1] * scl[1] +
-			glm::abs(rot[i][2]) * defaultHalfExtents[2] * scl[2];
-	}
+	case Algo::Ritter:
+	{
 
-	//GetHalfExtents() = newHalfSize;
-	GetRadius() =
-		newHalfSize.x * newHalfSize.x * newHalfSize.x +
-		newHalfSize.y * newHalfSize.y * newHalfSize.y +
-		newHalfSize.z * newHalfSize.z * newHalfSize.z;
-	GetOffset() = newCenter;
+		break;
+	}
+	case Algo::Larsson:
+		break;
+	case Algo::PCA:
+		break;
+	default: break;
+	}
 }
