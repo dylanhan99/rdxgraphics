@@ -1,4 +1,3 @@
-#include <pch.h>
 #include "IntersectionTests.h"
 
 void Intersection::MostSeparatedPointsOnAABB(std::vector<glm::vec3> const& pt, size_t& oMinI, size_t& oMaxI)

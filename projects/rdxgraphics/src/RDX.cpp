@@ -1,4 +1,3 @@
-#include <pch.h>
 #include "RDX.h"
 
 #include "ECS/Components.h"

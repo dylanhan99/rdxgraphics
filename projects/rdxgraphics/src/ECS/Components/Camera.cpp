@@ -1,6 +1,4 @@
-#include <pch.h>
 #include "Camera.h"
-
 #include "Utils/Input.h"
 #include "GLFWWindow/GLFWWindow.h"
 #include "ECS/EntityManager.h"

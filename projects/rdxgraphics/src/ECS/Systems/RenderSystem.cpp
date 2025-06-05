@@ -1,4 +1,3 @@
-#include <pch.h>
 #include "RenderSystem.h"
 #include "GLFWWindow/GLFWWindow.h"
 #include "ECS/Components.h"

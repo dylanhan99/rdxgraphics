@@ -1,4 +1,3 @@
-#include <pch.h>
 #include "BaseComponent.h"
 #include "ECS/EntityManager.h"
 

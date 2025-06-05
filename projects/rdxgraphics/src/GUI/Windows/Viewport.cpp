@@ -1,4 +1,3 @@
-#include <pch.h>
 #include "Viewport.h"
 #include "ECS/Systems/RenderSystem.h"
 #include "GSM/SceneManager.h"

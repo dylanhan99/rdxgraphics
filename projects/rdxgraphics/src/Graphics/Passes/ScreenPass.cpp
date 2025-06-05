@@ -1,4 +1,3 @@
-#include <pch.h>
 #include "ScreenPass.h"
 #include "ECS/EntityManager.h"
 #include "ECS/Systems/RenderSystem.h"

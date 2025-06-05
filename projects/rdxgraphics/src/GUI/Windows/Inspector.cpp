@@ -1,4 +1,3 @@
-#include <pch.h>
 #include "Inspector.h"
 #include "GUI/GUI.h"
 #include "ECS/Systems/RenderSystem.h"

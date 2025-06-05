@@ -1,4 +1,3 @@
-#include <pch.h>
 #include "TransformSystem.h"
 #include "ECS/EntityManager.h"
 #include "ECS/Components.h"

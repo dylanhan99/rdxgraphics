@@ -1,4 +1,3 @@
-#include <pch.h>
 #include "Input.h"
 
 RX_SINGLETON_EXPLICIT(Input)

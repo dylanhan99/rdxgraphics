@@ -1,4 +1,3 @@
-#include <pch.h>
 #include "Assignment1.h"
 #include "GUI/GUI.h"
 

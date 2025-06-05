@@ -1,4 +1,3 @@
-#include <pch.h>
 #include "GUI.h"
 
 #include "Utils/Input.h"

@@ -1,4 +1,3 @@
-#include <pch.h>
 #include "EntityHierarchy.h"
 #include "GUI/GUI.h"
 #include "GSM/SceneManager.h"

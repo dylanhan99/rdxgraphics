@@ -1,4 +1,3 @@
-#include <pch.h>
 #include "Settings.h"
 #include "GUI/GUI.h"
 #include "GSM/SceneManager.h"

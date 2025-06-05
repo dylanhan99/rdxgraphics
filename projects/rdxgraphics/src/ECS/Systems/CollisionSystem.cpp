@@ -1,4 +1,3 @@
-#include <pch.h>
 #include "CollisionSystem.h"
 #include "ECS/EntityManager.h"
 #include "Utils/Input.h"

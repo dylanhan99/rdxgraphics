@@ -1,4 +1,3 @@
-#include <pch.h>
 #include "Object.h"
 
 // Macro to explicitly init functions. Cus i'd rather have all defines in one place, than in both hpp and cpp.

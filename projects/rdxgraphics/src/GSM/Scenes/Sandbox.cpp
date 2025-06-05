@@ -1,4 +1,3 @@
-#include <pch.h>
 #include "Sandbox.h"
 #include "Utils/Input.h"
 #include "ECS/Systems/RenderSystem.h"

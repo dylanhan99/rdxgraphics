@@ -1,5 +1,4 @@
-﻿#include <pch.h>
-#include "RDX.h"
+﻿#include "RDX.h"
 
 int main()
 {

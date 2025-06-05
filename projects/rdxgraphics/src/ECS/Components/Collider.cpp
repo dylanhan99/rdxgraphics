@@ -1,4 +1,3 @@
-#include <pch.h>
 #include "Collider.h"
 #include "ECS/EntityManager.h"
 #include "ECS/Components.h"

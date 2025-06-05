@@ -1,4 +1,3 @@
-#include <pch.h>
 #include "BasePass.h"
 #include "GLFWWindow/GLFWWindow.h"
 

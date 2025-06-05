@@ -1,4 +1,3 @@
-#include <pch.h>
 #include "EntityManager.h"
 #include "Components.h"
 

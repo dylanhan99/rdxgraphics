@@ -17,18 +17,18 @@ const std::filesystem::path g_WorkingDir{
 	std::filesystem::current_path()
 	// for the csd3151 build, this value is 
 	// R"(.....\sample-framework-csd-3151\build)"
-	// Hence, shaders are accessed via a backtrack first R"(..\shaders\bla.vert)
+	// Hence, shaders are accessed via a backtrack first R"(..\projects\projectname\shaders\bla.vert)
 #endif
 };
 
 #ifdef USE_CSD3151_AUTOMATION
-#if USE_CSD3151_AUTOMATION == 1
-#define RX_SHADER_PREFIX "../shaders/"
-#define RX_MODEL_PREFIX "../models/"
-#else
-#define RX_SHADER_PREFIX "../../../projects/rdxgraphics/shaders/"
-#define RX_MODEL_PREFIX "../../../projects/rdxgraphics/models/"
-#endif
+//#if USE_CSD3151_AUTOMATION == 1
+//#define RX_SHADER_PREFIX "../shaders/"
+//#define RX_MODEL_PREFIX "../models/"
+//#else
+#define RX_SHADER_PREFIX "../projects/rdxgraphics/shaders/"
+#define RX_MODEL_PREFIX "../projects/rdxgraphics/models/"
+//#endif
 #endif
 
 const uint64_t RX_INVALID_ID{ 0 };

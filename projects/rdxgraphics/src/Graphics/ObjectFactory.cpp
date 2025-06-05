@@ -1,4 +1,3 @@
-#include <pch.h>
 #include "ObjectFactory.h"
 #include "ECS/Components/Collider.h"
 #include "Utils/IntersectionTests.h"

@@ -66,6 +66,7 @@ foreach(child ${children})
             target_compile_options(${child} PRIVATE -Wall ${DisableWarnings})
         elseif (MSVC)
             target_compile_options(${child} PRIVATE /W3 /WX- /Zc:preprocessor)
+	    target_precompile_headers(${child} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/projects/${child}/src/pch.h)
         endif()
 
         # Include path for each project
