@@ -203,15 +203,15 @@ void AABBBV::RecalculateBV()
 
 void SphereBV::RecalculateBV()
 {
+	Xform& modelXform = EntityManager::GetComponent<Xform>(GetEntityHandle());
+	Rxuid const meshID = EntityManager::GetComponent<Model>(GetEntityHandle()).GetMesh();
+	auto& objekt = RenderSystem::GetObjekt(meshID);
+	auto const& points = objekt.GetVBData<VertexBasic::Position>();
+
 	switch (Algorithm)
 	{
 	case Algo::Ritter:
 	{
-		Xform& modelXform = EntityManager::GetComponent<Xform>(GetEntityHandle());
-		Rxuid const meshID = EntityManager::GetComponent<Model>(GetEntityHandle()).GetMesh();
-		auto& objekt = RenderSystem::GetObjekt(meshID);
-		auto const& points = objekt.GetVBData<VertexBasic::Position>();
-
 		// Get 6 random points and xform them
 		// Get the most min and most max x-y-z out of them, find the centroid 
 		// this will be your starting sphere
@@ -240,7 +240,6 @@ void SphereBV::RecalculateBV()
 		// next point.
 		for (auto point : points)
 		{
-			auto xformsad = modelXform.GetXform();
 			point = glm::vec3{ modelXform.GetXform() * glm::vec4{ point, 1.f } };
 
 			int col = Intersection::PointSphereTest(
@@ -270,7 +269,69 @@ void SphereBV::RecalculateBV()
 		break;
 	}
 	case Algo::Larsson:
+	{
+		// EPOS-6 direction dictionary: ±X, ±Y, ±Z
+		std::vector<glm::vec3> directionDictionary = {
+			{1, 0, 0}, {-1, 0, 0},
+			{0, 1, 0}, {0, -1, 0},
+			{0, 0, 1}, {0, 0, -1}
+		};
+
+
+		auto pointsCopy = points;
+		std::vector<glm::vec3> extremalPoints;
+		for (const auto& dir : directionDictionary) {
+			float maxProj = -std::numeric_limits<float>::infinity();
+			float minProj = std::numeric_limits<float>::infinity();
+			glm::vec3 pMax, pMin;
+			for (auto& v : pointsCopy) {
+				v = glm::vec3{ modelXform.GetXform() * glm::vec4{ v, 1.f } };
+
+				float proj = glm::dot(v, dir);
+				if (proj > maxProj) {
+					maxProj = proj;
+					pMax = v;
+				}
+				if (proj < minProj) {
+					minProj = proj;
+					pMin = v;
+				}
+			}
+			extremalPoints.push_back(pMax);
+			extremalPoints.push_back(pMin);
+		}
+
+		// Step 2: Find farthest pair among extremal points
+		float maxDistance = 0.0f;
+		glm::vec3 p1, p2;
+		for (size_t i = 0; i < extremalPoints.size(); ++i) {
+			for (size_t j = i + 1; j < extremalPoints.size(); ++j) {
+				float dist = glm::distance(extremalPoints[i], extremalPoints[j]);
+				if (dist > maxDistance) {
+					maxDistance = dist;
+					p1 = extremalPoints[i];
+					p2 = extremalPoints[j];
+				}
+			}
+		}
+		// Step 3: Initial sphere from farthest pair
+		glm::vec3 center = (p1 + p2) * 0.5f;
+		float radius = maxDistance * 0.5f;
+		// Step 4: Grow to include all points
+		for (const auto& v : pointsCopy) {
+			float dist = glm::distance(center, v);
+			if (dist > radius) {
+				float newRadius = (radius + dist) * 0.5f;
+				glm::vec3 direction = glm::normalize(v - center);
+				center += (newRadius - radius) * direction;
+				radius = newRadius;
+			}
+		}
+
+		GetRadius() = radius;
+		SetPosition(center);
 		break;
+	}
 	case Algo::PCA:
 		break;
 	default: break;
