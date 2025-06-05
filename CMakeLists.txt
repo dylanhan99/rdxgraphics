@@ -1,116 +1,78 @@
-﻿cmake_minimum_required(VERSION 3.8)
-find_package(Python3 REQUIRED)
+# ======================= Project Configuration =========================
+cmake_minimum_required(VERSION 2.8...3.13)
 
-option(RX_IS_IDE_BUILD "Enable IDE debugger-specific settings" ON)
+# Set the CMake policy version (this enables all policies up to CMake 3.5)
+cmake_policy(VERSION 3.5)
 
-project(rdxgraphics)
+project(csd-3151)
 
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+# Set the directory where custom CMake modules are stored
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
-# Prefer static runtime for MSVC
-set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Release>:Release>")
+# Include project-wide utility and dependency modules
+include(ImportDependencies)
+importDependencies()
 
-# Enable Hot Reload for MSVC compilers if supported.
-if (POLICY CMP0141)
-  cmake_policy(SET CMP0141 NEW)
-  set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
-endif()
+# Global compile flags and macros
+add_definitions(-DGLEW_STATIC)
+add_definitions(-DUSE_CSD3151_AUTOMATION=0) # Used for instructor's automation
 
-if(MSVC)
-    add_compile_options(/permissive- /Zc:__cplusplus /Zc:preprocessor)
-endif()
-
-include(FetchContent)
-
-set(BUILD_SHARED_LIBS   OFF CACHE BOOL "" FORCE)
-
-set(GLFW_BUILD_DOCS     OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_TESTS    OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-set(GLFW_INSTALL        OFF CACHE BOOL "" FORCE)
-
-set(GLM_BUILD_TESTS     OFF CACHE BOOL "" FORCE)
-
-set(SPDLOG_ENABLE_PCH   ON CACHE BOOL "" FORCE)
-
-set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libs" FORCE)
-
-set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(ASSIMP_WARNINGS_AS_ERRORS OFF CACHE BOOL "" FORCE)
-
-
-FetchContent_Declare(glfw
-    GIT_REPOSITORY https://github.com/glfw/glfw.git
-    GIT_TAG        3.4
+# List of external libraries
+set(ALL_LIBS
+    PRIVATE glfw
+    PRIVATE libglew_static
+    PRIVATE glm::glm
+	PRIVATE imgui
+	PRIVATE spdlog::spdlog
+    PRIVATE EnTT::EnTT
+	PRIVATE assimp::assimp
+    #PRIVATE Eigen3::Eigen
 )
 
-FetchContent_Declare(glm
-    GIT_REPOSITORY https://github.com/g-truc/glm.git
-    GIT_TAG        1.0.1
-)
+# Include path for GLM (optional if not using FetchContent)
+#include_directories(${CMAKE_CURRENT_LIST_DIR}/lib/glm)
 
-FetchContent_Declare(BS_thread_pool
-    GIT_REPOSITORY https://github.com/bshoshany/thread-pool.git
-    GIT_TAG        v5.0.0
-)
+# ======================= AUTO PROJECT DISCOVERY =========================
 
-#FetchContent_Declare(glad
-#    GIT_REPOSITORY https://github.com/Dav1dde/glad.git
-#    GIT_TAG        f49229523c58ad7698e941f7c51454e77dd9d6a8
-#    SOURCE_SUBDIR  "cmake"
-#)
+# Get all subdirectories in the projects folder
+file(GLOB children RELATIVE "${CMAKE_CURRENT_LIST_DIR}/projects" "${CMAKE_CURRENT_LIST_DIR}/projects/*")
 
-FetchContent_Declare(glew
-    GIT_REPOSITORY https://github.com/omniavinco/glew-cmake.git
-    GIT_TAG master  # Or use a specific commit or tag if preferred
-)
+foreach(child ${children})
+    if(IS_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/projects/${child}")
+        message(STATUS "Configuring project: ${child}")
 
-FetchContent_Declare(imgui
-    #GIT_REPOSITORY https://github.com/ocornut/imgui.git
-    #GIT_TAG        v1.91.9b-docking
-    GIT_REPOSITORY https://github.com/dylanhan99/imgui.git
-    GIT_TAG        docking
-    SOURCE_SUBDIR  "cmake"
-)
+        # Collect sources
+        file(GLOB_RECURSE ${child}_source_files
+            ${CMAKE_CURRENT_LIST_DIR}/projects/${child}/src/*.cpp
+            ${CMAKE_CURRENT_LIST_DIR}/projects/${child}/src/*.h
+            ${CMAKE_CURRENT_LIST_DIR}/projects/${child}/src/*.hpp
+        )
 
-FetchContent_Declare(spdlog
-    GIT_REPOSITORY https://github.com/gabime/spdlog.git
-    GIT_TAG        v1.15.2
-)
+        # Create executable
+        add_executable(${child}
+            ${${child}_source_files}
+        )
 
-FetchContent_Declare(entt
-    GIT_REPOSITORY https://github.com/skypjack/entt.git
-    GIT_TAG        v3.15.0
-)
+        # Link libraries
+        target_link_libraries(${child}
+            ${ALL_LIBS}
+        )
 
-FetchContent_Declare(assimp
-    GIT_REPOSITORY https://github.com/assimp/assimp.git
-    GIT_TAG        v5.4.3
-)
+        # Set C++ standard
+        set_property(TARGET ${child} PROPERTY CXX_STANDARD 20)
 
-#########################################################
-# Additional setup for BS_thread_pool. Header-only, no cmakelists
-FetchContent_GetProperties(BS_thread_pool)
-if(NOT bs_thread_pool_POPULATED)
-    FetchContent_Populate(BS_thread_pool)
+        # Warnings based on compiler
+        if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+            target_compile_options(${child} PRIVATE -Wall ${DisableWarnings})
+        elseif (MSVC)
+            target_compile_options(${child} PRIVATE /W3 /WX- /Zc:preprocessor)
+        endif()
 
-    # Create a header-only interface target manually
-    add_library(BS_thread_pool INTERFACE)
-    target_include_directories(BS_thread_pool INTERFACE
-        "${bs_thread_pool_SOURCE_DIR}/include"
-    )
-endif()
-#########################################################
+        # Include path for each project
+        target_include_directories(${child} PRIVATE
+            ${CMAKE_CURRENT_LIST_DIR}/projects/${child}/src
+        )
+    endif()
+endforeach()
 
-
-#########################################################
-#########################################################
-# Only MakeAvailable projects who have cmakelists file
-#FetchContent_MakeAvailable(glfw glm glad imgui spdlog)
-FetchContent_MakeAvailable(glfw glm glew imgui spdlog entt assimp)
-
-# Add your actual project
-add_subdirectory(rdxgraphics)
+# ======================= END AUTO CONFIGURATION =========================
