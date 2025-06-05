@@ -89,7 +89,7 @@ void FrustumBV::UpdateXform()
 			glm::vec3 to = B - A;
 
 			glm::quat quat = glm::rotation(from, glm::normalize(to));
-			return glm::translate(A) * glm::scale(glm::vec3(glm::length(to))) * glm::mat4_cast(quat);
+			return glm::translate(A) * glm::mat4_cast(quat) * glm::scale(glm::vec3(glm::length(to)));
 		};
 
 	// Near plane, TL > BL > BR > TR
@@ -279,14 +279,15 @@ void SphereBV::RecalculateBV()
 
 
 		auto pointsCopy = points;
+		for (auto& v : pointsCopy) // This is so bad lmfao
+			v = glm::vec3{ modelXform.GetXform() * glm::vec4{ v, 1.f } };
+
 		std::vector<glm::vec3> extremalPoints;
 		for (const auto& dir : directionDictionary) {
 			float maxProj = -std::numeric_limits<float>::infinity();
 			float minProj = std::numeric_limits<float>::infinity();
 			glm::vec3 pMax, pMin;
-			for (auto& v : pointsCopy) {
-				v = glm::vec3{ modelXform.GetXform() * glm::vec4{ v, 1.f } };
-
+			for (auto const& v : pointsCopy) {
 				float proj = glm::dot(v, dir);
 				if (proj > maxProj) {
 					maxProj = proj;

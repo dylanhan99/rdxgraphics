@@ -4,7 +4,7 @@
 
 void Xform::UpdateXform()
 {
-	m_Xform = glm::translate(m_Translate) * glm::scale(m_Scale) * GetRotationMatrix();
+	m_Xform = glm::translate(m_Translate) * GetRotationMatrix() * glm::scale(m_Scale);
 }
 
 glm::vec3& Xform::GetTranslate()

@@ -23,7 +23,8 @@ void Sandbox::StartImpl()
 		EntityManager::AddComponent<Metadata>(handle, "L");
 		EntityManager::AddComponent<Xform>(handle, glm::vec3{ 0.f, 0.f, 0.f }, glm::vec3{ 1.f }, glm::vec3{ 0.f })
 			;
-		EntityManager::AddComponent<Model>(handle, Rxuid("ogre"));
+		//EntityManager::AddComponent<Model>(handle, Rxuid("ogre"));
+		EntityManager::AddComponent<Model>(handle, Shape::Cube);
 		EntityManager::AddComponent<Material>(handle, glm::vec3{ 0.f,1.f,0.f });
 		//EntityManager::AddComponent<BoundingVolume>(handle, BV::Sphere);
 		//EntityManager::AddComponent<Collider>(handle, Primitive::Plane);

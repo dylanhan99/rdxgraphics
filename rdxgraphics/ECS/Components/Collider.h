@@ -78,8 +78,10 @@ public:
 	RayPrimitive() = default;
 	inline void UpdateXform() override
 	{
-		m_Xform = glm::translate(GetPosition()) * glm::scale(glm::vec3{ s_Scale }) *
-			glm::mat4_cast(GetOrientationQuat());
+		m_Xform = 
+			glm::translate(GetPosition()) * 
+			glm::mat4_cast(GetOrientationQuat()) * 
+			glm::scale(glm::vec3{ s_Scale });
 	}
 
 	inline glm::vec3 const& GetOrientation() const { return m_EulerOrientation; }
@@ -169,8 +171,9 @@ public:
 	inline PlanePrimitive(glm::vec3 o, glm::vec3 const& eulerOrientation) : BasePrimitive(o), m_EulerOrientation(eulerOrientation) {}
 	inline void UpdateXform() override
 	{
-		m_Xform = glm::translate(GetPosition()) * glm::scale(s_Scale) *
-			glm::mat4_cast(glm::quat{ m_EulerOrientation });
+		m_Xform = glm::translate(GetPosition()) *
+			glm::mat4_cast(glm::quat{ m_EulerOrientation }) * 
+			glm::scale(s_Scale);
 	}
 
 	inline glm::vec3 const& GetOrientation() const { return m_EulerOrientation; }
