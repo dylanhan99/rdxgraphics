@@ -333,7 +333,36 @@ void SphereBV::RecalculateBV()
 		break;
 	}
 	case Algo::PCA:
+	{ // page 97 (136 in pdf), eigen sphere
+		glm::mat3 m{}, v{};
+
+		// Compute covariance mat
+		CovarianceMatrix(m, points);
+		// Decompose into eigenvectors (m), and eigenvalues (v);
+		Jacobi(m, v);
+
+		// Find the component with the largest magnitude eigenvalue (largest spread)
+		glm::vec3 e{};
+		int maxc = 0;
+		float maxf, maxe = glm::abs(m[0][0]);
+		if ((maxf = glm::abs(m[1][1])) > maxe) maxc = 1, maxe = maxf;
+		if ((maxf = glm::abs(m[2][2])) > maxe) maxc = 2, maxe = maxf;
+		e[0] = v[0][maxc];
+		e[1] = v[1][maxc];
+		e[2] = v[2][maxc];
+
+		// Find the most extreme points along direction ’e’
+		int imin, imax;
+		Intersection::ExtremePointsAlongDirection(e, points, &imin, &imax);
+		glm::vec3 minpt = pt[imin];
+		glm::vec3 maxpt = pt[imax];
+		float dist = glm::sqrt(glm::dot(maxpt - minpt, maxpt - minpt));
+
+		// This is still only the base sphere. Not yet rittered and grown.
+		GetRadius() = dist * 0.5f;
+		SetPosition((minpt + maxpt) * 0.5f);
 		break;
+	}
 	default: break;
 	}
 }
