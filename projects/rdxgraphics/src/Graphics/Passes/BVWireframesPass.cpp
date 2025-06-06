@@ -58,6 +58,15 @@ void BVWireframesPass::DrawImpl() const
 		}
 	}
 	{
+		auto bvView = EntityManager::View<OBBBV>();
+		for (auto [handle, bv] : bvView.each())
+		{
+			auto& obj = RenderSystem::GetObjekt(Shape::Cube);
+			obj.Submit<VertexBasic::Xform>(bv.GetXform());
+			obj.Submit<VertexBasic::Color>(GetBVColor(bv.GetBVState()));
+		}
+	}
+	{
 		auto bvView = EntityManager::View<SphereBV>();
 		for (auto [handle, bv] : bvView.each())
 		{

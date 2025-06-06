@@ -4,9 +4,6 @@
 #include "ECS/Components/Camera.h"
 #include "Utils/IntersectionTests.h"
 
-#include <Eigen/Dense>
-#include <Eigen/Geometry>
-
 void BoundingVolume::SetBVType(BV bvType)
 {
 	if (m_BVType == bvType)
@@ -301,67 +298,7 @@ void SphereBV::RecalculateBV()
 	}
 	case Algo::PCA:
 	{ // page 97 (136 in pdf), eigen sphere
-		// x, y, z
-		// x, y, z
-		// x, y, z
-		// ...
-		Eigen::MatrixXf pointMatrix{ pointsXformed.size(), 3 };
-		for (size_t i = 0; i < points.size(); ++i)
-		{
-			auto const& p = pointsXformed[i];
-
-			pointMatrix(i, 0) = p.x;
-			pointMatrix(i, 1) = p.y;
-			pointMatrix(i, 2) = p.z;
-		}
-
-		Eigen::Vector3f centroid = pointMatrix.colwise().mean();
-		Eigen::MatrixXf centered = pointMatrix.rowwise() - centroid.transpose();
-		Eigen::Matrix3f covariance = (centered.adjoint() * centered) / (float)pointsXformed.size();
-		Eigen::SelfAdjointEigenSolver<Eigen::Matrix3f> es{ covariance };
-		Eigen::Matrix3f eigenVectors = es.eigenvectors();
-		Eigen::Vector3f eigenValues  = es.eigenvalues();
-		int maxValIndex = 0;
-		if (eigenValues(1) > eigenValues[maxValIndex]) maxValIndex = 1;
-		if (eigenValues(2) > eigenValues[maxValIndex]) maxValIndex = 2;
-
-		Eigen::Vector3f principleDirection = eigenVectors.col(maxValIndex);
-
-		// Find the most extreme points along direction 'principleDirection'
-		int imin, imax;
-		//Intersection::ExtremePointsAlongDirection(principleDirection, pointsCopy, &imin, &imax);
-		{
-			float minproj = FLT_MAX, maxproj = -FLT_MAX;
-			for (size_t i = 0; i < pointsXformed.size(); i++) 
-			{
-				// Project vector from origin to point onto direction vector
-				Eigen::Vector3f pt = pointMatrix.row(i);
-				float proj = pt.dot(principleDirection);
-
-				// Keep track of least distant point along direction vector
-				if (proj < minproj) 
-				{
-					minproj = proj;
-					imin = i;
-				}
-				// Keep track of most distant point along direction vector
-				if (proj > maxproj) 
-				{
-					maxproj = proj;
-					imax = i;
-				}
-			}
-		}
-		//Eigen::Vector3f mid = (pointMatrix.row(imax) + pointMatrix.row(imin)) * 0.5f;
-		float dist = (pointMatrix.row(imax) - pointMatrix.row(imin)).norm();
-
-		// Initial sphere
-		finalRadius = dist * 0.5f;
-		finalCentroid = glm::vec3{ centroid.x(), centroid.y(), centroid.z() };
-
-		// Use ritter to grow
-		pointMatrix.transposeInPlace(); // Cus data in column major
-		Intersection::RitterGrowth(pointMatrix.data(), pointMatrix.rows(), finalCentroid, finalRadius);
+		Intersection::EigenSphere(pointsXformed, finalCentroid, finalRadius);
 		break;
 	}
 	default: break;
@@ -369,4 +306,29 @@ void SphereBV::RecalculateBV()
 
 	GetRadius() = finalRadius;
 	SetPosition(finalCentroid);
+}
+
+inline void OBBBV::UpdateXform()
+{
+	m_Xform = glm::translate(GetPosition()) * glm::mat4(m_EigenVectors) * glm::scale(2.f * GetHalfExtents());
+}
+
+inline void OBBBV::RecalculateBV()
+{
+	Xform& modelXform = EntityManager::GetComponent<Xform>(GetEntityHandle());
+	Rxuid const meshID = EntityManager::GetComponent<Model>(GetEntityHandle()).GetMesh();
+	auto& objekt = RenderSystem::GetObjekt(meshID);
+	auto const& points = objekt.GetVBData<VertexBasic::Position>();
+	auto pointsXformed = points;
+	for (auto& v : pointsXformed) // This is so bad lmfao
+		v = glm::vec3{ modelXform.GetXform() * glm::vec4{ v, 1.f } };
+
+	glm::vec3 finalCentroid{};
+	float finalRadius{};
+	glm::mat3 finalRotation{};
+	Intersection::EigenSphere(pointsXformed, finalCentroid, finalRadius, &finalRotation);
+
+	SetPosition(finalCentroid);
+	GetHalfExtents() = glm::vec3{ finalRadius };
+	m_EigenVectors = finalRotation;
 }

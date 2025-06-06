@@ -1,5 +1,8 @@
 #include "IntersectionTests.h"
 
+#include <Eigen/Dense>
+#include <Eigen/Geometry>
+
 void Intersection::MostSeparatedPointsOnAABB(std::vector<glm::vec3> const& pt, size_t& oMinI, size_t& oMaxI)
 { // oragne book page 90 (129 in pdf)
 	// First find most extreme points along principal axes
@@ -86,6 +89,73 @@ void Intersection::RitterGrowth(void const* points, size_t const length, glm::ve
 void Intersection::RitterGrowth(std::vector<glm::vec3> const& points, glm::vec3& spherePos, float& radius)
 {
 	RitterGrowth(points.data(), points.size(), spherePos, radius);
+}
+
+void Intersection::EigenSphere(std::vector<glm::vec3> const& points, glm::vec3& oCentroid, float& oRadius, glm::mat3* oRotation)
+{
+	// x, y, z
+	// x, y, z
+	// x, y, z
+	// ...
+	Eigen::MatrixXf pointMatrix{ points.size(), 3 };
+	for (size_t i = 0; i < points.size(); ++i)
+	{
+		auto const& p = points[i];
+
+		pointMatrix(i, 0) = p.x;
+		pointMatrix(i, 1) = p.y;
+		pointMatrix(i, 2) = p.z;
+	}
+
+	Eigen::Vector3f centroid = pointMatrix.colwise().mean();
+	Eigen::MatrixXf centered = pointMatrix.rowwise() - centroid.transpose();
+	Eigen::Matrix3f covariance = (centered.adjoint() * centered) / (float)points.size();
+	Eigen::SelfAdjointEigenSolver<Eigen::Matrix3f> es{ covariance };
+	Eigen::Matrix3f eigenVectors = es.eigenvectors();
+	Eigen::Vector3f eigenValues = es.eigenvalues();
+	int maxValIndex = 0;
+	if (eigenValues(1) > eigenValues[maxValIndex]) maxValIndex = 1;
+	if (eigenValues(2) > eigenValues[maxValIndex]) maxValIndex = 2;
+
+	Eigen::Vector3f principleDirection = eigenVectors.col(maxValIndex);
+
+	// Find the most extreme points along direction 'principleDirection'
+	int imin{}, imax{};
+	//Intersection::ExtremePointsAlongDirection(principleDirection, pointsCopy, &imin, &imax);
+	{
+		float minproj = FLT_MAX, maxproj = -FLT_MAX;
+		for (size_t i = 0; i < points.size(); i++)
+		{
+			// Project vector from origin to point onto direction vector
+			Eigen::Vector3f pt = pointMatrix.row(i);
+			float proj = pt.dot(principleDirection);
+
+			// Keep track of least distant point along direction vector
+			if (proj < minproj)
+			{
+				minproj = proj;
+				imin = i;
+			}
+			// Keep track of most distant point along direction vector
+			if (proj > maxproj)
+			{
+				maxproj = proj;
+				imax = i;
+			}
+		}
+	}
+	//Eigen::Vector3f mid = (pointMatrix.row(imax) + pointMatrix.row(imin)) * 0.5f;
+	float dist = (pointMatrix.row(imax) - pointMatrix.row(imin)).norm();
+
+	// Initial sphere
+	oCentroid = glm::vec3{ centroid.x(), centroid.y(), centroid.z() };
+	oRadius = dist * 0.5f;
+	if (oRotation)
+		std::memcpy(oRotation, eigenVectors.data(), sizeof(glm::mat3));
+
+	// Use ritter to grow
+	//pointMatrix.transposeInPlace(); // need to make matrix.data be in col major
+	//Intersection::RitterGrowth(pointMatrix.data(), pointMatrix.rows(), oCentroid, oRadius);
 }
 
 int Intersection::PointSphereTest(glm::vec3 pointPos, glm::vec3 spherePos, float radius)

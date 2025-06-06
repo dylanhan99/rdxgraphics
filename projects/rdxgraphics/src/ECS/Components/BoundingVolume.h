@@ -91,15 +91,16 @@ private:
 
 };
 
-class OBBBV : public BaseBV
+class OBBBV : public BaseBV, public AABBPrimitive
 {
 	RX_COMPONENT_DEF_HANDLE(OBBBV);
 public:
 	OBBBV() = default;
-	inline void UpdateXform() override {}; // Must have it's own beacuse of BasePrimitive
-	inline void RecalculateBV() override {};
+	void UpdateXform() override;
+	void RecalculateBV() override;
 
 private:
+	glm::mat3 m_EigenVectors{}; // ie Rotation
 };
 
 class SphereBV : public BaseBV, public SpherePrimitive

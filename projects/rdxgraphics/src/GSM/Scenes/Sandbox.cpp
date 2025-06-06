@@ -45,7 +45,7 @@ void Sandbox::StartImpl()
 		EntityManager::GetComponent<Model>(clone)
 			.SetMesh(Rxuid{ "ogre" });
 		EntityManager::AddComponent<Collider>(clone, Primitive::Plane);
-		EntityManager::AddComponent<BoundingVolume>(clone, BV::Sphere);
+		EntityManager::AddComponent<BoundingVolume>(clone, BV::OBB);
 	}
 		EntityManager::AddComponent<BoundingVolume>(test, BV::Sphere);
 }
