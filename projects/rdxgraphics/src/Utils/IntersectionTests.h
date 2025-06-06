@@ -8,7 +8,7 @@ struct Intersection
 	static void RitterGrowth(void const* points, size_t const length, glm::vec3& spherePos, float& radius);
 	static void RitterGrowth(std::vector<glm::vec3> const& points, glm::vec3& spherePos, float& radius);
 
-	static void EigenSphere(std::vector<glm::vec3> const& points, glm::vec3& oCentroid, float& oRadius, glm::mat3* oRotation = nullptr);
+	static void PCA(std::vector<glm::vec3> const& points, glm::vec3* oCentroid = nullptr, float* oRadius = nullptr, glm::mat3* oRotation = nullptr, glm::vec3* oHalfExtents = nullptr);
 
 	// -1 >> Outside
 	//  0 >> Intersect

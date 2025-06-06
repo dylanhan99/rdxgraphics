@@ -298,7 +298,7 @@ void SphereBV::RecalculateBV()
 	}
 	case Algo::PCA:
 	{ // page 97 (136 in pdf), eigen sphere
-		Intersection::EigenSphere(pointsXformed, finalCentroid, finalRadius);
+		Intersection::PCA(pointsXformed, &finalCentroid, &finalRadius);
 		break;
 	}
 	default: break;
@@ -324,11 +324,11 @@ inline void OBBBV::RecalculateBV()
 		v = glm::vec3{ modelXform.GetXform() * glm::vec4{ v, 1.f } };
 
 	glm::vec3 finalCentroid{};
-	float finalRadius{};
 	glm::mat3 finalRotation{};
-	Intersection::EigenSphere(pointsXformed, finalCentroid, finalRadius, &finalRotation);
+	glm::vec3 finalHalfExtents{};
+	Intersection::PCA(pointsXformed, &finalCentroid, nullptr, &finalRotation, &finalHalfExtents);
 
 	SetPosition(finalCentroid);
-	GetHalfExtents() = glm::vec3{ finalRadius };
+	GetHalfExtents() = finalHalfExtents;
 	m_EigenVectors = finalRotation;
 }

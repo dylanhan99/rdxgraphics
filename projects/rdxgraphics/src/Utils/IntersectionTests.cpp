@@ -91,7 +91,7 @@ void Intersection::RitterGrowth(std::vector<glm::vec3> const& points, glm::vec3&
 	RitterGrowth(points.data(), points.size(), spherePos, radius);
 }
 
-void Intersection::EigenSphere(std::vector<glm::vec3> const& points, glm::vec3& oCentroid, float& oRadius, glm::mat3* oRotation)
+void Intersection::PCA(std::vector<glm::vec3> const& points, glm::vec3* oCentroid, float* oRadius, glm::mat3* oRotation, glm::vec3* oHalfExtents)
 {
 	// x, y, z
 	// x, y, z
@@ -148,10 +148,23 @@ void Intersection::EigenSphere(std::vector<glm::vec3> const& points, glm::vec3& 
 	float dist = (pointMatrix.row(imax) - pointMatrix.row(imin)).norm();
 
 	// Initial sphere
-	oCentroid = glm::vec3{ centroid.x(), centroid.y(), centroid.z() };
-	oRadius = dist * 0.5f;
+	if (oCentroid)
+		*oCentroid = glm::vec3{ centroid.x(), centroid.y(), centroid.z() };
+	if (oRadius)
+		*oRadius = dist * 0.5f;
 	if (oRotation)
 		std::memcpy(oRotation, eigenVectors.data(), sizeof(glm::mat3));
+	if (oHalfExtents)
+	{
+		// Project centered points onto local axes
+		Eigen::MatrixXf localPoints = centered * eigenVectors;
+
+		// For each axis, find min/max (captures the *actual* half-extents)
+		Eigen::Vector3f min = localPoints.colwise().minCoeff();
+		Eigen::Vector3f max = localPoints.colwise().maxCoeff();
+		Eigen::Vector3f halfExtents = (max - min) * 0.5f;
+		std::memcpy(oHalfExtents, halfExtents.data(), sizeof(glm::vec3));
+	}
 
 	// Use ritter to grow
 	//pointMatrix.transposeInPlace(); // need to make matrix.data be in col major
