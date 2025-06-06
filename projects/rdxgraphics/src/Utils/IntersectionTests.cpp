@@ -51,7 +51,7 @@ void Intersection::CalculateAABBBV(std::vector<glm::vec3> const& positions, glm:
 	outHalfExtents = glm::abs((max - min) * 0.5f);
 }
 
-void Intersection::SphereOfSphereAndPt(glm::vec3 const& point, glm::vec3& spherePos, float radius)
+void Intersection::SphereOfSphereAndPt(glm::vec3 const& point, glm::vec3& spherePos, float& radius)
 {
 	glm::vec3 d = point - spherePos;
 	float dist2 = glm::dot(d, d);
@@ -63,14 +63,16 @@ void Intersection::SphereOfSphereAndPt(glm::vec3 const& point, glm::vec3& sphere
 		float k = (newRadius - radius) / dist;
 
 		radius = newRadius;
-		spherePos += d * k;
+		spherePos += glm::normalize(d) * k;
 	}
 }
 
-void Intersection::RitterGrowth(std::vector<glm::vec3> const& points, glm::vec3& spherePos, float& radius)
+void Intersection::RitterGrowth(void const* points, size_t const length, glm::vec3& spherePos, float& radius)
 {
-	for (auto const& point : points)
+	glm::vec3 const* pData = reinterpret_cast<glm::vec3 const*>(points);
+	for (size_t i = 0; i < length; ++i)
 	{
+		glm::vec3 const& point = pData[i];
 		int col = Intersection::PointSphereTest(
 			point,
 			spherePos, radius
@@ -79,6 +81,11 @@ void Intersection::RitterGrowth(std::vector<glm::vec3> const& points, glm::vec3&
 		if (col == -1)
 			Intersection::SphereOfSphereAndPt(point, spherePos, radius);
 	}
+}
+
+void Intersection::RitterGrowth(std::vector<glm::vec3> const& points, glm::vec3& spherePos, float& radius)
+{
+	RitterGrowth(points.data(), points.size(), spherePos, radius);
 }
 
 int Intersection::PointSphereTest(glm::vec3 pointPos, glm::vec3 spherePos, float radius)
