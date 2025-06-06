@@ -209,7 +209,12 @@ void SphereBV::RecalculateBV()
 	Rxuid const meshID = EntityManager::GetComponent<Model>(GetEntityHandle()).GetMesh();
 	auto& objekt = RenderSystem::GetObjekt(meshID);
 	auto const& points = objekt.GetVBData<VertexBasic::Position>();
+	auto pointsXformed = points;
+	for (auto& v : pointsXformed) // This is so bad lmfao
+		v = glm::vec3{ modelXform.GetXform() * glm::vec4{ v, 1.f } };
 
+	glm::vec3 finalCentroid{};
+	float finalRadius{};
 	switch (Algorithm)
 	{
 	case Algo::Ritter:
@@ -221,10 +226,8 @@ void SphereBV::RecalculateBV()
 		std::uniform_int_distribution<> distribution{ 0, (int)points.size() - 1 };
 		std::vector<glm::vec3> startingPoints{}; startingPoints.resize(6);
 		for (int i = 0; i < 6; ++i)
-			startingPoints[i] = glm::vec3{ modelXform.GetXform() * glm::vec4{ points[distribution(gen)], 1.f } };
+			startingPoints[i] = pointsXformed[distribution(gen)];
 
-		glm::vec3 finalCentroid{};
-		float finalRadius{};
 		// SphereFromDistantPoints
 		{
 			size_t min{}, max{};
@@ -236,38 +239,7 @@ void SphereBV::RecalculateBV()
 			finalRadius = glm::sqrt(finalRadius);
 		}
 
-		// Now, for every single point, xform them and compare, if it is in or out of sphere.
-		// If in, continue
-		// If out, then expand the sphere, find the new centroid and radius
-		// next point.
-		for (auto point : points)
-		{
-			point = glm::vec3{ modelXform.GetXform() * glm::vec4{ point, 1.f } };
-
-			int col = Intersection::PointSphereTest(
-				point,
-				finalCentroid, finalRadius
-			);
-
-			if (col != -1)
-				continue;
-
-			glm::vec3 d = point - finalCentroid;
-			float dist2 = glm::dot(d, d);
-
-			if (dist2 > glm::dot(finalRadius, finalRadius))
-			{
-				float dist = glm::sqrt(dist2);
-				float newRadius = (finalRadius + dist) * 0.5f;
-				float k = (newRadius - finalRadius) / dist;
-
-				finalRadius = newRadius;
-				finalCentroid += d * k;
-			}
-		}
-
-		GetRadius() = finalRadius;
-		SetPosition(finalCentroid);
+		Intersection::RitterGrowth(pointsXformed, finalCentroid, finalRadius);
 		break;
 	}
 	case Algo::Larsson:
@@ -279,17 +251,13 @@ void SphereBV::RecalculateBV()
 			{0, 0, 1}, {0, 0, -1}
 		};
 
-		auto pointsCopy = points;
-		for (auto& v : pointsCopy) // This is so bad lmfao
-			v = glm::vec3{ modelXform.GetXform() * glm::vec4{ v, 1.f } };
-
 		std::vector<glm::vec3> extremalPoints;
 		for (const auto& dir : directionDictionary) 
 		{
 			float maxProj = -std::numeric_limits<float>::infinity();
 			float minProj = std::numeric_limits<float>::infinity();
 			glm::vec3 pMax, pMin;
-			for (auto const& v : pointsCopy) 
+			for (auto const& v : pointsXformed)
 			{
 				float proj = glm::dot(v, dir);
 				if (proj > maxProj) 
@@ -325,37 +293,23 @@ void SphereBV::RecalculateBV()
 		}
 
 		// Step 3: Initial sphere from farthest pair
-		glm::vec3 center = (p1 + p2) * 0.5f;
-		float radius = maxDistance * 0.5f;
-		// Step 4: Grow to include all points
-		for (const auto& v : pointsCopy) {
-			float dist = glm::distance(center, v);
-			if (dist > radius) {
-				float newRadius = (radius + dist) * 0.5f;
-				glm::vec3 direction = glm::normalize(v - center);
-				center += (newRadius - radius) * direction;
-				radius = newRadius;
-			}
-		}
+		finalRadius = maxDistance * 0.5f;
+		finalCentroid = (p1 + p2) * 0.5f;
 
-		GetRadius() = radius;
-		SetPosition(center);
+		// Step 4: Grow to include all points
+		Intersection::RitterGrowth(pointsXformed, finalCentroid, finalRadius);
 		break;
 	}
 	case Algo::PCA:
 	{ // page 97 (136 in pdf), eigen sphere
-		auto pointsCopy = points;
-		for (auto& v : pointsCopy) // This is so bad lmfao
-			v = glm::vec3{ modelXform.GetXform() * glm::vec4{ v, 1.f } };
-
 		// x, y, z
 		// x, y, z
 		// x, y, z
 		// ...
-		Eigen::MatrixXf pointMatrix{ pointsCopy.size(), 3 };
+		Eigen::MatrixXf pointMatrix{ pointsXformed.size(), 3 };
 		for (size_t i = 0; i < points.size(); ++i)
 		{
-			auto const& p = pointsCopy[i];
+			auto const& p = pointsXformed[i];
 
 			pointMatrix(i, 0) = p.x;
 			pointMatrix(i, 1) = p.y;
@@ -364,7 +318,7 @@ void SphereBV::RecalculateBV()
 
 		Eigen::Vector3f centroid = pointMatrix.colwise().mean();
 		Eigen::MatrixXf centered = pointMatrix.rowwise() - centroid.transpose();
-		Eigen::Matrix3f covariance = (centered.adjoint() * centered) / (float)pointsCopy.size();
+		Eigen::Matrix3f covariance = (centered.adjoint() * centered) / (float)pointsXformed.size();
 		Eigen::SelfAdjointEigenSolver<Eigen::Matrix3f> es{ covariance };
 		Eigen::Matrix3f eigenVectors = es.eigenvectors();
 		Eigen::Vector3f eigenValues  = es.eigenvalues();
@@ -379,7 +333,7 @@ void SphereBV::RecalculateBV()
 		//Intersection::ExtremePointsAlongDirection(principleDirection, pointsCopy, &imin, &imax);
 		{
 			float minproj = FLT_MAX, maxproj = -FLT_MAX;
-			for (size_t i = 0; i < pointsCopy.size(); i++) 
+			for (size_t i = 0; i < pointsXformed.size(); i++) 
 			{
 				// Project vector from origin to point onto direction vector
 				Eigen::Vector3f pt = pointMatrix.row(i);
@@ -402,42 +356,17 @@ void SphereBV::RecalculateBV()
 		//Eigen::Vector3f mid = (pointMatrix.row(imax) + pointMatrix.row(imin)) * 0.5f;
 		float dist = (pointMatrix.row(imax) - pointMatrix.row(imin)).norm();
 
-		float finalRadius = dist * 0.5f;
-		glm::vec3 finalCentroid = glm::vec3{ centroid.x(), centroid.y(), centroid.z() };
+		// Initial sphere
+		finalRadius = dist * 0.5f;
+		finalCentroid = glm::vec3{ centroid.x(), centroid.y(), centroid.z() };
+
 		// Use ritter to grow
-		{
-			for (size_t i = 0; i < points.size(); ++i)
-			{
-				Eigen::Vector3f point = pointMatrix.row(i);
-				glm::vec3 pointG{ point.x(), point.y(), point.z() };
-
-				int col = Intersection::PointSphereTest(
-					pointG,
-					finalCentroid, finalRadius
-				);
-
-				if (col != -1)
-					continue;
-
-				glm::vec3 d = pointG - finalCentroid;
-				float dist2 = glm::dot(d, d);
-
-				if (dist2 > glm::dot(finalRadius, finalRadius))
-				{
-					float dist = glm::sqrt(dist2);
-					float newRadius = (finalRadius + dist) * 0.5f;
-					float k = (newRadius - finalRadius) / dist;
-
-					finalRadius = newRadius;
-					finalCentroid += d * k;
-				}
-			}
-		}
-
-		GetRadius() = finalRadius;
-		SetPosition(finalCentroid);
+		Intersection::RitterGrowth(pointMatrix.data(), pointMatrix.rows(), finalCentroid, finalRadius);
 		break;
 	}
 	default: break;
 	}
+
+	GetRadius() = finalRadius;
+	SetPosition(finalCentroid);
 }
