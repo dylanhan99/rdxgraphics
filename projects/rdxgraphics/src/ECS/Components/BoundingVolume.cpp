@@ -4,6 +4,9 @@
 #include "ECS/Components/Camera.h"
 #include "Utils/IntersectionTests.h"
 
+#include <Eigen/Dense>
+#include <Eigen/Geometry>
+
 void BoundingVolume::SetBVType(BV bvType)
 {
 	if (m_BVType == bvType)
@@ -270,29 +273,32 @@ void SphereBV::RecalculateBV()
 	case Algo::Larsson:
 	{
 		// EPOS-6 direction dictionary: ±X, ±Y, ±Z
-		std::vector<glm::vec3> directionDictionary = {
+		std::vector<glm::vec3> const directionDictionary = {
 			{1, 0, 0}, {-1, 0, 0},
 			{0, 1, 0}, {0, -1, 0},
 			{0, 0, 1}, {0, 0, -1}
 		};
-
 
 		auto pointsCopy = points;
 		for (auto& v : pointsCopy) // This is so bad lmfao
 			v = glm::vec3{ modelXform.GetXform() * glm::vec4{ v, 1.f } };
 
 		std::vector<glm::vec3> extremalPoints;
-		for (const auto& dir : directionDictionary) {
+		for (const auto& dir : directionDictionary) 
+		{
 			float maxProj = -std::numeric_limits<float>::infinity();
 			float minProj = std::numeric_limits<float>::infinity();
 			glm::vec3 pMax, pMin;
-			for (auto const& v : pointsCopy) {
+			for (auto const& v : pointsCopy) 
+			{
 				float proj = glm::dot(v, dir);
-				if (proj > maxProj) {
+				if (proj > maxProj) 
+				{
 					maxProj = proj;
 					pMax = v;
 				}
-				if (proj < minProj) {
+				if (proj < minProj) 
+				{
 					minProj = proj;
 					pMin = v;
 				}
@@ -304,16 +310,20 @@ void SphereBV::RecalculateBV()
 		// Step 2: Find farthest pair among extremal points
 		float maxDistance = 0.0f;
 		glm::vec3 p1, p2;
-		for (size_t i = 0; i < extremalPoints.size(); ++i) {
-			for (size_t j = i + 1; j < extremalPoints.size(); ++j) {
+		for (size_t i = 0; i < extremalPoints.size(); ++i) 
+		{
+			for (size_t j = i + 1; j < extremalPoints.size(); ++j) 
+			{
 				float dist = glm::distance(extremalPoints[i], extremalPoints[j]);
-				if (dist > maxDistance) {
+				if (dist > maxDistance) 
+				{
 					maxDistance = dist;
 					p1 = extremalPoints[i];
 					p2 = extremalPoints[j];
 				}
 			}
 		}
+
 		// Step 3: Initial sphere from farthest pair
 		glm::vec3 center = (p1 + p2) * 0.5f;
 		float radius = maxDistance * 0.5f;
@@ -334,33 +344,98 @@ void SphereBV::RecalculateBV()
 	}
 	case Algo::PCA:
 	{ // page 97 (136 in pdf), eigen sphere
-		glm::mat3 m{}, v{};
+		auto pointsCopy = points;
+		for (auto& v : pointsCopy) // This is so bad lmfao
+			v = glm::vec3{ modelXform.GetXform() * glm::vec4{ v, 1.f } };
 
-		// Compute covariance mat
-		CovarianceMatrix(m, points);
-		// Decompose into eigenvectors (m), and eigenvalues (v);
-		Jacobi(m, v);
+		// x, y, z
+		// x, y, z
+		// x, y, z
+		// ...
+		Eigen::MatrixXf pointMatrix{ pointsCopy.size(), 3 };
+		for (size_t i = 0; i < points.size(); ++i)
+		{
+			auto const& p = pointsCopy[i];
 
-		// Find the component with the largest magnitude eigenvalue (largest spread)
-		glm::vec3 e{};
-		int maxc = 0;
-		float maxf, maxe = glm::abs(m[0][0]);
-		if ((maxf = glm::abs(m[1][1])) > maxe) maxc = 1, maxe = maxf;
-		if ((maxf = glm::abs(m[2][2])) > maxe) maxc = 2, maxe = maxf;
-		e[0] = v[0][maxc];
-		e[1] = v[1][maxc];
-		e[2] = v[2][maxc];
+			pointMatrix(i, 0) = p.x;
+			pointMatrix(i, 1) = p.y;
+			pointMatrix(i, 2) = p.z;
+		}
 
-		// Find the most extreme points along direction ’e’
+		Eigen::Vector3f centroid = pointMatrix.colwise().mean();
+		Eigen::MatrixXf centered = pointMatrix.rowwise() - centroid.transpose();
+		Eigen::Matrix3f covariance = (centered.adjoint() * centered) / (float)pointsCopy.size();
+		Eigen::SelfAdjointEigenSolver<Eigen::Matrix3f> es{ covariance };
+		Eigen::Matrix3f eigenVectors = es.eigenvectors();
+		Eigen::Vector3f eigenValues  = es.eigenvalues();
+		int maxValIndex = 0;
+		if (eigenValues(1) > eigenValues[maxValIndex]) maxValIndex = 1;
+		if (eigenValues(2) > eigenValues[maxValIndex]) maxValIndex = 2;
+
+		Eigen::Vector3f principleDirection = eigenVectors.col(maxValIndex);
+
+		// Find the most extreme points along direction 'principleDirection'
 		int imin, imax;
-		Intersection::ExtremePointsAlongDirection(e, points, &imin, &imax);
-		glm::vec3 minpt = pt[imin];
-		glm::vec3 maxpt = pt[imax];
-		float dist = glm::sqrt(glm::dot(maxpt - minpt, maxpt - minpt));
+		//Intersection::ExtremePointsAlongDirection(principleDirection, pointsCopy, &imin, &imax);
+		{
+			float minproj = FLT_MAX, maxproj = -FLT_MAX;
+			for (size_t i = 0; i < pointsCopy.size(); i++) 
+			{
+				// Project vector from origin to point onto direction vector
+				Eigen::Vector3f pt = pointMatrix.row(i);
+				float proj = pt.dot(principleDirection);
 
-		// This is still only the base sphere. Not yet rittered and grown.
-		GetRadius() = dist * 0.5f;
-		SetPosition((minpt + maxpt) * 0.5f);
+				// Keep track of least distant point along direction vector
+				if (proj < minproj) 
+				{
+					minproj = proj;
+					imin = i;
+				}
+				// Keep track of most distant point along direction vector
+				if (proj > maxproj) 
+				{
+					maxproj = proj;
+					imax = i;
+				}
+			}
+		}
+		//Eigen::Vector3f mid = (pointMatrix.row(imax) + pointMatrix.row(imin)) * 0.5f;
+		float dist = (pointMatrix.row(imax) - pointMatrix.row(imin)).norm();
+
+		float finalRadius = dist * 0.5f;
+		glm::vec3 finalCentroid = glm::vec3{ centroid.x(), centroid.y(), centroid.z() };
+		// Use ritter to grow
+		{
+			for (size_t i = 0; i < points.size(); ++i)
+			{
+				Eigen::Vector3f point = pointMatrix.row(i);
+				glm::vec3 pointG{ point.x(), point.y(), point.z() };
+
+				int col = Intersection::PointSphereTest(
+					pointG,
+					finalCentroid, finalRadius
+				);
+
+				if (col != -1)
+					continue;
+
+				glm::vec3 d = pointG - finalCentroid;
+				float dist2 = glm::dot(d, d);
+
+				if (dist2 > glm::dot(finalRadius, finalRadius))
+				{
+					float dist = glm::sqrt(dist2);
+					float newRadius = (finalRadius + dist) * 0.5f;
+					float k = (newRadius - finalRadius) / dist;
+
+					finalRadius = newRadius;
+					finalCentroid += d * k;
+				}
+			}
+		}
+
+		GetRadius() = finalRadius;
+		SetPosition(finalCentroid);
 		break;
 	}
 	default: break;

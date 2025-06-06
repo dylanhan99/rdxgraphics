@@ -9,6 +9,9 @@ project(csd-3151)
 # Set the directory where custom CMake modules are stored
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
+# Disabling all install directories to avoid clashes
+set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY TRUE CACHE BOOL "" FORCE)
+
 # Include project-wide utility and dependency modules
 include(ImportDependencies)
 importDependencies()
@@ -26,7 +29,7 @@ set(ALL_LIBS
 	PRIVATE spdlog::spdlog
     PRIVATE EnTT::EnTT
 	PRIVATE assimp::assimp
-    #PRIVATE Eigen3::Eigen
+    PRIVATE Eigen3::Eigen
 )
 
 # Include path for GLM (optional if not using FetchContent)

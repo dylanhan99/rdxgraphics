@@ -12,6 +12,7 @@ macro(import_glfw)
             set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
             set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
             set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+            set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
             FetchContent_Populate(glfw)
         endif()
 
@@ -130,12 +131,13 @@ macro(import_assimp)
 
         set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libs" FORCE)
         set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+        set(ASSIMP_INSTALL OFF CACHE BOOL "" FORCE)
         set(ASSIMP_WARNINGS_AS_ERRORS OFF CACHE BOOL "" FORCE)
         FetchContent_MakeAvailable(assimp)
     endif()
 endmacro()
 
-#macro to import assimp
+#macro to import eigen
 macro(import_eigen)
     if(NOT TARGET eigen)
         include(FetchContent)
@@ -144,6 +146,9 @@ macro(import_eigen)
             GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
             GIT_TAG        3.4.0
         )
+        set(EIGEN_INSTALL OFF CACHE BOOL "" FORCE)
+        set(EIGEN_BUILD_UNINSTALL_TARGET OFF CACHE BOOL "" FORCE)
+        set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
         FetchContent_MakeAvailable(eigen)
     endif()
 endmacro()
@@ -180,9 +185,9 @@ macro(importDependencies)
     import_assimp()
     message(STATUS "assimp imported successfully.")
 
-    #message(STATUS "Importing eigen...")
-    #import_eigen()
-    #message(STATUS "eigen imported successfully.")
+    message(STATUS "Importing eigen...")
+    import_eigen()
+    message(STATUS "eigen imported successfully.")
 
     message(STATUS "All dependencies have been imported successfully.")
 endmacro()
