@@ -130,21 +130,23 @@ void Intersection::PCA(std::vector<glm::vec3> const& points, glm::vec3* oCentroi
 	//Eigen::Vector3f mid = (pointMatrix.row(imax) + pointMatrix.row(imin)) * 0.5f;
 	float dist = (pointMatrix.row(imax) - pointMatrix.row(imin)).norm();
 
-	// Initial sphere
+	// Project centered points onto local axes
+	Eigen::MatrixXf localPoints = centered * eigenVectors;
+	// For each axis, find min/max
+	Eigen::Vector3f min = localPoints.colwise().minCoeff();
+	Eigen::Vector3f max = localPoints.colwise().maxCoeff();
+
 	if (oCentroid)
-		*oCentroid = glm::vec3{ centroid.x(), centroid.y(), centroid.z() };
+	{
+		centroid = centroid + eigenVectors * ((min + max) * 0.5f);
+		std::memcpy(oCentroid, centroid.data(), sizeof(glm::vec3));
+	}
 	if (oRadius)
 		*oRadius = dist * 0.5f;
 	if (oRotation)
 		std::memcpy(oRotation, eigenVectors.data(), sizeof(glm::mat3));
 	if (oHalfExtents)
 	{
-		// Project centered points onto local axes
-		Eigen::MatrixXf localPoints = centered * eigenVectors;
-
-		// For each axis, find min/max (captures the *actual* half-extents)
-		Eigen::Vector3f min = localPoints.colwise().minCoeff();
-		Eigen::Vector3f max = localPoints.colwise().maxCoeff();
 		Eigen::Vector3f halfExtents = (max - min) * 0.5f;
 		std::memcpy(oHalfExtents, halfExtents.data(), sizeof(glm::vec3));
 	}

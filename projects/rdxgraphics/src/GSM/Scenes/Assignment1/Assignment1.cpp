@@ -1,11 +1,6 @@
 #include "Assignment1.h"
 #include "GUI/GUI.h"
 
-static float Linear(float start, float end, float value)
-{
-	return (1.f - value) * start + value * end;
-}
-
 void SphereXSphereScene::StartImpl()
 {
 	{

@@ -13,6 +13,7 @@
 #include "Utils/Input.h"
 
 #include "GSM/Scenes/Assignment1/Assignment1.h"
+#include "GSM/Scenes/Assignment2/Assignment2.h"
 
 void RDX::Run()
 {
@@ -26,25 +27,26 @@ void RDX::Run()
 	if (!initOK)
 		throw RX_EXCEPTION("System initialization failed");
 
+	SceneManager::RegisterScene<Assignment2>("Assignment 2");
 	SceneManager::RegisterScene<Sandbox>("Sandbox");
 
-	SceneManager::RegisterScene<SphereXSphereScene>("Sphere - Sphere");
-	SceneManager::RegisterScene<AABBXSphereScene>("AABB - Sphere");
-	SceneManager::RegisterScene<AABBXSphereScene>("Sphere - AABB");
-	SceneManager::RegisterScene<AABBXAABBScene>("AABB - AABB");
-
-	SceneManager::RegisterScene<PointXSphereScene>("Point - Sphere");
-	SceneManager::RegisterScene<PointXAABBScene>("Point - AABB");
-	SceneManager::RegisterScene<PointXTriangleScene>("Point - Triangle");
-	SceneManager::RegisterScene<PointXPlaneScene>("Point - Plane");
-
-	SceneManager::RegisterScene<RayXSphereScene>("Ray - Sphere");
-	SceneManager::RegisterScene<RayXAABBScene>("Ray - AABB");
-	SceneManager::RegisterScene<RayXTriangleScene>("Ray - Triangle");
-	SceneManager::RegisterScene<RayXPlaneScene>("Ray - Plane");
-
-	SceneManager::RegisterScene<PlaneXSphereScene>("Plane - Sphere");
-	SceneManager::RegisterScene<PlaneXAABBScene>("Plane - AABB");
+	//SceneManager::RegisterScene<SphereXSphereScene>("Sphere - Sphere");
+	//SceneManager::RegisterScene<AABBXSphereScene>("AABB - Sphere");
+	//SceneManager::RegisterScene<AABBXSphereScene>("Sphere - AABB");
+	//SceneManager::RegisterScene<AABBXAABBScene>("AABB - AABB");
+	//
+	//SceneManager::RegisterScene<PointXSphereScene>("Point - Sphere");
+	//SceneManager::RegisterScene<PointXAABBScene>("Point - AABB");
+	//SceneManager::RegisterScene<PointXTriangleScene>("Point - Triangle");
+	//SceneManager::RegisterScene<PointXPlaneScene>("Point - Plane");
+	//
+	//SceneManager::RegisterScene<RayXSphereScene>("Ray - Sphere");
+	//SceneManager::RegisterScene<RayXAABBScene>("Ray - AABB");
+	//SceneManager::RegisterScene<RayXTriangleScene>("Ray - Triangle");
+	//SceneManager::RegisterScene<RayXPlaneScene>("Ray - Plane");
+	//
+	//SceneManager::RegisterScene<PlaneXSphereScene>("Plane - Sphere");
+	//SceneManager::RegisterScene<PlaneXAABBScene>("Plane - AABB");
 
 	SceneManager::Init<CommonLayer>();
 

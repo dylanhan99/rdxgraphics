@@ -26,7 +26,7 @@ void CommonLayer::StartImpl()
 		EntityManager::AddComponent<Material>(handle, glm::vec3{ 1.f,1.f,0.f });
 		EntityManager::AddComponent<Camera>(handle,
 			Camera::Mode::Perspective,
-			glm::vec2{ 16.f, 9.f }, 90.f);
+			glm::vec2{ 16.f, 9.f }, 90.f, glm::vec2{0.1f, 700});
 	}
 
 	{

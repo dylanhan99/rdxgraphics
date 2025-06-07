@@ -15,7 +15,8 @@ public:
 	Camera(
 		Mode camMode,
 		glm::vec2 aspect = { 4.f, 3.f },
-		float fov = 90
+		float fov = 90,
+		glm::vec2 clipPlanes = { 0.1f, 100.f }
 	);
 
 	void OnConstructImpl() override;

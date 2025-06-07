@@ -6,11 +6,12 @@
 
 Camera::Camera(
 	Mode camMode,
-	glm::vec2 aspect, float fov)
+	glm::vec2 aspect, float fov, glm::vec2 clipPlanes)
 {
 	m_AspectRatio = aspect.s / aspect.t;
 	m_FOV = fov;
 	m_CameraMode = camMode;
+	m_Clip = clipPlanes;
 
 	EventDispatcher<int, int>::RegisterEvent(RX_EVENT_FRAMEBUFFER_RESIZE,
 		[&](int x, int y)
