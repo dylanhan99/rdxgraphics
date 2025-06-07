@@ -9,12 +9,13 @@ void BoundingVolume::SetBVType(BV bvType)
 	if (m_BVType == bvType)
 		return;
 
-	glm::vec3 offset = RemoveBV();
+	RemoveBV();
 	m_BVType = bvType;
 	if (m_BVType == BV::NIL)
 		return;
 
-	SetupBV(offset);
+	SetupBV();
+	SetDirty();
 }
 
 void BoundingVolume::SetDirty() const
@@ -33,7 +34,7 @@ case BV::Klass: {											  \
 #undef _RX_X
 }
 
-void BoundingVolume::SetupBV(glm::vec3 offset) const
+void BoundingVolume::SetupBV() const
 {
 	// Get the BV& component and 
 	entt::entity const handle = GetEntityHandle();
@@ -48,10 +49,27 @@ void BoundingVolume::SetupBV(glm::vec3 offset) const
 #undef _RX_X
 }
 
-glm::vec3 BoundingVolume::RemoveBV()
+void BoundingVolume::RemoveBV()
 {
+	if (m_BVType == BV::NIL)
+		return;
+
+	entt::entity const handle = GetEntityHandle();
+#define _RX_X(Klass)									  \
+	case BV::Klass:										  \
+		EntityManager::RemoveComponent<Klass##BV>(handle);\
+		break;
+
+	switch (m_BVType)
+	{
+		RX_DO_ALL_BV_ENUM;
+	default:
+		RX_ASSERT(false, "How did you get here");
+		break;
+	}
+#undef _RX_X
+
 	m_BVType = BV::NIL;
-	return glm::vec3();
 }
 
 void BaseBV::SetDirtyXform() const

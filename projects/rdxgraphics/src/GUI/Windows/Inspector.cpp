@@ -173,12 +173,15 @@ void Inspector::UpdateCompCollider(std::string const& strHandle, Collider& comp)
 		ImGui::EndCombo();
 	}
 
+	ImGuiTreeNodeFlags flags =
+		ImGuiTreeNodeFlags_DefaultOpen |
+		ImGuiTreeNodeFlags_SpanAvailWidth;
 #define _RX_X(Klass) case Primitive::Klass:													\
 	{																						\
 		RX_ASSERT(EntityManager::HasComponent<Klass##Primitive>(handle));					\
-		if (ImGui::TreeNodeEx(#Klass" Primitive")) {										\
+		if (ImGui::TreeNodeEx(#Klass" Primitive", flags)) {									\
 			Klass##Primitive& comp = EntityManager::GetComponent<Klass##Primitive>(handle);	\
-			PositionDrag(strHandle, comp.GetOffset());										\
+			Draggy("Offset", strHandle, &comp.GetOffset()[0], 3);							\
 			UpdateComp##Klass##Primitive(strHandle, comp);									\
 			ImGui::TreePop();																\
 		}																					\
@@ -253,31 +256,85 @@ void Inspector::UpdateCompSpherePrimitive(std::string const& strHandle, SpherePr
 
 void Inspector::UpdateCompBoundingVolume(std::string const& strHandle, BoundingVolume& comp)
 {
+	ImGui::Text("Choose BV");
+	entt::entity const handle = comp.GetEntityHandle();
+
+#define _RX_X(Klass) #Klass,
+	std::vector<std::string> bvOptions{
+		RX_DO_ALL_BV_ENUM_AND_NIL
+	};
+#undef _RX_X
+
+	size_t currIndex = (size_t)comp.GetBVType();
+	ImGuiComboFlags comboFlags = 0;
+	if (ImGui::BeginCombo("BV", bvOptions[currIndex].c_str(), comboFlags))
+	{
+		for (size_t i = 0; i < bvOptions.size(); ++i)
+		{
+			auto const& c = bvOptions[i];
+			bool currSelected = currIndex == i;
+			if (ImGui::Selectable(c.c_str(), &currSelected))
+			{
+				comp.SetBVType((BV)i);
+			}
+		}
+		ImGui::EndCombo();
+	}
+
+	ImGuiTreeNodeFlags flags =
+		ImGuiTreeNodeFlags_DefaultOpen | 
+		ImGuiTreeNodeFlags_SpanAvailWidth;
+#define _RX_X(Klass) case BV::Klass:										  \
+	{																		  \
+		RX_ASSERT(EntityManager::HasComponent<Klass##BV>(handle));			  \
+		if (ImGui::TreeNodeEx(#Klass" BV", flags)) {						  \
+			Klass##BV& comp = EntityManager::GetComponent<Klass##BV>(handle); \
+			if (ImGui::Button("Recalculate BV")) { comp.SetDirty(); }		  \
+			ImGui::Separator();												  \
+			ImGui::BeginDisabled();											  \
+			Draggy("Offset", strHandle, &comp.GetOffset()[0], 3);			  \
+			ImGui::EndDisabled();											  \
+			UpdateComp##Klass##BV(strHandle, comp);							  \
+			ImGui::TreePop();												  \
+		}																	  \
+	} break;
 	switch (comp.GetBVType())
 	{
-	case BV::Frustum:
-		ImGui::Text("Frusttum");
-		break;
-	case BV::AABB:
-	{
-		AABBBV& bv = EntityManager::GetComponent<AABBBV>(comp.GetEntityHandle());
-		ImGui::BeginDisabled();
-		Draggy("Offset", strHandle, &bv.GetOffset()[0], 3);
-		Draggy("Half Extent", strHandle, &bv.GetHalfExtents()[0], 3);
-		ImGui::EndDisabled();
-		break;
-	}
-	case BV::OBB:
-		ImGui::Text("OBB");
-		break;
-	case BV::Sphere:
-	{
-		SphereBV& bv = EntityManager::GetComponent<SphereBV>(comp.GetEntityHandle());
-		Draggy("Offset", strHandle, &bv.GetOffset()[0], 3);
-		Draggy("Radius", strHandle, &bv.GetRadius(), 1);
-		break;
-	}
+		RX_DO_ALL_BV_ENUM;
 	default:
 		break;
 	}
+#undef _RX_X;
+}
+
+void Inspector::UpdateCompFrustumBV(std::string const& strHandle, FrustumBV& comp)
+{
+
+}
+
+void Inspector::UpdateCompAABBBV(std::string const& strHandle, AABBBV& comp)
+{
+	ImGui::BeginDisabled();
+	Draggy("Half Extent", strHandle, &comp.GetHalfExtents()[0], 3);
+	ImGui::EndDisabled();
+}
+
+void Inspector::UpdateCompOBBBV(std::string const& strHandle, OBBBV& comp)
+{
+	ImGui::Text("Orthonormal Basis");
+	ImGui::BeginDisabled();
+	Draggy("Half Extent", strHandle, &comp.GetHalfExtents()[0], 3);
+	ImGui::EndDisabled();
+	ImGui::BeginDisabled();
+	Draggy("X", strHandle, &comp.GetOrthonormalBasis()[0][0], 3);
+	Draggy("Y", strHandle, &comp.GetOrthonormalBasis()[1][0], 3);
+	Draggy("Z", strHandle, &comp.GetOrthonormalBasis()[2][0], 3);
+	ImGui::EndDisabled();
+}
+
+void Inspector::UpdateCompSphereBV(std::string const& strHandle, SphereBV& comp)
+{
+	ImGui::BeginDisabled();
+	Draggy("Radius", strHandle, &comp.GetRadius(), 1);
+	ImGui::EndDisabled();
 }

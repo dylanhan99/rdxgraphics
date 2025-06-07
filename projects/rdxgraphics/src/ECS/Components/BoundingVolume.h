@@ -26,8 +26,8 @@ public:
 	void SetDirty() const;
 
 private:
-	void SetupBV(glm::vec3 offset = glm::vec3{ 0.f }) const;
-	glm::vec3 RemoveBV(); // returns offset of previous BV
+	void SetupBV() const;
+	void RemoveBV();
 
 private:
 	BV m_BVType{ BV::NIL };
@@ -99,6 +99,7 @@ public:
 	void UpdateXform() override;
 	void RecalculateBV() override;
 	glm::mat3 const& GetOrthonormalBasis() const { return m_EigenVectors; }
+	glm::mat3& GetOrthonormalBasis() { return m_EigenVectors; }
 
 private:
 	glm::mat3 m_EigenVectors{}; // ie Rotation
