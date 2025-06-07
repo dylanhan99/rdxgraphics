@@ -1,25 +1,3 @@
-# Thu Oct 29 11:32:47 1992
-#
-#\tab Triceratops Dinosaur
-#
-# Courtesy of:
-#
-#\tab Viewpoint Animation Engineering
-#\tab 870 West Center
-#\tab Orem, Utah 84057
-#\tab (801)224-2222
-#\tab 1-800-DATASET
-#
-$ Contributed to the FTP site at avalon.chinalake.navy.mil (129.131.31.11)
-# by Scott R. Nelson of Sun Microsystems (srnelson@eng.sun.com)
-#
-#\tab (c) Copyright 1992 Viewpoint Animation Engineering Inc.
-#\tab Sun Microsystems has been authorized to freely distribute
-#\tab these Datasets.  They are provided for unlimited use in
-#\tab existing or modified form.  The actual Dataset (ie, geometry)
-#\tab may not, however, be resold in existing or modified form.
-#
-g
 v 3.660927 0.002173 -0.738231
 v 3.719482 0.346536 -0.832918
 v 3.977333 0.310855 -0.725284
@@ -9192,6 +9170,4 @@ f 2830//2429 2831//2430 2609//2208 2610//2209
 f 2831//2430 2832//2431 2608//2207 2609//2208
 f 2832//2431 2825//2424 2607//2206 2608//2207
 # 2834 elements
-d\f1
-}
- 
+

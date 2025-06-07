@@ -81,10 +81,13 @@ void Inspector::UpdateCompXform(std::string const& strHandle, Xform& comp)
 
 void Inspector::UpdateCompCamera(std::string const& strHandle, Camera& comp)
 {
+	int* pCamMode = reinterpret_cast<int*>(&comp.GetCameraMode());
+	ImGui::Text("Camera Mode");
+	ImGui::RadioButton("Perspective", pCamMode, (int)Camera::Mode::Perspective);
+	ImGui::SameLine();
+	ImGui::RadioButton("Orthorgonal", pCamMode, (int)Camera::Mode::Orthorgonal);
 	glm::vec3 camDir = comp.GetDirection();
-
 	bool updateBV = false;
-
 	updateBV |= ImGui::DragFloat2("Near/Far", glm::value_ptr(comp.GetClipPlanes()), 0.1f, 0.f, FLT_MAX, "%.2f");
 	updateBV |= ImGui::DragFloat("FOV", &comp.GetFOV(), 1.f, 0.f, 103.f, "%.0f");
 
@@ -93,7 +96,9 @@ void Inspector::UpdateCompCamera(std::string const& strHandle, Camera& comp)
 	ImGui::EndDisabled();
 
 	if (comp.IsOrtho())
-		ImGui::DragFloat("Ortho Zoom", &comp.GetOrthoSize(), 0.01f, 0.f, 10.f);
+		ImGui::DragFloat("Ortho Zoom", &comp.GetOrthoSize(), 0.01f, 0.f, 1000.f);
+
+	ImGui::DragFloat("Move Speed", &comp.GetMovementSpeed(), 0.01f, 0.f, 1000.f);
 
 	//ImGui::Text("Cam [Pos]|X:% -4.1f |Y:% -4.1f |Z:% -4.1f", camPos.x, camPos.y, camPos.z);
 	//ImGui::Text("    [Dir]|X:% -4.1f |Y:% -4.1f |Z:% -4.1f", camFace.x, camFace.y, camFace.z);

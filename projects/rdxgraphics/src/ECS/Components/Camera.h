@@ -48,6 +48,7 @@ public:
 	inline float const& GetOrthoSize() const { return m_OrthoSize; }
 	inline float& GetOrthoSize() { return m_OrthoSize; }
 
+	inline Mode& GetCameraMode() { return m_CameraMode; }
 	inline bool IsPerspective() const { return m_CameraMode == Mode::Perspective; }
 	inline bool IsOrtho() const { return m_CameraMode == Mode::Orthorgonal; }
 

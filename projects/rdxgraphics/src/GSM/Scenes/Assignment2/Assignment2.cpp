@@ -33,15 +33,23 @@ void Assignment2::StartImpl()
 		EntityManager::AddComponent<Metadata>(handle, "Lucy Princeton");
 		EntityManager::AddComponent<Xform>(handle, glm::vec3{ 0.f, 0.f, -20.f }, glm::vec3{ 0.01f }, glm::vec3{ glm::quarter_pi<float>() });
 		EntityManager::AddComponent<Model>(handle, Rxuid{"lucy_princeton"});
-		EntityManager::AddComponent<Material>(handle, glm::vec3{ 0.5f, 0.f, 0.5f });
+		EntityManager::AddComponent<Material>(handle, glm::vec3{ 1.f, 1.f, 1.f });
 		EntityManager::AddComponent<BoundingVolume>(handle, BV::OBB);
+	}
+	{
+		auto handle = BaseScene::CreateDefaultEntity();
+		EntityManager::AddComponent<Metadata>(handle, "Rhino");
+		EntityManager::AddComponent<Xform>(handle, glm::vec3{ -16.f, 0.f, 16.f }, glm::vec3{ 1.f }, glm::vec3{0.f, 0.f, glm::half_pi<float>()});
+		EntityManager::AddComponent<Model>(handle, Rxuid{"rhino"});
+		EntityManager::AddComponent<Material>(handle, glm::vec3{ 1.f, 1.f, 1.f });
+		EntityManager::AddComponent<BoundingVolume>(handle, BV::Sphere);
 	}
 	{
 		auto handle = BaseScene::CreateDefaultEntity();
 		EntityManager::AddComponent<Metadata>(handle, "Spinny Cube");
 		EntityManager::AddComponent<Xform>(handle, glm::vec3{ 0.f, 0.f, 0.f }, glm::vec3{ 1.f });
 		EntityManager::AddComponent<Model>(handle, Shape::Cube);
-		EntityManager::AddComponent<Material>(handle, glm::vec3{ 1.f, 1.f, 1.5f });
+		EntityManager::AddComponent<Material>(handle, glm::vec3{ 1.f, 1.f, 1.f });
 		EntityManager::AddComponent<BoundingVolume>(handle, BV::AABB);
 
 		m_Spinny = handle;
