@@ -83,6 +83,11 @@ void Inspector::UpdateCompCamera(std::string const& strHandle, Camera& comp)
 {
 	glm::vec3 camDir = comp.GetDirection();
 
+	bool updateBV = false;
+
+	updateBV |= ImGui::DragFloat2("Near/Far", glm::value_ptr(comp.GetClipPlanes()), 0.1f, 0.f, FLT_MAX, "%.2f");
+	updateBV |= ImGui::DragFloat("FOV", &comp.GetFOV(), 1.f, 0.f, 103.f, "%.0f");
+
 	ImGui::BeginDisabled();
 	ImGui::InputFloat3(("Direction Faced" + strHandle).c_str(), glm::value_ptr(camDir));
 	ImGui::EndDisabled();
@@ -96,6 +101,9 @@ void Inspector::UpdateCompCamera(std::string const& strHandle, Camera& comp)
 	if (ImGui::Checkbox("CameraToggled", &comp.IsCameraInUserControl()))
 		EventDispatcher<Camera&>::FireEvent(RX_EVENT_CAMERA_USER_TOGGLED, comp);
 	ImGui::EndDisabled();
+
+	if (updateBV && EntityManager::HasComponent<BoundingVolume>(comp.GetEntityHandle()))
+		EntityManager::GetComponent<BoundingVolume>(comp.GetEntityHandle()).SetDirty();
 }
 
 void Inspector::UpdateCompModel(std::string const& strHandle, Model& comp)

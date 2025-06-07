@@ -8,8 +8,8 @@
 void CollisionSystem::Update(float dt)
 {
 	// Frustum X other checks
+	if (EntityManager::HasComponent<FrustumBV>(RenderSystem::GetActiveCamera()))
 	{
-		// This is assuming theres an active camera. Dangerous
 		FrustumBV& cameraFrustum = EntityManager::GetComponent<FrustumBV>(RenderSystem::GetActiveCamera());
 		auto const& planeEquations = cameraFrustum.GetPlaneEquations();
 

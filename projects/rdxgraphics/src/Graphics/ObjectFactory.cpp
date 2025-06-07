@@ -91,43 +91,45 @@ ObjectParams_VertexBasic ObjectFactory::LoadModelBuffer(std::string const& buffe
 	VertexBasic::Normal::container_type normals{};
 	VertexBasic::TexCoord::container_type texCoords{};
 
-	auto asd = std::function<void(aiNode*)>{};
-	asd =
-		[&](aiNode* pNode)
+	auto RecurseNode = std::function<void(aiNode*, glm::mat4)>{};
+	RecurseNode = [&](aiNode* pNode, glm::mat4 parentXform)
 		{
-			RX_ASSERT(pNode, "???");
-			for (int i = 0; i < pNode->mNumMeshes; ++i)
+			glm::mat4 nodeTransform = parentXform * glm::transpose(glm::make_mat4(&pNode->mTransformation.a1));
+
+			for (int i = 0; i < pNode->mNumMeshes; ++i) 
 			{
 				uint32_t meshID = pNode->mMeshes[i];
 				aiMesh* pMesh = pScene->mMeshes[meshID];
 
-				int numVertices = pMesh->mNumVertices;
-				positions.resize(numVertices);
-				normals.resize(numVertices);
-				texCoords.resize(numVertices);
-				std::memcpy(positions.data(), pMesh->mVertices, numVertices * sizeof(glm::vec3));
-				std::memcpy(normals.data(), pMesh->mNormals, numVertices * sizeof(glm::vec3));
+				size_t vertexOffset = positions.size();
 
-				// Assuming all are trianlges. Lazy and bad
-				for (int k = 0; k < pMesh->mNumFaces; ++k)
+				for (unsigned int j = 0; j < pMesh->mNumVertices; ++j) 
 				{
-					indices.push_back(pMesh->mFaces[k].mIndices[0]);
-					indices.push_back(pMesh->mFaces[k].mIndices[1]);
-					indices.push_back(pMesh->mFaces[k].mIndices[2]);
+					glm::vec3 pos = glm::make_vec3(&pMesh->mVertices[j].x);
+					glm::vec3 normal = glm::make_vec3(&pMesh->mNormals[j].x);
+					glm::vec2 texCoord{ 0.0f };
+					if (pMesh->HasTextureCoords(0))
+						texCoord = glm::vec2(pMesh->mTextureCoords[0][j].x, pMesh->mTextureCoords[0][j].y);
+
+					glm::vec4 v = nodeTransform * glm::vec4(pos, 1.0f);
+					positions.push_back(glm::vec3{ v });
+					normals.push_back(glm::normalize(glm::mat3(nodeTransform) * normal));
+					texCoords.push_back(texCoord);
+				}
+
+				for (unsigned int k = 0; k < pMesh->mNumFaces; ++k) 
+				{
+					aiFace& face = pMesh->mFaces[k];
+					for (unsigned int l = 0; l < face.mNumIndices; ++l) 
+						indices.push_back(face.mIndices[l] + vertexOffset);
 				}
 			}
 
-			for (int i = 0; i < pNode->mNumChildren; ++i)
-			{
-				aiNode* pChild = pNode->mChildren[i];
-				asd(pChild);
-			}
+			for (unsigned int i = 0; i < pNode->mNumChildren; ++i)
+				RecurseNode(pNode->mChildren[i], nodeTransform);
 		};
 
-	//RX_ASSERT(pScene->HasMeshes(), "This object buffer has no meshes");
-	// node -> multiple children -> multiple meshes 
-	aiNode* node = pScene->mRootNode;
-	asd(node);
+	RecurseNode(pScene->mRootNode, glm::mat4(1.0f));
 
 	return ObjectParams_VertexBasic{
 		GL_TRIANGLES,

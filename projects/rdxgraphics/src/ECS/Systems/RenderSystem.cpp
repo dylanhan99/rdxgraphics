@@ -226,10 +226,10 @@ void RenderSystem::CreateShapes()
 		ObjectFactory::LoadModelFile(RX_MODEL_PREFIX#obj".obj")));
 	_RX_X(ogre);
 	_RX_X(bunny);
-	//_RX_X(bunny_high_poly);
-	//_RX_X(cup);
-	//_RX_X(head);
-	//_RX_X(rhino);
-	//_RX_X(starwars1);
+	_RX_X(cup);
+	_RX_X(head);
+	_RX_X(lucy_princeton);
+	_RX_X(rhino);
+	_RX_X(starwars1);
 #undef _RX_X
 }
