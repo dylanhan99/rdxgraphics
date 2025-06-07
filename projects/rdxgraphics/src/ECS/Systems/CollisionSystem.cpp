@@ -17,14 +17,21 @@ void CollisionSystem::Update(float dt)
 	case BV::Klass: 												   \
 	{																   \
 		Klass##BV& bv = EntityManager::GetComponent<Klass##BV>(handle);\
-		int res{};													   \
+		int fullyInCount{};											   \
+		bool isOut = false;											   \
 		for (glm::vec4 const& plane : planeEquations)				   \
 		{															   \
-			res = CheckCollision(plane, bv);						   \
-			if (res <= 0) break;									   \
+			int res = CheckCollision(plane, bv);					   \
+			if (res < 0)											   \
+			{														   \
+				isOut = true;										   \
+				break;												   \
+			}														   \
+			if (res > 0)											   \
+				++fullyInCount;										   \
 		}															   \
-		if		(res > 0) bv.SetBVState(BVState::In);				   \
-		else if (res < 0) bv.SetBVState(BVState::Out);				   \
+		if		(isOut) bv.SetBVState(BVState::Out);				   \
+		else if (fullyInCount == (int)planeEquations.size()) bv.SetBVState(BVState::In);\
 		else			  bv.SetBVState(BVState::On);				   \
 		break;														   \
 	}
@@ -34,10 +41,14 @@ void CollisionSystem::Update(float dt)
 			switch (boundingVolume.GetBVType())
 			{
 				RX_DO_ALL_BV_ENUM;
+			default: break;
 			}
 		}
 #undef _RX_X
+	}
 
+	// Collision stuff
+	{
 		// Hardcoding here to un-set it for the next frame for now
 		// Maybe do some colliding pairs system in the future for efficiency if needed
 #define _RX_X(Klass){															  \
