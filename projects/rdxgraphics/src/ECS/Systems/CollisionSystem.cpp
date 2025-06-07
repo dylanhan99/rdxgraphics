@@ -107,9 +107,7 @@ bool CollisionSystem::CheckCollision(PointPrimitive const& lhs, TrianglePrimitiv
 
 bool CollisionSystem::CheckCollision(PointPrimitive const& lhs, PlanePrimitive const& rhs)
 {
-	glm::vec3 pp = lhs.GetPosition() - rhs.GetPosition();
-	return glm::abs(glm::dot(pp, rhs.GetNormal())) <= (glm::epsilon<float>() * 10.f); 
-	// More leeway for floating point error due to my crappy conversions from euler to normal
+	return Intersection::PlanePointTest(lhs.GetPosition(), rhs.GetPlaneEquation()) == 0;
 }
 
 bool CollisionSystem::CheckCollision(PointPrimitive const& lhs, AABBPrimitive const& rhs)
@@ -298,7 +296,35 @@ int CollisionSystem::CheckCollision(glm::vec4 const& plane, AABBBV const& bv)
 
 int CollisionSystem::CheckCollision(glm::vec4 const& plane, OBBBV const& bv)
 {
-	return false;
+	// C Center
+	// S ±1 of each direction the normal is pointing toward
+	// E Half lengths
+	// U Orthonormal basis (the rotation)
+	// pvtx = C + s0e0u0 + s1e1u1 + s2e2u2
+	// nvtx = C - s0e0u0 - s1e1u1 - s2e2u2
+	
+	glm::vec3 const C = bv.GetPosition();
+	glm::vec3 const S {
+		plane.x < 0 ? -1 : 1,
+		plane.y < 0 ? -1 : 1,
+		plane.z < 0 ? -1 : 1
+	};
+	glm::vec3 const& E = bv.GetHalfExtents();
+	glm::mat3 const& U = bv.GetOrthonormalBasis();
+
+	glm::vec3 const seu0 = S[0] * E[0] * U[0];
+	glm::vec3 const seu1 = S[1] * E[1] * U[1];
+	glm::vec3 const seu2 = S[2] * E[2] * U[2];
+
+	glm::vec3 pvtx = C + seu0 + seu1 + seu2;
+	glm::vec3 nvtx = C - seu0 - seu1 - seu2;
+
+	int p = Intersection::PlanePointTest(pvtx, plane);
+	int n = Intersection::PlanePointTest(nvtx, plane);
+
+	if		(p > 0 && n > 0) return 1;
+	else if (p < 0 && n < 0) return -1;
+	else					 return 0;
 }
 
 int CollisionSystem::CheckCollision(glm::vec4 const& plane, SphereBV const& bv)

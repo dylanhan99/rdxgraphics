@@ -98,6 +98,7 @@ public:
 	OBBBV() = default;
 	void UpdateXform() override;
 	void RecalculateBV() override;
+	glm::mat3 const& GetOrthonormalBasis() const { return m_EigenVectors; }
 
 private:
 	glm::mat3 m_EigenVectors{}; // ie Rotation

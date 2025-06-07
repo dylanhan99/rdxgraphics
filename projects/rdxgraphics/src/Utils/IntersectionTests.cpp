@@ -179,3 +179,19 @@ int Intersection::PlaneAABBTest(glm::vec3 aPos, glm::vec3 aHalfExtents, glm::vec
 	else if (s >= -r) return 0;
 	else			  return -1;
 }
+
+int Intersection::PlanePointTest(glm::vec3 aPos, glm::vec4 bEquation)
+{
+	glm::vec3 bNormal = glm::vec3{ bEquation };
+	glm::vec3 bPos = bEquation.w * bNormal;
+
+	glm::vec3 ba = aPos - bPos;
+	float dist = glm::dot(ba, bNormal);
+
+	// More leeway for floating point error due to my crappy conversions from euler to normal
+	constexpr float zero = glm::epsilon<float>() * 10.f;
+
+	if		(dist >  zero) return 1;
+	else if (dist > -zero) return 0;
+	else				   return -1;
+}

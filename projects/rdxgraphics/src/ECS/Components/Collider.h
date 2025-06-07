@@ -183,6 +183,8 @@ public:
 	inline glm::vec3 GetNormal() const { return GetNormal(glm::quat{ m_EulerOrientation }); }
 	inline float GetD() const { return glm::dot(GetNormal(), GetPosition()); }
 
+	inline glm::vec4 GetPlaneEquation() const { return glm::vec4{ GetNormal(), GetD() }; }
+
 public:
 	inline static glm::vec3 GetNormal(glm::quat const& quat) { return quat * DefaultNormal; }
 

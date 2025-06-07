@@ -18,4 +18,5 @@ struct Intersection
 	// +1 >> Inside
 	static int PlaneSphereTest(glm::vec3 aPos, float aRadius, glm::vec4 bEquation);
 	static int PlaneAABBTest(glm::vec3 aPos, glm::vec3 aHalfExtents, glm::vec4 bEquation);
+	static int PlanePointTest(glm::vec3 aPos, glm::vec4 bEquation);
 };
