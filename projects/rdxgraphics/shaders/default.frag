@@ -68,7 +68,7 @@ void main()
 		vec3 specular = vec3(0.0);
 
 		// Out
-		vec3 result = (ambient + diffuse + specular) * (fs_in.DiffuseColor.xyz * fs_in.DiffuseColor.w);
+		vec3 result = ambient + (diffuse + specular) * (fs_in.DiffuseColor.xyz * fs_in.DiffuseColor.w);
 		oFragColor = vec4(result, 1.0);
 	}
 	else

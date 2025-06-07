@@ -9,9 +9,10 @@ void CommonLayer::StartImpl()
 	{
 		entt::entity handle = m_LightHandle = BaseScene::CreateDefaultEntity<NoDelete>();
 		EntityManager::AddComponent<Metadata>(handle, "Directional Light");
-		EntityManager::AddComponent<Xform>(handle, glm::vec3{ 0.f, 5.f, 0.f }, glm::vec3{ 0.3f });
+		EntityManager::AddComponent<Xform>(handle, glm::vec3{ 0.f, 5.f, 0.f }, glm::vec3{ 0.3f }, glm::vec3{glm::quarter_pi<float>()});
 		EntityManager::AddComponent<Model>(handle, Shape::Cube);
 		EntityManager::AddComponent<DirectionalLight>(handle);
+		EntityManager::AddComponent<BoundingVolume>(handle, BV::AABB);
 	}
 
 	{
@@ -81,8 +82,8 @@ void CommonLayer::UpdateImpl(float dt)
 		auto& xform = EntityManager::GetComponent<Xform>(m_LightHandle);
 		auto& light = EntityManager::GetComponent<DirectionalLight>(m_LightHandle);
 		
-		const float rate = 0.25f;
-		const float radius = 5.f;
+		const float rate = 0.4f;
+		const float radius = 7.f;
 		angle += glm::two_pi<float>() * rate * dt;
 		if (angle > glm::two_pi<float>()) angle = 0.f;
 
@@ -92,5 +93,8 @@ void CommonLayer::UpdateImpl(float dt)
 		pos.z = glm::sin(angle) * radius;
 
 		light.GetDirection() = glm::normalize(-xform.GetTranslate()); // Look at origin
+
+		if (EntityManager::HasComponent<BoundingVolume>(m_LightHandle))
+			EntityManager::GetComponent<BoundingVolume>(m_LightHandle).SetDirtyXform();
 	}
 }

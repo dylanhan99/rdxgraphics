@@ -24,6 +24,7 @@ public:
 	void SetBVType(BV bvType);
 
 	void SetDirty() const;
+	void SetDirtyXform() const;
 
 private:
 	void SetupBV() const;

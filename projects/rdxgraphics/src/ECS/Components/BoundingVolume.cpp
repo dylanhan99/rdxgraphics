@@ -34,6 +34,22 @@ case BV::Klass: {											  \
 #undef _RX_X
 }
 
+void BoundingVolume::SetDirtyXform() const
+{
+#define _RX_X(Klass)										  \
+case BV::Klass: {											  \
+	EntityManager::GetComponent<Klass##BV>(GetEntityHandle()).SetDirtyXform();\
+	break;													  \
+}
+	switch (m_BVType)
+	{
+		RX_DO_ALL_BV_ENUM;
+	default:
+		break;
+	}
+#undef _RX_X
+}
+
 void BoundingVolume::SetupBV() const
 {
 	// Get the BV& component and 

@@ -200,7 +200,17 @@ void RenderSystem::CreateShapes()
 {
 	g.m_FBOObject = std::move(ObjectFactory::CreateObjekt<VertexFBO, ObjectParams_VertexFBO>(ObjectFactory::CreateScreenQuad()));
 
-#define _RX_X(Klass) GetObjekt(Shape::Klass) = ObjectFactory::CreateObjekt<VertexBasic, ObjectParams_VertexBasic>(ObjectFactory::Setup##Klass());
+	auto CreateShape =
+		[&](Rxuid id, std::string name , Object<VertexBasic>&& obj)
+		{
+			obj.SetName(name);
+			g.m_Objects[id] = std::move(obj);																					\
+		};
+
+#define _RX_X(Klass)													\
+	CreateShape(Rxuid(Shape::Klass), #Klass,							\
+	ObjectFactory::CreateObjekt<VertexBasic, ObjectParams_VertexBasic>(	\
+		ObjectFactory::Setup##Klass()));
 	_RX_X(Point);
 	_RX_X(Line);
 	_RX_X(Triangle);
@@ -210,12 +220,10 @@ void RenderSystem::CreateShapes()
 	_RX_X(Sphere);
 #undef _RX_X
 
-#define _RX_X(obj)																															\
-	{																																		\
-	auto obj = ObjectFactory::CreateObjekt<VertexBasic, ObjectParams_VertexBasic>(ObjectFactory::LoadModelFile(RX_MODEL_PREFIX#obj".obj"));	\
-		g.m_Objects[Rxuid{ #obj }] = std::move(obj);																						\
-	}
-
+#define _RX_X(obj)														\
+	CreateShape(Rxuid{#obj}, #obj,										\
+	ObjectFactory::CreateObjekt<VertexBasic, ObjectParams_VertexBasic>(	\
+		ObjectFactory::LoadModelFile(RX_MODEL_PREFIX#obj".obj")));
 	_RX_X(ogre);
 	_RX_X(bunny);
 	//_RX_X(bunny_high_poly);
