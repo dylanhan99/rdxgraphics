@@ -7,6 +7,26 @@ void ModelsPass::DrawImpl() const
 	auto view = EntityManager::View<const Xform, const Model>();
 	for (auto [handle, xform, model] : view.each())
 	{
+		// If has BV, then bother to cull or not.
+		// If no BV, just draw no problem
+		if (EntityManager::HasComponent<BoundingVolume>(handle))
+		{
+#define _RX_X(Klass) case BV::Klass:									  \
+			{															  \
+				auto& bv = EntityManager::GetComponent<Klass##BV>(handle);\
+				if (bv.GetBVState() == BVState::Out) continue;			  \
+				break; 													  \
+			}
+
+			BoundingVolume& boundingVolume = EntityManager::GetComponent<BoundingVolume>(handle);
+			switch (boundingVolume.GetBVType())
+			{
+				RX_DO_ALL_BV_ENUM;
+			default: break; // NIL is also considered as "no BV"
+			}
+#undef _RX_X
+		}
+
 		Rxuid meshID = model.GetMesh();
 		if (meshID == RX_INVALID_ID)
 			continue;
