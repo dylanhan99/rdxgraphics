@@ -171,33 +171,28 @@ void FrustumBV::RecalculateBV()
 
 void AABBBV::RecalculateBV()
 {
-	// "Original"
-	Model const& model = EntityManager::GetComponent<const Model>(GetEntityHandle());
-	auto& obj = RenderSystem::GetObjekt(model.GetMesh());
-	AABBBV const& defaultBV = obj.GetDefaultAABBBV();
+	Xform& modelXform = EntityManager::GetComponent<Xform>(GetEntityHandle());
+	Rxuid const meshID = EntityManager::GetComponent<Model>(GetEntityHandle()).GetMesh();
+	auto& objekt = RenderSystem::GetObjekt(meshID);
+	auto const& points = objekt.GetVBData<VertexBasic::Position>();
 
-	glm::vec3 const& defaultCenter = defaultBV.GetOffset();
-	glm::vec3 const& defaultHalfExtents = defaultBV.GetHalfExtents();
-
-	Xform const& xform = EntityManager::GetComponent<const Xform>(GetEntityHandle());
-	glm::vec3 const& scl = xform.GetScale();
-	glm::mat4 const rot = xform.GetRotationMatrix();
-
-	glm::vec3 newCenter{ 0.f };
-	if (defaultCenter != glm::vec3{ 0.f })
-		newCenter = /*glm::translate(xform.GetTranslate()) **/ rot * glm::scale(scl) * glm::vec4{ defaultCenter, 1.f };
-
-	glm::vec3 newHalfSize{};
-	for (int i = 0; i < 3; ++i)
+	glm::vec3 min{ std::numeric_limits<float>::infinity() };
+	glm::vec3 max{ -std::numeric_limits<float>::infinity() };
+	for (glm::vec3 v : points)
 	{
-		newHalfSize[i] =
-			glm::abs(rot[i][0]) * defaultHalfExtents[0] * scl[0] +
-			glm::abs(rot[i][1]) * defaultHalfExtents[1] * scl[1] +
-			glm::abs(rot[i][2]) * defaultHalfExtents[2] * scl[2];
+		v = glm::vec3{ modelXform.GetXform() * glm::vec4{ v, 1.f } };
+
+		if (v.x < min.x) min.x = v.x;
+		if (v.y < min.y) min.y = v.y;
+		if (v.z < min.z) min.z = v.z;
+
+		if (v.x > max.x) max.x = v.x;
+		if (v.y > max.y) max.y = v.y;
+		if (v.z > max.z) max.z = v.z;
 	}
 
-	GetHalfExtents() = newHalfSize;
-	GetOffset() = newCenter;
+	GetHalfExtents() = glm::abs((max - min) * 0.5f);
+	SetPosition((max + min) * 0.5f);
 }
 
 void SphereBV::RecalculateBV()

@@ -36,24 +36,6 @@ void Intersection::MostSeparatedPointsOnAABB(std::vector<glm::vec3> const& pt, s
 	}
 }
 
-void Intersection::CalculateAABBBV(std::vector<glm::vec3> const& positions, glm::vec3 &outCenter, glm::vec3& outHalfExtents)
-{
-	glm::vec3 min{std::numeric_limits<float>::max()}, max{ std::numeric_limits<float>::min() };
-	for (glm::vec3 const& pos : positions)
-	{
-		min.x = (pos.x < min.x) ? pos.x : min.x;
-		min.y = (pos.y < min.y) ? pos.y : min.y;
-		min.z = (pos.z < min.z) ? pos.z : min.z;
-	
-		max.x = (pos.x > max.x) ? pos.x : max.x;
-		max.y = (pos.y > max.y) ? pos.y : max.y;
-		max.z = (pos.z > max.z) ? pos.z : max.z;
-	}
-	
-	outCenter = (max + min) * 0.5f;
-	outHalfExtents = glm::abs((max - min) * 0.5f);
-}
-
 void Intersection::SphereOfSphereAndPt(glm::vec3 const& point, glm::vec3& spherePos, float& radius)
 {
 	glm::vec3 d = point - spherePos;
@@ -123,7 +105,8 @@ void Intersection::PCA(std::vector<glm::vec3> const& points, glm::vec3* oCentroi
 	int imin{}, imax{};
 	//Intersection::ExtremePointsAlongDirection(principleDirection, pointsCopy, &imin, &imax);
 	{
-		float minproj = FLT_MAX, maxproj = -FLT_MAX;
+		float minproj{ std::numeric_limits<float>::infinity() };
+		float maxproj{ -std::numeric_limits<float>::infinity() };
 		for (size_t i = 0; i < points.size(); i++)
 		{
 			// Project vector from origin to point onto direction vector

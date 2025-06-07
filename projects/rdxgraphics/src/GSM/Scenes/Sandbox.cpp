@@ -30,13 +30,13 @@ void Sandbox::StartImpl()
 		GUI::SetSelectedEntity(handle);
 	}
 	{
-		//auto clone = BaseScene::CloneEntity(test);
-		//EntityManager::GetComponent<Xform>(clone)
-		//	.SetTranslate({-2.f, 0.f, -2.f});
-		//EntityManager::GetComponent<Model>(clone)
-		//	.SetMesh(Shape::Cube);
-		//EntityManager::AddComponent<Collider>(clone, Primitive::AABB);
-		//EntityManager::AddComponent<BoundingVolume>(clone, BV::AABB);
+		auto clone = BaseScene::CloneEntity(test);
+		EntityManager::GetComponent<Xform>(clone)
+			.SetTranslate({-2.f, 0.f, -2.f});
+		EntityManager::GetComponent<Model>(clone)
+			.SetMesh(Shape::Cube);
+		EntityManager::AddComponent<Collider>(clone, Primitive::AABB);
+		EntityManager::AddComponent<BoundingVolume>(clone, BV::AABB);
 	}
 	{
 		auto clone = BaseScene::CloneEntity(test);
