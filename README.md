@@ -1,4 +1,4 @@
-# CS350/CSD3150 | Project 1: Geometry Toolbox
+# CS350/CSD3150 | Project 2: Bounding Volumes and View Frustum Culling
 By: 2201020 | dylan.h | Han Wei, Dylan
 Engine: rdxgraphics
 
@@ -10,7 +10,7 @@ Engine: rdxgraphics
 - C++20
 
 ### Libraries
-- OpenGL/GLEW/GLFW/glm/ImGUI-docking/spdlog/EnTT
+- OpenGL/GLEW/GLFW/glm/ImGUI-docking/spdlog/EnTT/assimp/Eigen
 
 ### Machines Tested On
 - Laptop 1, Windows 11, Intel i7-11800H, NVIDIA GeForce RTX 3060 (Laptop), OpenGL 4.5
@@ -18,10 +18,11 @@ Engine: rdxgraphics
 - Lab PC (Multiple), did not take note of specs but all ran fine 		 , OpenGL 4.5
 
 ### CMake Changes
-Minor edits made to the cmake files provided by the professor.</br>
+Minor edits made to the cmake files provided by the professor. It is likely most of these changes only work for MSVC</br>
 - Removed the include/ directory in the project to streamline my own workflow. This includes editing the cmake file to only GLOB_RECURSE over src/ for .h/.hpp/.cpp.
 - Added /Zc:preprocessor in MSVC target_compile_options. This allows me to use __VA_OPT__ C++20 preprocessor feature.
 - Added setup for other libraries as instructed in CMaksLists.txt and ImportDependencies.cmake. Libraries added include glm, ImGUI, spdlog and EnTT.
+- Added target_precompile_headers option to improve compile times
 
 ### Application Setup
 - Ensure the software stated in [Environment] is installed
@@ -37,26 +38,25 @@ Context:</br>
 > If you select an entity in Hierarchy, the component data can be inspected in Inspector, only Xform, DirectionalLight, Camera and Collider are inspectable right now.
 > Viewport shows the view from "FPS Cam" camera entity.
 > Settings include various engine settings. 
-- In settings, the most notable setting for the tester would be under "GSM", where you'd be able to change scenes. I've created multiple scenes, one for each collision test.
-- Use [TAB] to toggle control of the FPS camera 
-</br>
-Carrying out Collision Tests (For the tester):</br>
-Select one of the scenes in Settings > "Select Scene" combo box, eg "Sphere - Sphere".
-In Hierarchy, you now see the scene "Sphere - Sphere" with each entity. One of which, being named "(Sphere) Move Me!".
-For each of these collision test scenes, the very first entity is the one I'd expect you to play with.
-For this sphere, you may move it through Xform component, and play with the collider attributes through Collider component.
-</br>
-Most of the tests follow the aforementioned instructions, except for those involving Triangle primitives.</br>
-Using Point-Triangle as the example, this scene's first entity, the triangle, is special. Because it's calculations are based on the 3 points of the triangle, when either one of these points are moved, the centroid is supposed to update.
-Due to the design options of this engine, you *must* disable the "Follow Xform" tag under the Collider > "Triangle Primitive" option. This will ensure that your centroid is updated correctly, when either of the points have been moved.
-The reason is that I've set the colliders to follow the xform by default (they have separate positions).
+- Use [TAB] to toggle control of the FPS camera. Make sure you've clicked on "Viewport" window first, so that the ImGui focus is on that window. That ensures no GUI weirdness occurs when hitting [TAB].
+- (Assignment 2) By default, the scene loaded is already the "Assignment 2" scene with multiple entities, each with different BV, each with a different model.
+- (Assignment 2) In settings, the most notable setting for the tester would be under "Bounding Volumes", where you'd be able to change the algorithm SphereBVs use (Ritter, Larsson, PCA), as well as "Recalculate All BVs" which only re-scale/rotates the properties of every BV in the scene for performance considerations.
+- (Assignment 2) It should be noted that the Positions (translations) of each BV can still update and follow the parent Entity, but scale and rotate must be manually recalculated via the aforementioned button. 
+
+### Scene Description
+Multiple entities, each with a model, each of them having different BVs. All of these entities are considered static, meaning their BVs do not update (except for translation) unless explicitly indicated to (using "Recalculate BVs" button). There is an exception for "Spinny Cube" entity, which is simply a cube model with an AABB BV attatched. This is just for fun and helps to clearly demonstrate a dynamic BV using a small mesh.</br>
+You may notice a pinkish hue to every object, that simply is the global ambience of the scene. That can also be adjusted within the Settings.</br>
+There is a "Directional Light" entity which spins around and looks at the origin. It simply is an indicator of the scene's directional light direction.</br>
+Regarding the PiP view, this clearly demonstrates the core of this assignment, the BV status and culling. BVs within the frustum are BLUE, touching/on the frustum are YELLOW, outside the frustum are RED.</br>
+By toggling the passes prefixed with "PiP" in Settings > Graphics > Toggle Passes, you may either see the BVs turning each color even if outside of FPS camera's view, and for the models, you can see them being culled or not as they go in and out of FPS camera's view.</br>
 
 ### Other GUI Features
 - Hierarchy allows you to "Create Entity". This adds an entity into the scene.
 - You may delete entities by clicking the "X" button next to ecah entity. This feature is disabled for particular entities in "Common" and "Sandbox" scenes.
-- In Settings, you may toggle each renderpass (Base, Wireframe, Minimap).
+- In Settings, you may toggle each renderpass (Base, Wireframe, PiP, ...).
 - In Settings, under GSM, you may restart a scene in case you messed too much and want to reset.
-- In Inspector, Collider component, you may change Primitive types, using the combo box under "Choose Primitive Type".
+- In Inspector, BoundingVolume component, you may change BV type using the combo box under "Choose BV".
+- In Inspector, for entities with Camera component, you may adjust "Move Speed" if you find the camera too slow.
 
 ### Project Structure (Code Stuff)
 Main (/):</br>
@@ -71,21 +71,27 @@ ECS (ECS/):</br>
 - The project is very much ECS based, so each system (ECS/Systems/*) only touches the components relevant to them.
 - Components (ECS/Components/*) are simple datastructures typically only with getter/setter funcitons. Data/lifetime managed by systems.
 - EntityManager.h/cpp wraps around EnTT interface.
+- Transformation System (ECS/Systems/TransformSystem) manages both translate/rotate/scale and the recalculation of BVs. The recalculation portion can be found in TransformSystem::Update [77]. They call bv.RecalculateBV(). These RecalculateBV functions can then be found in ECS/Components/BoundingVolume.*. Each BV (Frustum , AABB, OBB, Sphere) have their own definitions for RecalculateBV().
 
 Graphics (Graphics/):</br>
 - An instance based graphics system.
-- Wrapper classes around VAO/VBO (Object.h), FBO (RenderPass.h), Shaders (Shader.h), UBO (UniformBuffer.h)
+- Wrapper classes around VAO/VBO (Object.h), FBO (BasePass.h, Passes/*), Shaders (Shader.h), UBO (UniformBuffer.h)
+- Wrapper class around model loading/creation (ObjectFactory.h)
 - Usage can mainly be seen in ECS/Systems/RenderSystem.*
 - This engine does multi-pass rendering, it requires one set of "main" shaders for our standard rendering, and another set of "screen" shaders to combine the results of each pass into the output we see.
-- Object creation (Object.h usage) found in RenderSystem.cpp [457], RenderSystem::CreateShapes()
+- Object creation (Object/ObjectFactory usage) found in RenderSystem.cpp [199], RenderSystem::CreateShapes()
 > Objects refer to meshes such as Sphere, Cube, Line, etc. 
 > These meshes are reused both in regular rendering, and debug wireframes.
 > The data submitted to GPU can be seen in RenderSystem::Draw, find multiple ".Submit". These specialy submitted data are the instanced data.
+> Other meshes loaded using Assimp such as Rhino and Cup are used soley as models (refular rendering)
 
 Collision (ECS/Systems/CollisionSystem.\*):</br>
 - The other bulk of the rubrics are here
-- Using a naive O(n^2) double for-loop to check collisions. This will be improved during upcoming BVH project.
-- Each test stated by the rubric can be found in each CollisionSystem::CheckCollision function overload.
+- Using a naive O(n^2) double for-loop to check collisions.
+- Each collision test can be found in each CollisionSystem::CheckCollision function overload.
+- View Frustum BV against other entity BVs can be found here in CollisionSystem.cpp [11], CollisionSystem::Update.
+- Depending on the collision with the frustum, they are either In/Out/On.
+- These BV collision tests (helper funcs) can be found at CollisionSystem.cpp [303], [308], [341], also as CollisionSystem::CheckCollision overloads.
 
 GSM/GUI (GSM/, GUI/):</br>
 - Wrappers around "scripting" and ImGUI windows respectively.
@@ -102,7 +108,7 @@ TAB  (Trigger)	- Toggles FPS camera control</br>
 W/A/S/D (Hold)	- Move FPS camera forward/backward/left/right (While camera toggled)</br>
 L-SHIFT (Hold)	- Move in -Y (While camera toggled)</br>
 SPACE	(Hold)	- Move in +Y (While camera toggled)</br>
-L-CTRL	(Hold)	- Increase speed while moving (1.5x i think)</br>
+L-CTRL	(Hold)	- Increase speed while moving (2x speed)</br>
 F11  (Trigger)	- Toggle window enlarge/shrink</br>
 ESC  (Trigger)	- Kill application</br>
 
@@ -125,26 +131,15 @@ Settings:</br>
 - Random settings such as changing scenes, toggling different passes, and FPS
 
 ## Tasks
-Task 1: Window Class								> Complete
-Task 2/3: Buffer class VBO and Attribute management > Complete
-Task 4: ECS											> Complete
-Task 5: Light										> Complete
-Task 6: Interactivity (Camera)						> Complete
-Collision Tests										> All complete
+- Task 1: Scene Setup					> Complete
+- Task 2: Bounding Volume Calculations  > Complete
+- Task 3: Bounding Volume Display       > Complete
 
 ### Task Code Locations
-Task 1:	  GLFWWindow/GLFWWindow.\*, used in RDX.cpp</br>
-Task 2/3: Graphics/\*, used mainly in ECS/Systems/RenderSystem.cpp</br>
-Task 4:	  ECS/\*, used mainly in ECS/Systems/\*</br>
-Task 5: </br>
-- ECS/Components/BaseComponent.h, class DirectionalLight
-- ECS/Systems/RenderSystem.cpp, submit light component data to shader
-- shaders/default.frag			
-Task 6:</br>
-- ECS/Systems/CollisionSystem.cpp, the full suite (as stated by brief) of CheckCollision(FooBV&, GooBV&) overloads.
-- ECS/Components/Colliders.\*, BV components declared here
+- Task 1: Assignment2.cpp (Scene setup), ObjectFactory.cpp (Assimp loading), Camera.cpp (Camera)
+- Task 2: BoundingVolume.cpp (BV calculations)
+- Task 3: BVWireframesPass.cpp (Render pass handling BV drawing, colors stated there)
 
 ## Other Notes
-- I copy pasted the keymappings from glfw.h into Input.h to mask the same mappings with my own alias instead (RX_ prefix). This is pretty bad.)
 - Average 4 hours daily on this assignment
 - The USE_CSD3151_AUTOMATION for assignment_vs/fs shader buffers are located at the top of RenderSystem.cpp
