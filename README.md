@@ -23,6 +23,7 @@ Minor edits made to the cmake files provided by the professor. It is likely most
 - Added /Zc:preprocessor in MSVC target_compile_options. This allows me to use __VA_OPT__ C++20 preprocessor feature.
 - Added setup for other libraries as instructed in CMaksLists.txt and ImportDependencies.cmake. Libraries added include glm, ImGUI, spdlog and EnTT.
 - Added target_precompile_headers option to improve compile times
+- Added a add_custom_target copy_directory command to copy models/ from root dir to the cmake build/ dir. This ensures that both running from vs2022 and exe directly is the same, but this means you cannot run the exe unless the exe has access to models in ../models.
 
 ### Application Setup
 - Ensure the software stated in [Environment] is installed
@@ -143,3 +144,4 @@ Settings:</br>
 ## Other Notes
 - Average 4 hours daily on this assignment
 - The USE_CSD3151_AUTOMATION for assignment_vs/fs shader buffers are located at the top of RenderSystem.cpp
+- Please note, the Frustum X OBB collision is somewhat inaccurate and incorrect in some circumstances I've not yet been able to identify. I'd say it works 70% of the time you'd expect it to. So it's normal to see that it's still "In the frustum" even though it's meant to be "On the frustum".

@@ -19,6 +19,7 @@ public:
 public:
 	inline BoundingVolume(BV bvType = BV::NIL) : m_BVType(bvType) {}
 	inline void OnConstructImpl() override { SetupBV(); }
+	inline void OnDestroyImpl() override { SetBVType(BV::NIL); }
 
 	inline BV GetBVType() const { return m_BVType; }
 	void SetBVType(BV bvType);

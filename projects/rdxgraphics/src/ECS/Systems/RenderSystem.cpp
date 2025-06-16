@@ -80,10 +80,10 @@ bool RenderSystem::Init()
 	// screenpass will foreach the Passes, and automatically slurp according to data provided
 	//RegisterPass<Type>("display name", "shader boolean (uHas_)", default_enabled = true_or_false).Init(dims);
 
-	auto pModelsPass = RegisterPass<ModelsPass>("Models & Lighting", "Models");
+	auto pModelsPass = RegisterPass<ModelsPass>("Models & Lighting", "Models", true);
 	auto pColliderWireframesPass = RegisterPass<ColliderWireframesPass>("Collider Wireframes", "Colliders", false);
-	auto pBVWireframesPass = RegisterPass<BVWireframesPass>("BV Wireframes", "BVs");
-	auto pPiPModelsPass = RegisterPass<ModelsPass>("PiP Models & Lighting", "PiPModels", false);
+	auto pBVWireframesPass = RegisterPass<BVWireframesPass>("BV Wireframes", "BVs", true);
+	auto pPiPModelsPass = RegisterPass<ModelsPass>("PiP Models & Lighting", "PiPModels", true);
 	auto pPiPBVWireframesPass = RegisterPass<BVWireframesPass>("PiP BV Wireframes", "PiPBVs", true);
 
 	pModelsPass->Init(0, 0, dims.x, dims.y);
@@ -211,25 +211,25 @@ void RenderSystem::CreateShapes()
 	CreateShape(Rxuid(Shape::Klass), #Klass,							\
 	ObjectFactory::CreateObjekt<VertexBasic, ObjectParams_VertexBasic>(	\
 		ObjectFactory::Setup##Klass()));
-	_RX_X(Point);
-	_RX_X(Line);
-	_RX_X(Triangle);
-	_RX_X(Quad);
-	_RX_X(Plane);
-	_RX_X(Cube);
-	_RX_X(Sphere);
+
+	RX_DO_ALL_SHAPE_ENUM;
 #undef _RX_X
 
+#if USE_CSD3151_AUTOMATION == 1
+#define _RX_X(obj)														\
+	CreateShape(Rxuid{#obj}, #obj,										\
+	ObjectFactory::CreateObjekt<VertexBasic, ObjectParams_VertexBasic>(	\
+		ObjectFactory::LoadModelFile(RX_MODEL_PREFIX#obj##".obj")));
+
+	RX_DO_ALL_OBJ;
+#undef _RX_X
+#else
 #define _RX_X(obj)														\
 	CreateShape(Rxuid{#obj}, #obj,										\
 	ObjectFactory::CreateObjekt<VertexBasic, ObjectParams_VertexBasic>(	\
 		ObjectFactory::LoadModelFile(RX_MODEL_PREFIX#obj".obj")));
-	_RX_X(ogre);
-	_RX_X(bunny);
-	_RX_X(cup);
-	_RX_X(head);
-	_RX_X(lucy_princeton);
-	_RX_X(rhino);
-	_RX_X(starwars1);
+
+	RX_DO_ALL_OBJ;
 #undef _RX_X
+#endif
 }

@@ -10,6 +10,7 @@ public:
 public:
 	inline Collider(Primitive primType = Primitive::NIL) : m_PrimitiveType(primType) { }
 	inline void OnConstructImpl() override { SetupPrimitive(); }
+	inline void OnDestroyImpl() override { SetPrimitiveType(Primitive::NIL); }
 
 	inline Primitive GetPrimitiveType() const { return m_PrimitiveType; }
 	void SetPrimitiveType(Primitive primType);

@@ -44,13 +44,19 @@ void Inspector::UpdateImpl(float dt)
 
 	std::string strHandle = std::to_string((uint32_t)selectedEntityHandle);
 	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen;
-	
+
 #define _RX_X(Klass)															\
 	if (EntityManager::HasComponent<Klass>(selectedEntityHandle))				\
 	{ 																			\
 		ImGui::Separator(); 													\
 		Klass& comp = EntityManager::GetComponent<Klass>(selectedEntityHandle);	\
-		if (ImGui::TreeNodeEx((#Klass"##" + strHandle).c_str(), flags))			\
+		bool isTreeOpen = ImGui::TreeNodeEx((#Klass"##" + strHandle).c_str(), flags);\
+		ImGui::SameLine();														\
+		ImGui::BeginDisabled(EntityManager::HasComponent<NoDelete>(selectedEntityHandle));\
+		if (ImGui::Button("[Delete Component]"))								\
+			EntityManager::RemoveComponent<Klass>(selectedEntityHandle);		\
+		ImGui::EndDisabled();													\
+		if (isTreeOpen)															\
 		{																		\
 			UpdateComp##Klass(strHandle, comp);									\
 			ImGui::TreePop();													\

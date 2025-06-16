@@ -21,15 +21,13 @@ const std::filesystem::path g_WorkingDir{
 #endif
 };
 
-#ifdef USE_CSD3151_AUTOMATION
-//#if USE_CSD3151_AUTOMATION == 1
-//#define RX_SHADER_PREFIX "../shaders/"
-//#define RX_MODEL_PREFIX "../models/"
-//#else
-#define RX_SHADER_PREFIX "../projects/rdxgraphics/shaders/"
-#define RX_MODEL_PREFIX "../projects/rdxgraphics/models/"
-//#endif
+#if USE_CSD3151_AUTOMATION == 1
+#define RX_PRJ_NAME "dylan.h-project-2"
+#else
+#define RX_PRJ_NAME "rdxgraphics"
 #endif
+#define RX_SHADER_PREFIX "../projects/" RX_PRJ_NAME "/shaders/"
+#define RX_MODEL_PREFIX "../models/"
 
 const uint64_t RX_INVALID_ID{ 0 };
 const glm::vec3 g_WorldUp{ 0.f,1.f,0.f };
@@ -89,3 +87,13 @@ enum class BV
 	RX_DO_ALL_BV_ENUM_AND_NIL
 };
 #undef _RX_X
+
+#define RX_DO_ALL_OBJ_M(F_O_O, ...)		\
+	F_O_O(ogre, ##__VA_ARGS__)			\
+	F_O_O(bunny, ##__VA_ARGS__)			\
+	F_O_O(cup, ##__VA_ARGS__)			\
+	F_O_O(head, ##__VA_ARGS__)			\
+	F_O_O(lucy_princeton, ##__VA_ARGS__)\
+	F_O_O(rhino, ##__VA_ARGS__)			\
+	F_O_O(starwars1, ##__VA_ARGS__)
+#define RX_DO_ALL_OBJ RX_DO_ALL_OBJ_M(_RX_X)

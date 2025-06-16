@@ -73,6 +73,7 @@ void Assignment2::UpdateImpl(float dt)
 		glm::vec3& euler = xform.GetEulerOrientation();
 		euler += rate;
 
-		EntityManager::GetComponent<BoundingVolume>(m_Spinny).SetDirty();
+		if (EntityManager::HasComponent<BoundingVolume>(m_Spinny))
+			EntityManager::GetComponent<BoundingVolume>(m_Spinny).SetDirty();
 	}
 }

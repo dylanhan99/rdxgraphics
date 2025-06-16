@@ -151,7 +151,7 @@ void FrustumBV::UpdateXform()
 void FrustumBV::RecalculateBV()
 {
 	entt::entity const handle = GetEntityHandle();
-	if (!EntityManager::HasComponent<Camera>(handle))
+	if (!EntityManager::HasComponent<Xform, Camera>(handle))
 	{
 		RX_WARN("FrustumBV is lacking a Camera component - entt::{}", (uint32_t)handle);
 		return;
@@ -205,8 +205,12 @@ void FrustumBV::RecalculateBV()
 
 void AABBBV::RecalculateBV()
 {
-	Xform& modelXform = EntityManager::GetComponent<Xform>(GetEntityHandle());
-	Rxuid const meshID = EntityManager::GetComponent<Model>(GetEntityHandle()).GetMesh();
+	entt::entity const handle = GetEntityHandle();
+	if (!EntityManager::HasComponent<Xform, Model>(handle))
+		return;
+
+	Xform& modelXform = EntityManager::GetComponent<Xform>(handle);
+	Rxuid const meshID = EntityManager::GetComponent<Model>(handle).GetMesh();
 	auto& objekt = RenderSystem::GetObjekt(meshID);
 	auto const& points = objekt.GetVBData<VertexBasic::Position>();
 
@@ -231,8 +235,12 @@ void AABBBV::RecalculateBV()
 
 void SphereBV::RecalculateBV()
 {
-	Xform& modelXform = EntityManager::GetComponent<Xform>(GetEntityHandle());
-	Rxuid const meshID = EntityManager::GetComponent<Model>(GetEntityHandle()).GetMesh();
+	entt::entity const handle = GetEntityHandle();
+	if (!EntityManager::HasComponent<Xform, Model>(handle))
+		return;
+
+	Xform& modelXform = EntityManager::GetComponent<Xform>(handle);
+	Rxuid const meshID = EntityManager::GetComponent<Model>(handle).GetMesh();
 	auto& objekt = RenderSystem::GetObjekt(meshID);
 	auto const& points = objekt.GetVBData<VertexBasic::Position>();
 	auto pointsXformed = points;
@@ -344,8 +352,12 @@ inline void OBBBV::UpdateXform()
 
 inline void OBBBV::RecalculateBV()
 {
-	Xform& modelXform = EntityManager::GetComponent<Xform>(GetEntityHandle());
-	Rxuid const meshID = EntityManager::GetComponent<Model>(GetEntityHandle()).GetMesh();
+	entt::entity const handle = GetEntityHandle();
+	if (!EntityManager::HasComponent<Xform, Model>(handle))
+		return;
+
+	Xform& modelXform = EntityManager::GetComponent<Xform>(handle);
+	Rxuid const meshID = EntityManager::GetComponent<Model>(handle).GetMesh();
 	auto& objekt = RenderSystem::GetObjekt(meshID);
 	auto const& points = objekt.GetVBData<VertexBasic::Position>();
 	auto pointsXformed = points;

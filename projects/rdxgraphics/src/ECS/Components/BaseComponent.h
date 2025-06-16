@@ -20,6 +20,7 @@ class BaseComponent
 public:
 	~BaseComponent() = default;
 	inline virtual void OnConstructImpl() {};
+	inline virtual void OnDestroyImpl() {};
 private:
 };
 
@@ -38,11 +39,17 @@ private:																		 \
 		klass.SetEntityHandle(handle);											 \
 		klass.OnConstructImpl();												 \
 	}																			 \
+	inline static void OnDestroy(entt::registry& registry, entt::entity handle)	 \
+	{																			 \
+		Klass& klass = registry.get<Klass>(handle);								 \
+		klass.OnDestroyImpl();													 \
+	}																			 \
 public:																			 \
 	inline static void Init(entt::registry& registry)							 \
 	{																			 \
 		registry.on_construct<Klass>().connect<&Klass::OnConstruct>();			 \
 		registry.on_update<Klass>().connect<&Klass::OnConstruct>();				 \
+		registry.on_destroy<Klass>().connect<&Klass::OnDestroy>();				 \
 	}																			 \
 private:
 
@@ -77,7 +84,7 @@ public:
 	void SetEulerOrientation(glm::vec3);
 
 private:
-	inline void OnConstructImpl() { SetDirty(); }
+	inline void OnConstructImpl() override { SetDirty(); }
 	void SetDirty() const; // Indicates this xform to be dirty and m_Xform MUST be updated.
 
 private:

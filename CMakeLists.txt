@@ -79,4 +79,12 @@ foreach(child ${children})
     endif()
 endforeach()
 
+# Copy the models/ folder to the output dir
+add_custom_target(CopyModels ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_CURRENT_LIST_DIR}/models"
+        "${CMAKE_BINARY_DIR}/models"
+    COMMENT "Copying models directory to build output"
+)
+
 # ======================= END AUTO CONFIGURATION =========================
