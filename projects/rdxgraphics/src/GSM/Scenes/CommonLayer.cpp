@@ -65,6 +65,14 @@ void CommonLayer::UpdateImpl(float dt)
 		EventDispatcher<Camera&>::FireEvent(RX_EVENT_CAMERA_USER_TOGGLED, cam);
 	}
 
+	if (Input::IsKeyDown(RX_KEY_LEFT_CONTROL))
+	{
+		if (Input::IsKeyTriggered(RX_KEY_1))
+			cam.SetControlScheme(Camera::ControlScheme::Regular);
+		if (Input::IsKeyTriggered(RX_KEY_2))
+			cam.SetControlScheme(Camera::ControlScheme::Arcball);
+	}
+
 	if (cam.IsCameraInUserControl())
 		cam.Inputs(dt, GUI::GetSelectedEntity());
 

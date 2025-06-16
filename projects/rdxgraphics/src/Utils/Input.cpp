@@ -38,6 +38,12 @@ void Input::ScrollCallback(double, double yoffset)
 	g.m_ScrollOffset = yoffset;
 }
 
+void Input::MousePosCallback(double xpos, double ypos)
+{
+	//g.m_MousePos.x = xpos;
+	//g.m_MousePos.y = ypos;
+}
+
 bool Input::IsKeyTriggered(unsigned int key)
 {
 	return g.m_KeysPrev[key] != RX_PRESS && g.m_Keys[key] == RX_PRESS;

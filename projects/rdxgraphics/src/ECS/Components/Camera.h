@@ -26,8 +26,9 @@ public:
 	void OnConstructImpl() override;
 
 	void UpdateCameraVectors();
-	void Inputs(float dt);
 	void Inputs(float dt, entt::entity target);
+	void Inputs_Regular(float dt);
+	void Inputs_Arcball(float dt, entt::entity target);
 
 	inline glm::mat4 const& GetViewMatrix() const { return m_ViewMatrix; }
 	inline glm::mat4 const& GetProjMatrix() const { return m_ProjectionMatrix; }
@@ -54,6 +55,7 @@ public:
 	inline float& GetOrthoSize() { return m_OrthoSize; }
 
 	inline ControlScheme& GetControlScheme() { return m_ControlScheme; }
+	inline void SetControlScheme(ControlScheme s) { m_ControlScheme = s; }
 	inline Mode& GetCameraMode() { return m_CameraMode; }
 	inline bool IsPerspective() const { return m_CameraMode == Mode::Perspective; }
 	inline bool IsOrtho() const { return m_CameraMode == Mode::Orthorgonal; }

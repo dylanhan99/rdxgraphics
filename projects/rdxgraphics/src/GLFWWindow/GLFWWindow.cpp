@@ -190,9 +190,7 @@ void GLFWWindow::RegisterCallbacks()
 			if (!GLFWWindow::IsFocused())
 				return;
 
-			EventDispatcher<double, double>::FireEvent(
-				RX_EVENT_CURSOR_POS_CALLBACK,
-				xpos, ypos);
+			Input::MousePosCallback(xpos, ypos);
 		});
 
 	glfwSetScrollCallback(g.m_pWindow,

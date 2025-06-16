@@ -68,7 +68,24 @@ void Camera::UpdateCameraVectors()
 	}
 }
 
-void Camera::Inputs(float dt)
+void Camera::Inputs(float dt, entt::entity target)
+{
+	switch (m_ControlScheme)
+	{
+	case ControlScheme::Regular:
+		Inputs_Regular(dt);
+		break;
+	case ControlScheme::Arcball:
+		Inputs_Arcball(dt, target);
+		break;
+	default: break;
+	}
+	if (EntityManager::HasComponent<BoundingVolume>(GetEntityHandle()))
+		EntityManager::GetComponent<BoundingVolume>(GetEntityHandle()).SetDirty();
+	GLFWWindow::CenterCursor();
+}
+
+void Camera::Inputs_Regular(float dt)
 {
 	Xform& xform = EntityManager::GetComponent<Xform>(GetEntityHandle());
 	glm::vec3& position = xform.GetTranslate();
@@ -103,7 +120,6 @@ void Camera::Inputs(float dt)
 
 	glm::vec2 cursorPos = (glm::vec2)GLFWWindow::GetCursorPos();
 	glm::vec2 windowDims = (glm::vec2)GLFWWindow::GetWindowDims();
-
 	float pitch = windowDims.y ? m_PitchSpeed * ((windowDims.y * 0.5f - cursorPos.y) / windowDims.y) : 0.f;
 	float yaw = windowDims.x ? m_YawSpeed * ((windowDims.x * 0.5f - cursorPos.x) / windowDims.x) : 0.f;
 
@@ -111,52 +127,41 @@ void Camera::Inputs(float dt)
 		-glm::half_pi<float>() + glm::radians(1.f),
 		glm::half_pi<float>() - glm::radians(1.f));
 	eulerOrientation.y += yaw;
-
-	if (EntityManager::HasComponent<BoundingVolume>(GetEntityHandle()))
-		EntityManager::GetComponent<BoundingVolume>(GetEntityHandle()).SetDirty();
-	GLFWWindow::CenterCursor();
 }
 
-void Camera::Inputs(float dt, entt::entity target)
-{
-	// https://gamedev.stackexchange.com/questions/53333/how-to-implement-a-basic-arcball-camera-in-opengl-with-glm
-	/*
-	Move camera via up down left right of mouse.
-	Up and down -> move along sphere vertically
-	Left and Right -> move along sphere horizontally
-
-	Scroll to inc/dec radius
-
-	Point of origin is "target"
-	If "target" dosnt exist, just use the origin
-	*/
+void Camera::Inputs_Arcball(float dt, entt::entity target)
+{ // https://gamedev.stackexchange.com/questions/53333/how-to-implement-a-basic-arcball-camera-in-opengl-with-glm
 	if (!EntityManager::HasComponent<Xform>(GetEntityHandle()))
 		return;
 
-	glm::vec3 const targetPos = 
-		EntityManager::HasEntity(target) && EntityManager::HasComponent<Xform>(target) ?
+	glm::vec3 const targetPos =
+		EntityManager::HasEntity(target) && EntityManager::HasComponent<Xform>(target) && GetEntityHandle() != target ?
 		EntityManager::GetComponent<Xform const>(target).GetTranslate() :
 		glm::vec3{ 0.f };
 
 	Xform& myXform = EntityManager::GetComponent<Xform>(GetEntityHandle());
 
 	glm::vec3& camPos = myXform.GetTranslate();
-	
-	//float offsetX = Input::GetMouseMoveOffsetX();
+
+	glm::vec2 cursorPos = (glm::vec2)GLFWWindow::GetCursorPos();
+	glm::vec2 windowDims = (glm::vec2)GLFWWindow::GetWindowDims();
+	float pitch = windowDims.y ? m_PitchSpeed * ((windowDims.y * 0.5f - cursorPos.y) / windowDims.y) : 0.f;
+	float yaw = windowDims.x ? m_YawSpeed * ((windowDims.x * 0.5f - cursorPos.x) / windowDims.x) : 0.f;
+
 	{ // Latitudal shift
-		float angle{ 1.f * dt };
+		//float angle{ (float)Input::GetMousePosOffsetX() * 1.f * dt };
 		glm::vec3 TM{}; // From T(arget) to M(e)
 		TM = camPos - targetPos;
-		camPos = targetPos + glm::vec3{ glm::rotate(glm::mat4{ 1.f }, angle, m_Right) * glm::vec4{ TM, 0.f } };
+		camPos = targetPos + glm::vec3{ glm::rotate(glm::mat4{ 1.f }, pitch, m_Right) * glm::vec4{ TM, 0.f } };
 	}
 	{ // Longitudal shift
-		float angle{ 1.f * dt };
+		//float angle{ (float)Input::GetMousePosOffsetY() * 1.f * dt };
 		glm::vec3 TM{}; // From T(arget) to M(e)
 		TM = camPos - targetPos;
-		camPos = targetPos + glm::vec3{ glm::rotate(glm::mat4{ 1.f }, angle, glm::vec3{0.f,1.f,0.f}) * glm::vec4{TM, 0.f} };
+		camPos = targetPos + glm::vec3{ glm::rotate(glm::mat4{ 1.f }, yaw, glm::vec3{0.f,1.f,0.f}) * glm::vec4{TM, 0.f} };
 	}
 
-	// Recalculating front
+	// Recalculating orientation
 	{
 		glm::vec3 forward{}; // From T(arget) to M(e)
 		forward = glm::normalize(camPos - targetPos);
@@ -165,10 +170,6 @@ void Camera::Inputs(float dt, entt::entity target)
 		eulerOri.x = glm::asin(-forward.y);
 		eulerOri.y = glm::atan(forward.x, forward.z);
 	}
-
-	if (EntityManager::HasComponent<BoundingVolume>(GetEntityHandle()))
-		EntityManager::GetComponent<BoundingVolume>(GetEntityHandle()).SetDirty();
-	GLFWWindow::CenterCursor();
 }
 
 glm::vec3 Camera::GetPosition() const

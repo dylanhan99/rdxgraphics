@@ -156,6 +156,7 @@ public:
 	static void KeyCallback(int key, int scancode, int action);
 	static void ButtonCallback(int btn, int action);
 	static void ScrollCallback(double xoffset, double yoffset);
+	static void MousePosCallback(double xpos, double ypos);
 
 	static bool IsKeyTriggered(unsigned int key);
 	static bool IsKeyReleased(unsigned int key);
