@@ -105,11 +105,18 @@ void Inspector::UpdateCompXform(std::string const& strHandle, Xform& comp)
 
 void Inspector::UpdateCompCamera(std::string const& strHandle, Camera& comp)
 {
+	int* pControlScheme = reinterpret_cast<int*>(&comp.GetControlScheme());
+	ImGui::Text("Control Scheme");
+	ImGui::RadioButton("Regular", pControlScheme, (int)Camera::ControlScheme::Regular);
+	ImGui::SameLine();
+	ImGui::RadioButton("Arcball", pControlScheme, (int)Camera::ControlScheme::Arcball);
+
 	int* pCamMode = reinterpret_cast<int*>(&comp.GetCameraMode());
 	ImGui::Text("Camera Mode");
 	ImGui::RadioButton("Perspective", pCamMode, (int)Camera::Mode::Perspective);
 	ImGui::SameLine();
 	ImGui::RadioButton("Orthorgonal", pCamMode, (int)Camera::Mode::Orthorgonal);
+
 	glm::vec3 camDir = comp.GetDirection();
 	bool updateBV = false;
 	updateBV |= ImGui::DragFloat2("Near/Far", glm::value_ptr(comp.GetClipPlanes()), 0.1f, 0.f, FLT_MAX, "%.2f");

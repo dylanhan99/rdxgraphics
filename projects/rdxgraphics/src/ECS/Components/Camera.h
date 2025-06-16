@@ -10,6 +10,10 @@ public:
 		Perspective,
 		Orthorgonal
 	};
+	enum class ControlScheme {
+		Regular,
+		Arcball
+	};
 
 public:
 	Camera(
@@ -23,6 +27,7 @@ public:
 
 	void UpdateCameraVectors();
 	void Inputs(float dt);
+	void Inputs(float dt, entt::entity target);
 
 	inline glm::mat4 const& GetViewMatrix() const { return m_ViewMatrix; }
 	inline glm::mat4 const& GetProjMatrix() const { return m_ProjectionMatrix; }
@@ -48,6 +53,7 @@ public:
 	inline float const& GetOrthoSize() const { return m_OrthoSize; }
 	inline float& GetOrthoSize() { return m_OrthoSize; }
 
+	inline ControlScheme& GetControlScheme() { return m_ControlScheme; }
 	inline Mode& GetCameraMode() { return m_CameraMode; }
 	inline bool IsPerspective() const { return m_CameraMode == Mode::Perspective; }
 	inline bool IsOrtho() const { return m_CameraMode == Mode::Orthorgonal; }
@@ -57,7 +63,7 @@ private:
 	glm::mat4 m_ProjectionMatrix{ glm::mat4(1.f) };
 
 	glm::vec2 m_Clip{ 0.1f, 100.f };
-	glm::vec3 m_Front{};
+	glm::vec3 m_Front{}, m_Right{};
 	float m_AspectRatio{};
 	float m_FOV{};
 	float m_MovementSpeed{ 1.f };
@@ -67,6 +73,8 @@ private:
 
 	float m_OrthoSize = 10.f;
 
+	ControlScheme m_ControlScheme{};
 	Mode m_CameraMode{};
 	bool m_CameraInUserControl{ false };
+
 };

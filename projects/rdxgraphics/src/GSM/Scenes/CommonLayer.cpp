@@ -3,6 +3,7 @@
 #include "Utils/Input.h"
 #include "ECS/Systems/RenderSystem.h"
 #include "ECS/Components.h"
+#include "GUI/GUI.h"
 
 void CommonLayer::StartImpl()
 {
@@ -65,7 +66,7 @@ void CommonLayer::UpdateImpl(float dt)
 	}
 
 	if (cam.IsCameraInUserControl())
-		cam.Inputs(dt);
+		cam.Inputs(dt, GUI::GetSelectedEntity());
 
 	// PiP following FPS's X/Z
 	if (EntityManager::HasComponent<Xform::Dirty>(cam.GetEntityHandle()))
