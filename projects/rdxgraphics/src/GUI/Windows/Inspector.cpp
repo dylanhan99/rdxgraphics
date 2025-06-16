@@ -65,6 +65,24 @@ void Inspector::UpdateImpl(float dt)
 
 	RX_DO_MAIN_COMPONENTS;
 #undef _RX_X
+
+	ImGui::Separator();
+	if (ImGui::Button("Add Component"))
+		ImGui::OpenPopup("AddComponentPopup");
+
+#define _RX_X(Klass)												 \
+	if (!EntityManager::HasComponent<Klass>(selectedEntityHandle))	 \
+	{																 \
+		if (ImGui::Selectable(#Klass))								 \
+			EntityManager::AddComponent<Klass>(selectedEntityHandle);\
+	}
+
+	if (ImGui::BeginPopup("AddComponentPopup"))
+	{
+		RX_DO_MAIN_COMPONENTS;
+		ImGui::EndPopup();
+	}
+#undef _RX_X
 }
 
 void Inspector::UpdateCompMetadata(std::string const& strHandle, Metadata& comp)

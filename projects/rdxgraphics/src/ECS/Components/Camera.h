@@ -13,7 +13,7 @@ public:
 
 public:
 	Camera(
-		Mode camMode,
+		Mode camMode = Mode::Perspective,
 		glm::vec2 aspect = { 4.f, 3.f },
 		float fov = 90,
 		glm::vec2 clipPlanes = { 0.1f, 100.f }

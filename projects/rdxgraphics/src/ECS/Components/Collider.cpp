@@ -29,7 +29,6 @@ void Collider::SetupPrimitive(glm::vec3 offset) const
 	{
 		RX_DO_ALL_PRIMITIVE_ENUM;
 	default:
-		RX_ASSERT(false, "How did you get here");
 		break;
 	}
 #undef _RX_X
@@ -44,7 +43,7 @@ glm::vec3 Collider::RemovePrimitive()
 	glm::vec3 o{};
 #define _RX_X(Klass)															 \
 	case Primitive::Klass:														 \
-		RX_ASSERT(EntityManager::HasComponent<Klass##Primitive>(handle));		 \
+		if (!EntityManager::HasComponent<Klass##Primitive>(handle)) break;		 \
 		o = EntityManager::GetComponent<Klass##Primitive>(handle).GetOffset();	 \
 		EntityManager::RemoveComponent<Klass##Primitive>(handle);				 \
 		break;
