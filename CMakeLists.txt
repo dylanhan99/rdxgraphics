@@ -26,6 +26,7 @@ set(ALL_LIBS
     PRIVATE libglew_static
     PRIVATE glm::glm
 	PRIVATE imgui
+	PRIVATE imguizmo
 	PRIVATE spdlog::spdlog
     PRIVATE EnTT::EnTT
 	PRIVATE assimp::assimp

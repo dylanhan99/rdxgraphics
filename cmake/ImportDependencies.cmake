@@ -106,6 +106,32 @@ macro(import_imgui)
     endif()
 endmacro()
 
+#macro to import imguizmo
+macro(import_imguizmo)
+    if (NOT TARGET imguizmo)
+        include(FetchContent)
+
+        FetchContent_Declare(imguizmo
+            GIT_REPOSITORY https://github.com/CedricGuillemet/ImGuizmo.git
+            GIT_TAG        2310acda820d7383d4c4884b7945ada92cd16a47
+        )
+        FetchContent_MakeAvailable(imguizmo)
+
+        file(GLOB IMGUIZMO_REQ_SOURCES CONFIGURE_DEPENDS
+            "${imguizmo_SOURCE_DIR}/*.cpp"
+        )
+
+        add_library(imguizmo STATIC "${IMGUIZMO_REQ_SOURCES}")
+        target_include_directories(imguizmo
+	        PUBLIC "${imguizmo_SOURCE_DIR}"
+        )
+
+        target_link_libraries(imguizmo
+	        PRIVATE imgui
+        )
+    endif()
+endmacro()
+
 #macro to import entt
 macro(import_entt)
     if(NOT TARGET entt)
@@ -176,6 +202,10 @@ macro(importDependencies)
     message(STATUS "Importing imgui-docking...")
     import_imgui()
     message(STATUS "imgui-docking imported successfully.")
+
+    message(STATUS "Importing imguizmo...")
+    import_imguizmo()
+    message(STATUS "imguizmo imported successfully.")
 
     message(STATUS "Importing entt...")
     import_entt()
