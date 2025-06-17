@@ -1,6 +1,7 @@
 #pragma once
 #include "ECS/EntityManager.h"
 #include "ECS/Components.h"
+#include "ECS/Systems/CollisionSystem.h"
 #define RX_SCENE_DEFAULT(Foo) public: inline Foo(std::string const& name, std::string const& desc = "") : BaseScene(name, desc) {} private:
 
 class BaseScene
@@ -15,17 +16,11 @@ public:
 	inline virtual void StopImpl() {};
 
 	template <typename ...Args>
-	entt::entity CreateEntity()
-	{
-		entt::entity handle = EntityManager::CreateEntity<Args...>();
-		m_Handles.push_back(handle);
-		return handle;
-	}
-
-	template <typename ...Args>
 	inline entt::entity CreateDefaultEntity()
 	{
-		return CreateEntity<Metadata, Xform, Args...>();
+		entt::entity handle = CreateEntity<Metadata, Xform, Args...>();
+		EntityManager::AddComponent<BV>(handle, CollisionSystem::GetGlobalBVType());
+		return handle;
 	}
 
 	inline void DestroyEntity(entt::entity handle)
@@ -61,6 +56,15 @@ public:
 	inline std::string const& GetSceneDesc() const { return m_SceneDesc; }
 	inline std::vector<entt::entity> const& GetEntities() const { return m_Handles; }
 	inline std::vector<entt::entity>& GetEntities() { return m_Handles; }
+
+private:
+	template <typename ...Args>
+	entt::entity CreateEntity()
+	{
+		entt::entity handle = EntityManager::CreateEntity<Args...>();
+		m_Handles.push_back(handle);
+		return handle;
+	}
 
 private:
 	std::string m_SceneName{};
