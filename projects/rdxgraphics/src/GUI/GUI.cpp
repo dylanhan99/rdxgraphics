@@ -96,6 +96,18 @@ void GUI::Update(float dt)
 		ImGui::DockBuilderFinish(dockID);
 	}
 
+	{ // Common input
+		if (Input::IsKeyDown(RX_KEY_LEFT_ALT))
+		{
+			if (Input::IsKeyTriggered(RX_KEY_Q))
+				g.m_GuizmoOperation = ImGuizmo::OPERATION::TRANSLATE;
+			if (Input::IsKeyTriggered(RX_KEY_W))
+				g.m_GuizmoOperation = ImGuizmo::OPERATION::SCALE;
+			if (Input::IsKeyTriggered(RX_KEY_E))
+				g.m_GuizmoOperation = ImGuizmo::OPERATION::ROTATE;
+		}
+	}
+
 	for (auto& pGUIWin : g.m_GUIWindows)
 		pGUIWin->Update(dt);
 }
