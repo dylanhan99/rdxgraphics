@@ -12,6 +12,36 @@ void Viewport::UpdateImpl(float dt)
 	ImGuiTableColumnFlags colFlags = ImGuiTableColumnFlags_WidthStretch;
 	ImGui::TableSetupColumn("viewport_col0", colFlags);
 
+	// Start viewport settings row
+	ImGui::TableNextRow();
+	ImGui::TableNextColumn();
+
+	int* pOperation = reinterpret_cast<int*>(&GUI::GetGuizmoOperation());
+	ImGui::Text("Guizmo");
+	ImGui::SameLine();
+	ImGui::RadioButton("Translate", pOperation, (int)ImGuizmo::OPERATION::TRANSLATE);
+	if (ImGui::BeginItemTooltip())
+	{
+		ImGui::Text("Alt + Q");
+		ImGui::EndTooltip();
+	}
+	ImGui::SameLine();
+	ImGui::RadioButton("Scale", pOperation, (int)ImGuizmo::OPERATION::SCALE);
+	if (ImGui::BeginItemTooltip())
+	{
+		ImGui::Text("Alt + W");
+		ImGui::EndTooltip();
+	}
+	ImGui::SameLine();
+	ImGui::RadioButton("Rotate", pOperation, (int)ImGuizmo::OPERATION::ROTATE);
+	if (ImGui::BeginItemTooltip())
+	{
+		ImGui::Text("Alt + R");
+		ImGui::EndTooltip();
+	}
+	ImGui::Separator();
+
+	// Start image row
 	ImGui::TableNextRow();
 	ImGui::TableNextColumn();
 

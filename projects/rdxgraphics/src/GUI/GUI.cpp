@@ -14,8 +14,6 @@
 #include "Windows/Settings.h"
 
 RX_SINGLETON_EXPLICIT(GUI);
-extern float move;
-extern int renderOption;
 
 void BaseGUIWindow::Update(float dt)
 {
