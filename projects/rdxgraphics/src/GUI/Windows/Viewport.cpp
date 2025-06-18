@@ -3,6 +3,7 @@
 #include "GSM/SceneManager.h"
 #include "Graphics/Passes/Passes.h"
 #include "GUI/GUI.h"
+#include "GLFWWindow/GLFWWindow.h"
 
 void Viewport::UpdateImpl(float dt)
 {
@@ -16,6 +17,19 @@ void Viewport::UpdateImpl(float dt)
 	ImGui::TableNextRow();
 	ImGui::TableNextColumn();
 
+	ToolBar();
+
+	// Start image row
+	ImGui::TableNextRow();
+	ImGui::TableNextColumn();
+
+	EngineView();
+
+	ImGui::EndTable();
+}
+
+void Viewport::ToolBar()
+{
 	int* pOperation = reinterpret_cast<int*>(&GUI::GetGuizmoOperation());
 	ImGui::Text("Guizmo");
 	ImGui::SameLine();
@@ -40,11 +54,10 @@ void Viewport::UpdateImpl(float dt)
 		ImGui::EndTooltip();
 	}
 	ImGui::Separator();
+}
 
-	// Start image row
-	ImGui::TableNextRow();
-	ImGui::TableNextColumn();
-
+void Viewport::EngineView()
+{
 	ImVec2 currPos = ImGui::GetCursorPos();
 	std::shared_ptr<BasePass> pass = RenderSystem::GetScreenPass();
 	ImVec2 winDims{
@@ -75,11 +88,51 @@ void Viewport::UpdateImpl(float dt)
 	}
 
 	GLuint const frameHandle = pass->GetTextureBuffer();
-	ImVec2 imagePos = ImGui::GetCursorScreenPos();
-	ImGui::Image(frameHandle, 
-		ImVec2{ vpSize.x, vpSize.y },
+	ImVec2 imagePosAbs = ImGui::GetCursorScreenPos();
+	ImVec2 imageSize{ vpSize.x, vpSize.y };
+	ImGui::Image(frameHandle,
+		imageSize,
 		{ 0.f, 1.f }, { 1.f, 0.f }); // It's flipped vertically
 
+	Picking(imagePosAbs, imageSize, bufDims);
+	Guizmos(imagePosAbs, imageSize);
+}
+
+void Viewport::Picking(ImVec2 const& imagePos, ImVec2 const& imageSize, glm::vec2 const& actualBufferSize)
+{
+	entt::entity const camHandle = RenderSystem::GetActiveCamera();
+	if (!EntityManager::HasEntity(camHandle) || !EntityManager::HasComponent<Camera>(camHandle))
+		return;
+
+	ImVec2 imWinPos = ImGui::GetWindowPos();
+	ImGui::SetCursorScreenPos(imagePos);
+	ImGui::InvisibleButton("viewport_picking", imageSize);
+	if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+	{
+		// Get the % along width and height of where the mouse is and get the screen coords
+		glm::vec2 mousePos{ ImGui::GetMousePos().x, ImGui::GetMousePos().y };
+		glm::vec4 point = { // ImGui vp offset first
+			mousePos.x - imagePos.x,
+			imageSize.y - (mousePos.y - imagePos.y),
+			0.f, 1.f };
+
+		// Now ndc
+		point.x = (point.x / imageSize.x) * 2.f - 1.f;
+		point.y = (point.y / imageSize.y) * 2.f - 1.f;
+		point.z = -1.f; // Near plane
+
+		// Then inverse all the way back to world coords
+		Camera const& cam = EntityManager::GetComponent<Camera const>(camHandle);
+		glm::mat4 const invMatrix = glm::inverse(cam.GetProjMatrix() * cam.GetViewMatrix());
+		point = invMatrix * point;
+		point /= point.w; // perspective division
+
+		glm::vec3 direction = glm::vec3{ point } - cam.GetPosition();
+	}
+}
+
+void Viewport::Guizmos(ImVec2 const& imagePos, ImVec2 const& imageSize)
+{
 	entt::entity const selectedEntity = GUI::GetSelectedEntity();
 	Camera& cam = EntityManager::GetComponent<Camera>(RenderSystem::GetActiveCamera());
 	if (EntityManager::HasEntity(selectedEntity) && selectedEntity != RenderSystem::GetActiveCamera())
@@ -88,14 +141,14 @@ void Viewport::UpdateImpl(float dt)
 		ImGuizmo::BeginFrame();
 		ImGuizmo::SetOrthographic(false);
 		ImGuizmo::SetDrawlist();
-		ImGuizmo::SetRect(imagePos.x, imagePos.y, vpSize.x, vpSize.y);
+		ImGuizmo::SetRect(imagePos.x, imagePos.y, imageSize.x, imageSize.y);
 
 		Xform& xform = EntityManager::GetComponent<Xform>(GUI::GetSelectedEntity());
 		glm::mat4 trData = xform.GetXform();
 
 		ImGuizmo::Manipulate(
-			glm::value_ptr(cam.GetViewMatrix()), 
-			glm::value_ptr(cam.GetProjMatrix()), 
+			glm::value_ptr(cam.GetViewMatrix()),
+			glm::value_ptr(cam.GetProjMatrix()),
 			GUI::GetGuizmoOperation(), ImGuizmo::WORLD, glm::value_ptr(trData));
 
 		if (ImGuizmo::IsUsing())
@@ -111,6 +164,4 @@ void Viewport::UpdateImpl(float dt)
 			xform.SetEulerOrientation(glm::eulerAngles(rotation));
 		}
 	}
-
-	ImGui::EndTable();
 }
