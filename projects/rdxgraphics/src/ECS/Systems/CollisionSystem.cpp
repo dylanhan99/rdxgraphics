@@ -210,24 +210,7 @@ bool CollisionSystem::CheckCollision(RayPrimitive const& lhs, AABBPrimitive cons
 
 bool CollisionSystem::CheckCollision(RayPrimitive const& lhs, SpherePrimitive const& rhs)
 { // Orange book page 178 (217 in the pdf)
-	glm::vec3 m = lhs.GetPosition() - rhs.GetPosition();
-	float c = glm::dot(m, m) - glm::pow(rhs.GetRadius(), 2.f);
-	// If there is definitely at least one real root, there must be an intersection
-	if (c <= 0.f) 
-		return true;
-
-	float b = glm::dot(m, lhs.GetDirection());
-	// Early exit if ray origin outside sphere and ray pointing away from sphere
-	if (b > 0.f) 
-		return false;
-
-	float disc = b * b - c;
-	// A negative discriminant corresponds to ray missing sphere
-	if (disc < 0.f) 
-		return false;
-
-	// Now ray must hit sphere
-	return true;
+	return Intersection::RaySphereTest(lhs.GetPosition(), lhs.GetDirection(), rhs.GetPosition(), rhs.GetRadius());
 }
 
 bool CollisionSystem::CheckCollision(TrianglePrimitive const& lhs, PointPrimitive const& rhs) { return CheckCollision(rhs, lhs); }
@@ -341,6 +324,14 @@ int CollisionSystem::CheckCollision(glm::vec4 const& plane, OBBBV const& bv)
 int CollisionSystem::CheckCollision(glm::vec4 const& plane, SphereBV const& bv)
 {
 	return Intersection::PlaneSphereTest(bv.GetPosition(), bv.GetRadius(), plane);
+}
+
+bool CollisionSystem::CheckCollision(RayPrimitive const& ray, SphereBV const& bv, float* tI, float* tO)
+{
+	return Intersection::RaySphereTest(
+		ray.GetPosition(), ray.GetDirection(), 
+		bv.GetPosition(), bv.GetRadius(), 
+		tI, tO);
 }
 
 bool CollisionSystem::IntersectPointTriangle(glm::vec3 const& p, glm::vec3 const& q0, glm::vec3 const& q1, glm::vec3 const& q2, glm::vec3 const& qn)

@@ -197,3 +197,20 @@ int Intersection::PlanePointTest(glm::vec3 aPos, glm::vec4 bEquation)
 	else if (dist > -zero) return 0;
 	else				   return -1;
 }
+
+bool Intersection::RaySphereTest(glm::vec3 const rayPos, glm::vec3 const rayDir, glm::vec3 const spherePos, float const sphereRadius, float* tI, float* tO)
+{
+	glm::vec3 m = rayPos - spherePos;
+	float b = glm::dot(m, rayPos);
+	float c = glm::dot(m, m) - glm::dot(sphereRadius, sphereRadius);
+
+	float disc = b * b - c;
+	// A negative discriminant corresponds to ray missing sphere
+	if (disc < 0.f)
+		return false;
+
+	float sqrtDisc = glm::sqrt(disc);
+	if (tI) *tI = -b - sqrtDisc;
+	if (tO) *tO = -b + sqrtDisc;
+	return true;
+}

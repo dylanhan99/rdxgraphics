@@ -107,7 +107,7 @@ void Viewport::Picking(ImVec2 const& imagePos, ImVec2 const& imageSize, glm::vec
 	ImVec2 imWinPos = ImGui::GetWindowPos();
 	ImGui::SetCursorScreenPos(imagePos);
 	ImGui::InvisibleButton("viewport_picking", imageSize);
-	if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+	if (ImGui::IsItemClicked(ImGuiMouseButton_Left) && !ImGuizmo::IsUsingAny())
 	{
 		// Get the % along width and height of where the mouse is and get the screen coords
 		glm::vec2 mousePos{ ImGui::GetMousePos().x, ImGui::GetMousePos().y };
@@ -127,7 +127,53 @@ void Viewport::Picking(ImVec2 const& imagePos, ImVec2 const& imageSize, glm::vec
 		point = invMatrix * point;
 		point /= point.w; // perspective division
 
-		glm::vec3 direction = glm::vec3{ point } - cam.GetPosition();
+		glm::vec3 direction = glm::normalize(glm::vec3{ point } - cam.GetPosition());
+		entt::entity const rayHandle = EntityManager::CreateEntity();
+		EntityManager::AddComponent<Xform>(rayHandle, point);
+		EntityManager::AddComponent<Collider>(rayHandle, Primitive::Ray);
+		RayPrimitive& ray = EntityManager::GetComponent<RayPrimitive>(rayHandle);
+		ray.SetDirection(direction);
+
+		// For each BV, if is OUT, skip
+		// Else do check
+		auto view = EntityManager::View<BoundingVolume>(entt::exclude<FrustumBV>);
+#define _RX_X(Klass)
+		//case BV::Klass:
+		//{
+		//	Klass##BV& bv = EntityManager::GetComponent<Klass##BV>(handle);
+		//	if (bv.GetBVState() == BVState::Out) continue;
+		//	float tE{}; /* time of entry */
+		//	bool intersect = CollisionSystem::CheckCollision(ray, bv, &tE, ...);
+		//	if (intersect)
+		//	{
+		//		//Add tE and entity handle to sorted list (prob use a map);
+		//	}
+		//}
+		std::map<float, entt::entity const> tEs{};
+		for (auto [handle, boundingVolume] : view.each())
+		{
+			switch (boundingVolume.GetBVType())
+			{
+				//RX_DO_ALL_BV_ENUM;
+			case BV::Sphere:
+			{
+				SphereBV& bv = EntityManager::GetComponent<SphereBV>(handle);
+				if (bv.GetBVState() == BVState::Out) continue;
+				float tE{}; /* time of entry */
+				bool intersect = CollisionSystem::CheckCollision(ray, bv, &tE);
+				if (intersect)
+				{
+					tEs.emplace(tE, handle);
+				}
+				break;
+			}
+			default: break;
+			}
+		}
+		EntityManager::Destroy(rayHandle);
+#undef _RX_X
+		auto it = tEs.begin();
+		GUI::SetSelectedEntity(it != tEs.end() ? it->second : entt::null);
 	}
 }
 

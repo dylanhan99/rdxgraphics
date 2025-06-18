@@ -19,4 +19,10 @@ struct Intersection
 	static int PlaneSphereTest(glm::vec3 aPos, float aRadius, glm::vec4 bEquation);
 	static int PlaneAABBTest(glm::vec3 aPos, glm::vec3 aHalfExtents, glm::vec4 bEquation);
 	static int PlanePointTest(glm::vec3 aPos, glm::vec4 bEquation);
+
+	// This is the unoptimized, no early exit version because it supports tI and tO
+	static bool RaySphereTest(
+		glm::vec3 const rayPos, glm::vec3 const rayDir, 
+		glm::vec3 const spherePos, float const sphereRadius,
+		float* tI = nullptr, float* tO = nullptr);
 };

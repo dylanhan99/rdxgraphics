@@ -92,6 +92,9 @@ public:
 	// inward facing is the agreed upon standard for ray
 	inline glm::vec3 GetDirection() const { return GetDirection(glm::quat{ m_EulerOrientation }); }
 
+	// direction MUST be normalized
+	inline void SetDirection(glm::vec3 const& direction) { m_EulerOrientation = glm::eulerAngles(glm::rotation(DefaultDirection, direction)); }
+
 public:
 	inline static glm::vec3 GetDirection(glm::quat const& quat) { return quat * DefaultDirection; }
 
