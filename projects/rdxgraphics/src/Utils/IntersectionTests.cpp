@@ -201,7 +201,7 @@ int Intersection::PlanePointTest(glm::vec3 aPos, glm::vec4 bEquation)
 bool Intersection::RaySphereTest(glm::vec3 const rayPos, glm::vec3 const rayDir, glm::vec3 const spherePos, float const sphereRadius, float* tI, float* tO)
 {
 	glm::vec3 m = rayPos - spherePos;
-	float b = glm::dot(m, rayPos);
+	float b = glm::dot(m, rayDir);
 	float c = glm::dot(m, m) - glm::dot(sphereRadius, sphereRadius);
 
 	float disc = b * b - c;
