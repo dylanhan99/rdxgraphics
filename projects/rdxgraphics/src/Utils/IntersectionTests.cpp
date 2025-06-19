@@ -198,22 +198,6 @@ int Intersection::PlanePointTest(glm::vec3 aPos, glm::vec4 bEquation)
 	else				   return -1;
 }
 
-bool Intersection::RaySphereTest(glm::vec3 const rayPos, glm::vec3 const rayDir, glm::vec3 const spherePos, float const sphereRadius, float* tI, float* tO)
-{
-	glm::vec3 m = rayPos - spherePos;
-	float b = glm::dot(m, rayDir);
-	float c = glm::dot(m, m) - glm::dot(sphereRadius, sphereRadius);
-
-	float disc = b * b - c;
-	// A negative discriminant corresponds to ray missing sphere
-	if (disc < 0.f)
-		return false;
-
-	float sqrtDisc = glm::sqrt(disc);
-	if (tI) *tI = -b - sqrtDisc;
-	if (tO) *tO = -b + sqrtDisc;
-	return true;
-}
 
 bool Intersection::RayAABBTest(glm::vec3 const rayPos, glm::vec3 const rayDir, glm::vec3 const aabbPos, glm::vec3 const halfExtents, float* tI, float* tO)
 {
@@ -234,4 +218,78 @@ bool Intersection::RayAABBTest(glm::vec3 const rayPos, glm::vec3 const rayDir, g
 	if (tO) *tO = tFar;
 
 	return tNear <= tFar && tFar >= 0.0f;
+}
+
+bool Intersection::RayOBBTest(glm::vec3 const rayPos, glm::vec3 const rayDir, glm::vec3 const obbPos, glm::vec3 const halfExtents, glm::mat3 const orthonormalBasis, float* tI, float* tO)
+{ // https://www.opengl-tutorial.org/miscellaneous/clicking-on-objects/picking-with-custom-ray-obb-function/
+	glm::vec3 min{  std::numeric_limits<float>().infinity() };
+	glm::vec3 max{ -std::numeric_limits<float>().infinity() };
+	{ // This is terrible, i need the minmax and i didn't cache it, im too lazy to cache it
+		// Note to future me, maybe use minmax instead idk. Or actually, just unlink AABB and OBB classes.
+		for (int x = -1; x <= 1; x+=2)
+		for (int y = -1; y <= 1; y+=2)
+		for (int z = -1; z <= 1; z+=2)
+		{
+			glm::vec3 offset =
+				orthonormalBasis[0] * (halfExtents.x * (float)x) +
+				orthonormalBasis[1] * (halfExtents.y * (float)y) +
+				orthonormalBasis[2] * (halfExtents.z * (float)z);
+
+			glm::vec3 point = obbPos + offset;
+			min = glm::min(point, min);
+			max = glm::max(point, max);
+		}
+	}
+
+	glm::vec3 delta = obbPos - rayPos;
+	float tNear{ std::numeric_limits<float>().infinity() };
+	float tFar{ -std::numeric_limits<float>().infinity() };
+	for (int i = 0; i < 3; ++i)
+	{
+		glm::vec3 const& axis = orthonormalBasis[i];
+		float e = glm::dot(axis, delta);
+		float f = glm::dot(rayDir, axis);
+
+		if (glm::abs(f) > 0.f)
+		{
+			float t1 = (e + min[i]) / f;
+			float t2 = (e + max[i]) / f;
+
+			float tmin = glm::min(t1, t2);
+			float tmax = glm::max(t1, t2);
+
+			tNear = glm::min(tNear, tmin);
+			tFar  = glm::max(tFar, tmax);
+
+			if (tFar < tNear)
+				return false;
+		}
+		else
+		{
+			if (-e + min[i] > 0.0f || -e + max[i] < 0.0f)
+				return false;
+		}
+	}
+
+	if (tI) *tI = tNear;
+	if (tO) *tO = tFar;
+
+	return tNear <= tFar && tFar >= 0.0f;
+}
+
+bool Intersection::RaySphereTest(glm::vec3 const rayPos, glm::vec3 const rayDir, glm::vec3 const spherePos, float const sphereRadius, float* tI, float* tO)
+{
+	glm::vec3 m = rayPos - spherePos;
+	float b = glm::dot(m, rayDir);
+	float c = glm::dot(m, m) - glm::dot(sphereRadius, sphereRadius);
+
+	float disc = b * b - c;
+	// A negative discriminant corresponds to ray missing sphere
+	if (disc < 0.f)
+		return false;
+
+	float sqrtDisc = glm::sqrt(disc);
+	if (tI) *tI = -b - sqrtDisc;
+	if (tO) *tO = -b + sqrtDisc;
+	return true;
 }

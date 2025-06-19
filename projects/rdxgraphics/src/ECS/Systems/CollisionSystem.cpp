@@ -308,12 +308,7 @@ int CollisionSystem::CheckCollision(glm::vec4 const& plane, OBBBV const& bv)
 	else					 return 0;
 }
 
-int CollisionSystem::CheckCollision(glm::vec4 const& plane, SphereBV const& bv)
-{
-	return Intersection::PlaneSphereTest(bv.GetPosition(), bv.GetRadius(), plane);
-}
-
-bool CollisionSystem::CheckCollision(RayPrimitive const& ray, OBBBV const& bv, float* tI, float* tO)
+bool CollisionSystem::CheckCollision(RayPrimitive const& ray, FrustumBV const& bv, float* tI, float* tO)
 {
 	return false;
 }
@@ -325,6 +320,20 @@ bool CollisionSystem::CheckCollision(RayPrimitive const& ray, AABBBV const& bv, 
 		bv.GetPosition(), bv.GetHalfExtents(),
 		tI, tO
 	);
+}
+
+bool CollisionSystem::CheckCollision(RayPrimitive const& ray, OBBBV const& bv, float* tI, float* tO)
+{
+	return Intersection::RayOBBTest(
+		ray.GetPosition(), ray.GetDirection(),
+		bv.GetPosition(), bv.GetHalfExtents(), bv.GetOrthonormalBasis(),
+		tI, tO
+	);
+}
+
+int CollisionSystem::CheckCollision(glm::vec4 const& plane, SphereBV const& bv)
+{
+	return Intersection::PlaneSphereTest(bv.GetPosition(), bv.GetRadius(), plane);
 }
 
 bool CollisionSystem::CheckCollision(RayPrimitive const& ray, SphereBV const& bv, float* tI, float* tO)
