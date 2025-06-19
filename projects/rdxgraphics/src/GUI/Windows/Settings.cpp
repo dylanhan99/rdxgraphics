@@ -18,19 +18,35 @@ void Settings::UpdateImpl(float dt)
 				boundingVolume.SetDirty();
 		}
 
-		int* algorithm = reinterpret_cast<int*>(&SphereBV::Algorithm);
-		ImGui::SeparatorText("SphereBV Options");
-		bool isRadiod = false;
-		isRadiod |= ImGui::RadioButton("Ritter",  algorithm, static_cast<int>(SphereBV::Algo::Ritter));
-		isRadiod |= ImGui::RadioButton("Larsson", algorithm, static_cast<int>(SphereBV::Algo::Larsson));
-		isRadiod |= ImGui::RadioButton("PCA",	  algorithm, static_cast<int>(SphereBV::Algo::PCA));
-
-		if (isRadiod) // Set ALL spheres to be dirty, to be updated with new algorithm
 		{
-			auto view = EntityManager::View<const BoundingVolume, SphereBV>();
-			for (auto [handle, boundingVolume, bv] : view.each())
+			int* pBV = reinterpret_cast<int*>(&CollisionSystem::GetGlobalBVType());
+			ImGui::SeparatorText("CurrentBV Option");
+			bool isRadiod = false;
+			isRadiod |= ImGui::RadioButton("AABB", pBV, static_cast<int>(BV::AABB)); ImGui::SameLine();
+			isRadiod |= ImGui::RadioButton("OBB", pBV, static_cast<int>(BV::OBB)); ImGui::SameLine();
+			isRadiod |= ImGui::RadioButton("Sphere", pBV, static_cast<int>(BV::Sphere));
+
+			if (isRadiod)
 			{
-				bv.SetDirtyBV();
+				auto view = EntityManager::View<BoundingVolume>(entt::exclude<Camera>);
+				for (auto [handle, bv] : view.each())
+					bv.SetBVType(CollisionSystem::GetGlobalBVType());
+			}
+		}
+
+		{
+			int* algorithm = reinterpret_cast<int*>(&SphereBV::Algorithm);
+			ImGui::SeparatorText("SphereBV Options");
+			bool isRadiod = false;
+			isRadiod |= ImGui::RadioButton("Ritter", algorithm, static_cast<int>(SphereBV::Algo::Ritter)); ImGui::SameLine();
+			isRadiod |= ImGui::RadioButton("Larsson", algorithm, static_cast<int>(SphereBV::Algo::Larsson)); ImGui::SameLine();
+			isRadiod |= ImGui::RadioButton("PCA", algorithm, static_cast<int>(SphereBV::Algo::PCA));
+
+			if (isRadiod && CollisionSystem::GetGlobalBVType() == BV::Sphere) // Set ALL spheres to be dirty, to be updated with new algorithm
+			{
+				auto view = EntityManager::View<const BoundingVolume, SphereBV>();
+				for (auto [handle, boundingVolume, bv] : view.each())
+					bv.SetDirtyBV();
 			}
 		}
 

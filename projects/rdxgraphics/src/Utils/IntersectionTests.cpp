@@ -197,3 +197,79 @@ int Intersection::PlanePointTest(glm::vec3 aPos, glm::vec4 bEquation)
 	else if (dist > -zero) return 0;
 	else				   return -1;
 }
+
+
+bool Intersection::RayAABBTest(glm::vec3 const rayPos, glm::vec3 const rayDir, glm::vec3 const aabbPos, glm::vec3 const halfExtents, float* tI, float* tO)
+{
+	glm::vec3 invDir = 1.0f / rayDir; // May cause div-by-zero if dir is 0 on any axis
+	glm::vec3 min = aabbPos - halfExtents;
+	glm::vec3 max = aabbPos + halfExtents;
+
+	glm::vec3 t1 = (min - rayPos) * invDir;
+	glm::vec3 t2 = (max - rayPos) * invDir;
+
+	glm::vec3 tmin = glm::min(t1, t2);
+	glm::vec3 tmax = glm::max(t1, t2);
+
+	float tNear = glm::compMax(tmin);
+	float tFar = glm::compMin(tmax);
+
+	if (tI) *tI = tNear;
+	if (tO) *tO = tFar;
+
+	return tNear <= tFar && tFar >= 0.0f;
+}
+
+bool Intersection::RayOBBTest(glm::vec3 const rayPos, glm::vec3 const rayDir, glm::vec3 const obbPos, glm::vec3 const halfExtents, glm::mat3 const orthonormalBasis, float* tI, float* tO)
+{ // https://www.opengl-tutorial.org/miscellaneous/clicking-on-objects/picking-with-custom-ray-obb-function/
+	glm::vec3 delta = obbPos - rayPos;
+	float tNear{ -std::numeric_limits<float>().infinity() };
+	float tFar{ std::numeric_limits<float>().infinity() };
+	for (int i = 0; i < 3; ++i)
+	{
+		glm::vec3 const& axis = orthonormalBasis[i];
+		float e = glm::dot(axis, delta);
+		float f = glm::dot(rayDir, axis);
+
+		if (glm::abs(f) > 0.f)
+		{
+			float t1 = (e + halfExtents[i]) / f;
+			float t2 = (e - halfExtents[i]) / f;
+
+			if (t1 > t2) std::swap(t1, t2);
+
+			tNear = glm::max(tNear, t1);
+			tFar  = glm::min(tFar, t2);
+
+			if (tFar < tNear)
+				return false;
+		}
+		else
+		{
+			if (std::abs(e) > halfExtents[i])
+				return false;
+		}
+	}
+
+	if (tI) *tI = tNear;
+	if (tO) *tO = tFar;
+
+	return true;
+}
+
+bool Intersection::RaySphereTest(glm::vec3 const rayPos, glm::vec3 const rayDir, glm::vec3 const spherePos, float const sphereRadius, float* tI, float* tO)
+{
+	glm::vec3 m = rayPos - spherePos;
+	float b = glm::dot(m, rayDir);
+	float c = glm::dot(m, m) - glm::dot(sphereRadius, sphereRadius);
+
+	float disc = b * b - c;
+	// A negative discriminant corresponds to ray missing sphere
+	if (disc < 0.f)
+		return false;
+
+	float sqrtDisc = glm::sqrt(disc);
+	if (tI) *tI = -b - sqrtDisc;
+	if (tO) *tO = -b + sqrtDisc;
+	return true;
+}

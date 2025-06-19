@@ -38,6 +38,8 @@ private:
 class BaseBV : public virtual BasePrimitive
 {
 public:
+	~BaseBV() = default;
+
 	void OnConstructImpl() override { SetDirty(); }
 	void SetDirtyXform() const override;
 	void SetDirtyBV() const;

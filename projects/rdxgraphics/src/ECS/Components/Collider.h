@@ -92,6 +92,9 @@ public:
 	// inward facing is the agreed upon standard for ray
 	inline glm::vec3 GetDirection() const { return GetDirection(glm::quat{ m_EulerOrientation }); }
 
+	// direction MUST be normalized
+	inline void SetDirection(glm::vec3 const& direction) { m_EulerOrientation = glm::eulerAngles(glm::rotation(DefaultDirection, direction)); }
+
 public:
 	inline static glm::vec3 GetDirection(glm::quat const& quat) { return quat * DefaultDirection; }
 
@@ -201,6 +204,8 @@ class AABBPrimitive : public virtual BasePrimitive
 	RX_COMPONENT_DEF_HANDLE(AABBPrimitive);
 public:
 	AABBPrimitive() = default;
+	~AABBPrimitive() = default;
+
 	inline void UpdateXform() override
 	{
 		m_Xform = glm::translate(GetPosition()) * glm::scale(2.f * m_HalfExtents);
@@ -208,8 +213,8 @@ public:
 
 	inline glm::vec3 const& GetHalfExtents() const { return m_HalfExtents; }
 	inline glm::vec3& GetHalfExtents() { return m_HalfExtents; }
-	inline glm::vec3 GetMinPoint() const { return GetPosition() - m_HalfExtents; }
-	inline glm::vec3 GetMaxPoint() const { return GetPosition() + m_HalfExtents; }
+	inline virtual glm::vec3 GetMinPoint() const { return GetPosition() - m_HalfExtents; }
+	inline virtual glm::vec3 GetMaxPoint() const { return GetPosition() + m_HalfExtents; }
 
 private:
 	glm::vec3 m_HalfExtents{ 0.5f };
@@ -220,6 +225,8 @@ class SpherePrimitive : public virtual BasePrimitive
 	RX_COMPONENT_DEF_HANDLE(SpherePrimitive);
 public:
 	SpherePrimitive() = default;
+	~SpherePrimitive() = default;
+
 	inline SpherePrimitive(glm::vec3 const& o, float r) : BasePrimitive(o), m_Radius(r) {}
 
 	inline void UpdateXform() override
