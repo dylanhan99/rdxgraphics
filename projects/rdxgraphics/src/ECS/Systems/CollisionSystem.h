@@ -70,6 +70,8 @@ public:
 	static int CheckCollision(glm::vec4 const& plane, OBBBV const& bv);
 	static int CheckCollision(glm::vec4 const& plane, SphereBV const& bv);
 
+	static bool CheckCollision(RayPrimitive const& ray, OBBBV const& bv, float* tI = nullptr, float* tO = nullptr);
+	static bool CheckCollision(RayPrimitive const& ray, AABBBV const& bv, float* tI = nullptr, float* tO = nullptr);
 	static bool CheckCollision(RayPrimitive const& ray, SphereBV const& bv, float* tI = nullptr, float* tO = nullptr);
 
 public: // Helper functions, most of these are directly from the orange textbook

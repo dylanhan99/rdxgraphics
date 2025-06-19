@@ -214,3 +214,24 @@ bool Intersection::RaySphereTest(glm::vec3 const rayPos, glm::vec3 const rayDir,
 	if (tO) *tO = -b + sqrtDisc;
 	return true;
 }
+
+bool Intersection::RayAABBTest(glm::vec3 const rayPos, glm::vec3 const rayDir, glm::vec3 const aabbPos, glm::vec3 const halfExtents, float* tI, float* tO)
+{
+	glm::vec3 invDir = 1.0f / rayDir; // May cause div-by-zero if dir is 0 on any axis
+	glm::vec3 min = aabbPos - halfExtents;
+	glm::vec3 max = aabbPos + halfExtents;
+
+	glm::vec3 t1 = (min - rayPos) * invDir;
+	glm::vec3 t2 = (max - rayPos) * invDir;
+
+	glm::vec3 tmin = glm::min(t1, t2);
+	glm::vec3 tmax = glm::max(t1, t2);
+
+	float tNear = glm::compMax(tmin);
+	float tFar = glm::compMin(tmax);
+
+	if (tI) *tI = tNear;
+	if (tO) *tO = tFar;
+
+	return tNear <= tFar && tFar >= 0.0f;
+}

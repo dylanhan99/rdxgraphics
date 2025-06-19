@@ -137,36 +137,26 @@ void Viewport::Picking(ImVec2 const& imagePos, ImVec2 const& imageSize, glm::vec
 		// For each BV, if is OUT, skip
 		// Else do check
 		auto view = EntityManager::View<BoundingVolume>(entt::exclude<FrustumBV>);
-#define _RX_X(Klass)
-		//case BV::Klass:
-		//{
-		//	Klass##BV& bv = EntityManager::GetComponent<Klass##BV>(handle);
-		//	if (bv.GetBVState() == BVState::Out) continue;
-		//	float tE{}; /* time of entry */
-		//	bool intersect = CollisionSystem::CheckCollision(ray, bv, &tE, ...);
-		//	if (intersect)
-		//	{
-		//		//Add tE and entity handle to sorted list (prob use a map);
-		//	}
-		//}
+#define _RX_X(Klass)													   \
+		case BV::Klass:													   \
+		{																   \
+			Klass##BV& bv = EntityManager::GetComponent<Klass##BV>(handle);\
+			if (bv.GetBVState() == BVState::Out) continue;				   \
+			float tE{}; /* time of entry */								   \
+			bool intersect = CollisionSystem::CheckCollision(ray, bv, &tE);\
+			if (intersect)												   \
+				tEs.emplace(tE, handle);								   \
+			break;														   \
+		}
+
 		std::map<float, entt::entity const> tEs{};
 		for (auto [handle, boundingVolume] : view.each())
 		{
 			switch (boundingVolume.GetBVType())
 			{
 				//RX_DO_ALL_BV_ENUM;
-			case BV::Sphere:
-			{
-				SphereBV& bv = EntityManager::GetComponent<SphereBV>(handle);
-				if (bv.GetBVState() == BVState::Out) continue;
-				float tE{}; /* time of entry */
-				bool intersect = CollisionSystem::CheckCollision(ray, bv, &tE);
-				if (intersect)
-				{
-					tEs.emplace(tE, handle);
-				}
-				break;
-			}
+				_RX_X(AABB);
+				_RX_X(Sphere);
 			default: break;
 			}
 		}

@@ -25,4 +25,8 @@ struct Intersection
 		glm::vec3 const rayPos, glm::vec3 const rayDir, 
 		glm::vec3 const spherePos, float const sphereRadius,
 		float* tI = nullptr, float* tO = nullptr);
+	static bool RayAABBTest(
+		glm::vec3 const rayPos, glm::vec3 const rayDir,
+		glm::vec3 const aabbPos, glm::vec3 const halfExtents,
+		float* tI = nullptr, float* tO = nullptr);
 };

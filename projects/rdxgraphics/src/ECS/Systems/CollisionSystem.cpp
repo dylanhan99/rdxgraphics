@@ -192,20 +192,7 @@ bool CollisionSystem::CheckCollision(RayPrimitive const& lhs, PlanePrimitive con
 
 bool CollisionSystem::CheckCollision(RayPrimitive const& lhs, AABBPrimitive const& rhs)
 { // Orange book page 179 (218 in the pdf)
-	glm::vec3 dir = lhs.GetDirection();      // Should be normalized
-	glm::vec3 p = lhs.GetPosition();
-	glm::vec3 invDir = 1.0f / dir;           // May cause div-by-zero if dir is 0 on any axis
-
-	glm::vec3 t1 = (rhs.GetMinPoint() - p) * invDir;
-	glm::vec3 t2 = (rhs.GetMaxPoint() - p) * invDir;
-
-	glm::vec3 tmin = glm::min(t1, t2);
-	glm::vec3 tmax = glm::max(t1, t2);
-
-	float tNear = glm::compMax(tmin);
-	float tFar = glm::compMin(tmax);
-
-	return tNear <= tFar && tFar >= 0.0f;
+	return Intersection::RayAABBTest(lhs.GetPosition(), lhs.GetDirection(), rhs.GetPosition(), rhs.GetHalfExtents());
 }
 
 bool CollisionSystem::CheckCollision(RayPrimitive const& lhs, SpherePrimitive const& rhs)
@@ -324,6 +311,20 @@ int CollisionSystem::CheckCollision(glm::vec4 const& plane, OBBBV const& bv)
 int CollisionSystem::CheckCollision(glm::vec4 const& plane, SphereBV const& bv)
 {
 	return Intersection::PlaneSphereTest(bv.GetPosition(), bv.GetRadius(), plane);
+}
+
+bool CollisionSystem::CheckCollision(RayPrimitive const& ray, OBBBV const& bv, float* tI, float* tO)
+{
+	return false;
+}
+
+bool CollisionSystem::CheckCollision(RayPrimitive const& ray, AABBBV const& bv, float* tI, float* tO)
+{
+	return Intersection::RayAABBTest(
+		ray.GetPosition(), ray.GetDirection(),
+		bv.GetPosition(), bv.GetHalfExtents(),
+		tI, tO
+	);
 }
 
 bool CollisionSystem::CheckCollision(RayPrimitive const& ray, SphereBV const& bv, float* tI, float* tO)

@@ -40,7 +40,7 @@ void RDX::Run()
 	//SceneManager::RegisterScene<PointXTriangleScene>("Point - Triangle");
 	//SceneManager::RegisterScene<PointXPlaneScene>("Point - Plane");
 	//
-	SceneManager::RegisterScene<RayXSphereScene>("Ray - Sphere");
+	//SceneManager::RegisterScene<RayXSphereScene>("Ray - Sphere");
 	//SceneManager::RegisterScene<RayXAABBScene>("Ray - AABB");
 	//SceneManager::RegisterScene<RayXTriangleScene>("Ray - Triangle");
 	//SceneManager::RegisterScene<RayXPlaneScene>("Ray - Plane");
