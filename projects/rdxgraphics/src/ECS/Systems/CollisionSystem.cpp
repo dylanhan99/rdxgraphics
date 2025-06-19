@@ -285,20 +285,40 @@ int CollisionSystem::CheckCollision(glm::vec4 const& plane, OBBBV const& bv)
 	// nvtx = C - s0e0u0 - s1e1u1 - s2e2u2
 	
 	glm::vec3 const C = bv.GetPosition();
-	glm::vec3 const S {
-		plane.x < 0 ? -1 : 1,
-		plane.y < 0 ? -1 : 1,
-		plane.z < 0 ? -1 : 1
-	};
+	//glm::vec3 const S {
+	//	plane.x < 0 ? -1 : 1,
+	//	plane.y < 0 ? -1 : 1,
+	//	plane.z < 0 ? -1 : 1
+	//};
 	glm::vec3 const& E = bv.GetHalfExtents();
 	glm::mat3 const& U = bv.GetOrthonormalBasis();
+	//
+	//glm::vec3 const seu0 = S[0] * E[0] * U[0];
+	//glm::vec3 const seu1 = S[1] * E[1] * U[1];
+	//glm::vec3 const seu2 = S[2] * E[2] * U[2];
+	//
+	//glm::vec3 pvtx = C + seu0 + seu1 + seu2;
+	//glm::vec3 nvtx = C - seu0 - seu1 - seu2;
 
-	glm::vec3 const seu0 = S[0] * E[0] * U[0];
-	glm::vec3 const seu1 = S[1] * E[1] * U[1];
-	glm::vec3 const seu2 = S[2] * E[2] * U[2];
+	glm::vec3 pvtx = C;
+	glm::vec3 nvtx = C;
 
-	glm::vec3 pvtx = C + seu0 + seu1 + seu2;
-	glm::vec3 nvtx = C - seu0 - seu1 - seu2;
+	for (int i = 0; i < 3; ++i) 
+	{
+		float dotN = glm::dot(glm::vec3(plane), U[i]);
+		glm::vec3 offset = E[i] * U[i];
+
+		if (dotN >= 0.0f) 
+		{
+			pvtx += offset;
+			nvtx -= offset;
+		}
+		else 
+		{
+			pvtx -= offset;
+			nvtx += offset;
+		}
+	}
 
 	int p = Intersection::PlanePointTest(pvtx, plane);
 	int n = Intersection::PlanePointTest(nvtx, plane);
@@ -306,6 +326,11 @@ int CollisionSystem::CheckCollision(glm::vec4 const& plane, OBBBV const& bv)
 	if		(p > 0 && n > 0) return 1;
 	else if (p < 0 && n < 0) return -1;
 	else					 return 0;
+}
+
+int CollisionSystem::CheckCollision(glm::vec4 const& plane, SphereBV const& bv)
+{
+	return Intersection::PlaneSphereTest(bv.GetPosition(), bv.GetRadius(), plane);
 }
 
 bool CollisionSystem::CheckCollision(RayPrimitive const& ray, FrustumBV const& bv, float* tI, float* tO)
@@ -329,11 +354,6 @@ bool CollisionSystem::CheckCollision(RayPrimitive const& ray, OBBBV const& bv, f
 		bv.GetPosition(), bv.GetHalfExtents(), bv.GetOrthonormalBasis(),
 		tI, tO
 	);
-}
-
-int CollisionSystem::CheckCollision(glm::vec4 const& plane, SphereBV const& bv)
-{
-	return Intersection::PlaneSphereTest(bv.GetPosition(), bv.GetRadius(), plane);
 }
 
 bool CollisionSystem::CheckCollision(RayPrimitive const& ray, SphereBV const& bv, float* tI, float* tO)
