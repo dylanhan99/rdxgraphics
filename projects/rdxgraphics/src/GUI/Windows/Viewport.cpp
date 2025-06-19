@@ -154,9 +154,9 @@ void Viewport::Picking(ImVec2 const& imagePos, ImVec2 const& imageSize, glm::vec
 		{
 			switch (boundingVolume.GetBVType())
 			{
-				//RX_DO_ALL_BV_ENUM;
-				_RX_X(AABB);
-				_RX_X(Sphere);
+				RX_DO_ALL_BV_ENUM;
+				//_RX_X(AABB);
+				//_RX_X(Sphere);
 			default: break;
 			}
 		}
