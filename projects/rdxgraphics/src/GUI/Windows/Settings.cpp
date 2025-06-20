@@ -19,19 +19,16 @@ void Settings::UpdateImpl(float dt)
 		}
 
 		{
-			int* pBV = reinterpret_cast<int*>(&CollisionSystem::GetGlobalBVType());
+			int* pBV = reinterpret_cast<int*>(&BVHSystem::GetGlobalBVType());
 			ImGui::SeparatorText("CurrentBV Option");
+			BV prevGlobalBV = BVHSystem::GetGlobalBVType();
 			bool isRadiod = false;
 			isRadiod |= ImGui::RadioButton("AABB", pBV, static_cast<int>(BV::AABB)); ImGui::SameLine();
 			isRadiod |= ImGui::RadioButton("OBB", pBV, static_cast<int>(BV::OBB)); ImGui::SameLine();
 			isRadiod |= ImGui::RadioButton("Sphere", pBV, static_cast<int>(BV::Sphere));
 
-			if (isRadiod)
-			{
-				auto view = EntityManager::View<BoundingVolume>(entt::exclude<Camera>);
-				for (auto [handle, bv] : view.each())
-					bv.SetBVType(CollisionSystem::GetGlobalBVType());
-			}
+			if (isRadiod && ((BV)*pBV != prevGlobalBV))
+				BVHSystem::EnforceUniformBVs();
 		}
 
 		{
@@ -42,7 +39,7 @@ void Settings::UpdateImpl(float dt)
 			isRadiod |= ImGui::RadioButton("Larsson", algorithm, static_cast<int>(SphereBV::Algo::Larsson)); ImGui::SameLine();
 			isRadiod |= ImGui::RadioButton("PCA", algorithm, static_cast<int>(SphereBV::Algo::PCA));
 
-			if (isRadiod && CollisionSystem::GetGlobalBVType() == BV::Sphere) // Set ALL spheres to be dirty, to be updated with new algorithm
+			if (isRadiod && BVHSystem::GetGlobalBVType() == BV::Sphere) // Set ALL spheres to be dirty, to be updated with new algorithm
 			{
 				auto view = EntityManager::View<const BoundingVolume, SphereBV>();
 				for (auto [handle, boundingVolume, bv] : view.each())

@@ -9,11 +9,6 @@ class CollisionSystem : public BaseSingleton<CollisionSystem>
 public:
 	static void Update(float dt);
 
-	static BV& GetGlobalBVType() { return g.m_GlobalBVType; }
-
-private:
-	BV m_GlobalBVType{ BV::AABB };
-
 public:
 	// Default will come here.
 	template <typename T, typename U>

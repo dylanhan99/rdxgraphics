@@ -1,6 +1,7 @@
 #pragma once
 #include "ECS/EntityManager.h"
 #include "ECS/Components.h"
+#include "ECS/Systems/BVHSystem.h"
 #include "ECS/Systems/CollisionSystem.h"
 #define RX_SCENE_DEFAULT(Foo) public: inline Foo(std::string const& name, std::string const& desc = "") : BaseScene(name, desc) {} private:
 
@@ -19,7 +20,7 @@ public:
 	inline entt::entity CreateDefaultEntity()
 	{
 		entt::entity handle = CreateEntity<Metadata, Xform, Args...>();
-		EntityManager::AddComponent<BV>(handle, CollisionSystem::GetGlobalBVType());
+		EntityManager::AddComponent<BV>(handle, BVHSystem::GetGlobalBVType());
 		return handle;
 	}
 
