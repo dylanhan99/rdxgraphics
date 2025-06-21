@@ -19,15 +19,24 @@ struct BVHNode
 class BVHSystem : public BaseSingleton<BVHSystem>
 {
 	RX_SINGLETON_DECLARATION(BVHSystem);
+private:
+	using Entity = std::pair<entt::entity, float>; // handle, dotproduct on axis
+	using EntityList = std::vector<Entity>;
+
 public:
-	static void Init();
+	static bool Init();
 	static void EnforceUniformBVs();
 	// BVHTree_TopDown includes the in-place recalculation of BVH leafs
-	static void BVHTree_TopDown(std::unique_ptr<BVHNode>& pNode, std::vector<entt::entity> const& entities);
+	static void BVHTree_TopDown(std::unique_ptr<BVHNode>& pNode, Entity* entities, size_t numEnts);
 	static void DestroyBVH(std::unique_ptr<BVHNode>& pNode);
 	static std::unique_ptr<BVHNode>& GetRoot() { return g.m_RootNode; }
 
 	inline static BV& GetGlobalBVType() { return g.m_GlobalBVType; }
+
+	static EntityList GetSortedEntities();
+	static int PartitionEntities(Entity* entities, size_t numEnts);
+
+private:
 
 private:
 	BV m_GlobalBVType{ BV::AABB };

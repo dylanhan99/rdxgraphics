@@ -5,6 +5,7 @@
 #include "ECS/Systems/CollisionSystem.h"
 #include "ECS/Systems/RenderSystem.h"
 #include "ECS/Systems/TransformSystem.h"
+#include "ECS/Systems/BVHSystem.h"
 #include "GLFWWindow/GLFWWindow.h"
 #include "GSM/SceneManager.h"
 #include "GSM/Scenes/CommonLayer.h"
@@ -22,6 +23,7 @@ void RDX::Run()
 	bool initOK = true;
 	initOK &= GLFWWindow::Init();
 	initOK &= EntityManager::Init();
+	initOK &= BVHSystem::Init();
 	initOK &= RenderSystem::Init();
 	initOK &= GUI::Init();
 	if (!initOK)

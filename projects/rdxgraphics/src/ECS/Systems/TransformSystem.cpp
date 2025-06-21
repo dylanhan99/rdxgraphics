@@ -78,22 +78,7 @@ case Primitive::Klass:													 \
 		auto v = EntityManager::View<BoundingVolume::DirtyBV, BoundingVolume>();
 		for (auto [handle, _, boundingVolume] : v.each())
 		{
-#define _RX_XX(Klass)											 \
-	case BV::Klass:												 \
-	{															 \
-		Klass##BV& bv = EntityManager::GetComponent<Klass##BV>(handle);\
-		bv.RecalculateBV();										 \
-		bv.UpdateXform();										 \
-		break;													 \
-	}
-
-			switch (boundingVolume.GetBVType())
-			{
-				RX_DO_ALL_BV_ENUM_M(_RX_XX)
-			default:
-				break;
-			}
-#undef _RX_XX
+			boundingVolume.RecalculateBV();
 
 			EntityManager::RemoveComponent<BoundingVolume::DirtyXform>(handle);
 			EntityManager::RemoveComponent<BoundingVolume::DirtyBV>(handle);

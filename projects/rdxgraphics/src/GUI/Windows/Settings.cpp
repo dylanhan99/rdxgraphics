@@ -3,6 +3,7 @@
 #include "GSM/SceneManager.h"
 #include "GLFWWindow/GLFWWindow.h"
 #include "ECS/Systems/RenderSystem.h"
+#include "ECS/Systems/BVHSystem.h"
 
 void Settings::UpdateImpl(float dt)
 {
@@ -12,6 +13,13 @@ void Settings::UpdateImpl(float dt)
 
 	if (ImGui::TreeNodeEx("Bounding Volumes", scnFlags | ImGuiTreeNodeFlags_DefaultOpen))
 	{
+		if (ImGui::Button("Recalculate BVH"))
+		{
+			BVHSystem::DestroyBVH(BVHSystem::GetRoot());
+			auto sortedEntities = BVHSystem::GetSortedEntities();
+			BVHSystem::BVHTree_TopDown(BVHSystem::GetRoot(), sortedEntities.data(), sortedEntities.size());
+		}
+
 		if (ImGui::Button("Recalculate ALL BVs"))
 		{
 			for (auto [handle, boundingVolume] : EntityManager::View<BoundingVolume>().each())

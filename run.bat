@@ -8,7 +8,7 @@ if not exist build (
 REM BUILDING DEBUG
 pushd build
 cmake ..
-cmake --build . --config Debug
+cmake --build . --config Debug --parallel -- /m
 popd
 
 REM BUILDING RELEASE
@@ -18,7 +18,7 @@ if not exist build (
 
 pushd build
 cmake ..
-cmake --build . --config Release
+cmake --build . --config Release --parallel -- /m
 popd
 
 pause

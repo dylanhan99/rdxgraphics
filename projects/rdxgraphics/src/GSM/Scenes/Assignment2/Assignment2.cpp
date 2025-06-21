@@ -1,5 +1,6 @@
 #include "Assignment2.h"
 #include "GUI/GUI.h"
+#include "ECS/Systems/BVHSystem.h"
 
 void Assignment2::StartImpl()
 {
@@ -56,6 +57,7 @@ void Assignment2::StartImpl()
 	}
 
 	GUI::SetSelectedEntity(m_Spinny);
+	BVHSystem::EnforceUniformBVs();
 }
 
 void Assignment2::UpdateImpl(float dt)

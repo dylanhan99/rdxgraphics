@@ -21,6 +21,8 @@ public:
 	inline void OnConstructImpl() override { SetupBV(); }
 	inline void OnDestroyImpl() override { SetBVType(BV::NIL); }
 
+	void RecalculateBV() const;
+
 	inline BV GetBVType() const { return m_BVType; }
 	void SetBVType(BV bvType);
 
@@ -69,6 +71,7 @@ public:
 	FrustumBV() = default;
 	void UpdateXform() override; // Must have it's own beacuse of BasePrimitive
 	void RecalculateBV() override;
+	inline void RecalculateBV(FrustumBV const&, FrustumBV const&) {}; // Just filler, not meant to actually do anything
 
 	inline std::array<glm::vec4, 8> const& GetPoints() const { return m_Points; }
 	inline std::array<glm::mat4, 12> const& GetEdgeXforms() const { return m_Xforms; }
@@ -86,10 +89,19 @@ private:
 
 class AABBBV : public BaseBV, public AABBPrimitive
 {
-	RX_COMPONENT_DEF_HANDLE(AABBBV);
+private: inline static void OnConstruct(entt::registry& registry, entt::entity handle) {
+	AABBBV& klass = registry.get<AABBBV>(handle); 
+	klass.SetEntityHandle(handle); 
+	klass.OnConstructImpl();
+} inline static void OnDestroy(entt::registry& registry, entt::entity handle) {
+	AABBBV& klass = registry.get<AABBBV>(handle); klass.OnDestroyImpl();
+} public: inline static void Init(entt::registry& registry) {
+	registry.on_construct<AABBBV>().connect<&AABBBV::OnConstruct>(); registry.on_update<AABBBV>().connect<&AABBBV::OnConstruct>(); registry.on_destroy<AABBBV>().connect<&AABBBV::OnDestroy>();
+} private:;
 public:
 	AABBBV() = default;
 	void RecalculateBV() override;
+	void RecalculateBV(AABBBV const&, AABBBV const&);
 
 private:
 
@@ -102,6 +114,7 @@ public:
 	OBBBV() = default;
 	void UpdateXform() override;
 	void RecalculateBV() override;
+	void RecalculateBV(OBBBV const&, OBBBV const&);
 	glm::mat3 const& GetOrthonormalBasis() const { return m_EigenVectors; }
 	glm::mat3& GetOrthonormalBasis() { return m_EigenVectors; }
 
@@ -124,7 +137,8 @@ public:
 
 public:
 	SphereBV() = default;
-	inline void RecalculateBV() override;
+	void RecalculateBV() override;
+	void RecalculateBV(SphereBV const&, SphereBV const&);
 
 private:
 };

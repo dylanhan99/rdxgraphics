@@ -4,6 +4,27 @@
 #include "ECS/Components/Camera.h"
 #include "Utils/IntersectionTests.h"
 
+void BoundingVolume::RecalculateBV() const
+{
+#define _RX_X(Klass)											 \
+	case BV::Klass:												 \
+	{															 \
+		Klass##BV& bv = EntityManager::GetComponent<Klass##BV>(GetEntityHandle());\
+		bv.RecalculateBV();										 \
+		bv.UpdateXform();										 \
+		break;													 \
+	}
+
+	switch (GetBVType())
+	{
+		RX_DO_ALL_BV_ENUM;
+	default:
+		break;
+	}
+#undef _RX_X
+
+}
+
 void BoundingVolume::SetBVType(BV bvType)
 {
 	if (m_BVType == bvType)
@@ -233,6 +254,88 @@ void AABBBV::RecalculateBV()
 	SetPosition((max + min) * 0.5f);
 }
 
+void AABBBV::RecalculateBV(AABBBV const& bvL, AABBBV const& bvR)
+{
+	glm::vec3 newMin{ std::numeric_limits<float>().infinity() };
+	glm::vec3 newMax{-std::numeric_limits<float>().infinity() };
+
+	std::array<glm::vec3, 4> points{
+		bvL.GetMinPoint(),
+		bvL.GetMaxPoint(),
+		bvR.GetMinPoint(),
+		bvR.GetMaxPoint()
+	};
+
+	for (glm::vec3 const& p : points)
+	{
+		newMin.x = glm::min(p.x, newMin.x);
+		newMin.y = glm::min(p.y, newMin.y);
+		newMin.z = glm::min(p.z, newMin.z);
+	}
+
+	GetHalfExtents() = (newMax - newMin) * 0.5f;
+	SetPosition((newMin + newMax) * 0.5f);
+}
+
+inline void OBBBV::UpdateXform()
+{
+	m_Xform = glm::translate(GetPosition()) * glm::mat4(m_EigenVectors) * glm::scale(2.f * GetHalfExtents());
+}
+
+inline void OBBBV::RecalculateBV()
+{
+	entt::entity const handle = GetEntityHandle();
+	if (!EntityManager::HasComponent<Xform, Model>(handle))
+		return;
+
+	Xform& modelXform = EntityManager::GetComponent<Xform>(handle);
+	Rxuid const meshID = EntityManager::GetComponent<Model>(handle).GetMesh();
+	auto& objekt = RenderSystem::GetObjekt(meshID);
+	auto const& points = objekt.GetVBData<VertexBasic::Position>();
+	auto pointsXformed = points;
+	for (auto& v : pointsXformed) // This is so bad lmfao
+		v = glm::vec3{ modelXform.GetXform() * glm::vec4{ v, 1.f } };
+
+	glm::vec3 finalCentroid{};
+	glm::mat3 finalRotation{};
+	glm::vec3 finalHalfExtents{};
+	Intersection::PCA(pointsXformed, &finalCentroid, nullptr, &finalRotation, &finalHalfExtents);
+
+	SetPosition(finalCentroid);
+	GetHalfExtents() = finalHalfExtents;
+	m_EigenVectors = finalRotation;
+}
+
+void OBBBV::RecalculateBV(OBBBV const& bvL, OBBBV const& bvR)
+{
+	std::vector<glm::vec3> points{}; // 16 points
+	{
+		glm::vec3 minL = bvL.GetMinPoint();
+		glm::vec3 maxL = bvL.GetMaxPoint();
+		glm::vec3 minR = bvR.GetMinPoint();
+		glm::vec3 maxR = bvR.GetMaxPoint();
+		for (int x = -1; x <= 1; x+=2)
+		for (int y = -1; y <= 1; y+=2)
+		for (int z = -1; z <= 1; z+=2)
+		{
+			points.emplace_back(glm::vec3{ minL.x * x, minL.y * y, minL.z * z });
+			points.emplace_back(glm::vec3{ maxL.x * x, maxL.y * y, maxL.z * z });
+
+			points.emplace_back(glm::vec3{ minR.x * x, minR.y * y, minR.z * z });
+			points.emplace_back(glm::vec3{ maxR.x * x, maxR.y * y, maxR.z * z });
+		}
+	}
+
+	glm::vec3 finalCentroid{};
+	glm::mat3 finalRotation{};
+	glm::vec3 finalHalfExtents{};
+	Intersection::PCA(points, &finalCentroid, nullptr, &finalRotation, &finalHalfExtents);
+
+	SetPosition(finalCentroid);
+	GetHalfExtents() = finalHalfExtents;
+	m_EigenVectors = finalRotation;
+}
+
 void SphereBV::RecalculateBV()
 {
 	entt::entity const handle = GetEntityHandle();
@@ -285,7 +388,7 @@ void SphereBV::RecalculateBV()
 		};
 
 		std::vector<glm::vec3> extremalPoints;
-		for (const auto& dir : directionDictionary) 
+		for (const auto& dir : directionDictionary)
 		{
 			float maxProj = -std::numeric_limits<float>::infinity();
 			float minProj = std::numeric_limits<float>::infinity();
@@ -293,12 +396,12 @@ void SphereBV::RecalculateBV()
 			for (auto const& v : pointsXformed)
 			{
 				float proj = glm::dot(v, dir);
-				if (proj > maxProj) 
+				if (proj > maxProj)
 				{
 					maxProj = proj;
 					pMax = v;
 				}
-				if (proj < minProj) 
+				if (proj < minProj)
 				{
 					minProj = proj;
 					pMin = v;
@@ -311,12 +414,12 @@ void SphereBV::RecalculateBV()
 		// Step 2: Find farthest pair among extremal points
 		float maxDistance = 0.0f;
 		glm::vec3 p1, p2;
-		for (size_t i = 0; i < extremalPoints.size(); ++i) 
+		for (size_t i = 0; i < extremalPoints.size(); ++i)
 		{
-			for (size_t j = i + 1; j < extremalPoints.size(); ++j) 
+			for (size_t j = i + 1; j < extremalPoints.size(); ++j)
 			{
 				float dist = glm::distance(extremalPoints[i], extremalPoints[j]);
-				if (dist > maxDistance) 
+				if (dist > maxDistance)
 				{
 					maxDistance = dist;
 					p1 = extremalPoints[i];
@@ -345,31 +448,13 @@ void SphereBV::RecalculateBV()
 	SetPosition(finalCentroid);
 }
 
-inline void OBBBV::UpdateXform()
+void SphereBV::RecalculateBV(SphereBV const& bvL, SphereBV const& bvR)
 {
-	m_Xform = glm::translate(GetPosition()) * glm::mat4(m_EigenVectors) * glm::scale(2.f * GetHalfExtents());
-}
+	glm::vec3 posL = bvL.GetPosition();
+	glm::vec3 posR = bvR.GetPosition();
+	glm::vec3 newCentroid = (posL + posR) * 0.5f;
+	float newRadius = bvL.GetRadius() + bvR.GetRadius() + glm::distance(posL, posR);
 
-inline void OBBBV::RecalculateBV()
-{
-	entt::entity const handle = GetEntityHandle();
-	if (!EntityManager::HasComponent<Xform, Model>(handle))
-		return;
-
-	Xform& modelXform = EntityManager::GetComponent<Xform>(handle);
-	Rxuid const meshID = EntityManager::GetComponent<Model>(handle).GetMesh();
-	auto& objekt = RenderSystem::GetObjekt(meshID);
-	auto const& points = objekt.GetVBData<VertexBasic::Position>();
-	auto pointsXformed = points;
-	for (auto& v : pointsXformed) // This is so bad lmfao
-		v = glm::vec3{ modelXform.GetXform() * glm::vec4{ v, 1.f } };
-
-	glm::vec3 finalCentroid{};
-	glm::mat3 finalRotation{};
-	glm::vec3 finalHalfExtents{};
-	Intersection::PCA(pointsXformed, &finalCentroid, nullptr, &finalRotation, &finalHalfExtents);
-
-	SetPosition(finalCentroid);
-	GetHalfExtents() = finalHalfExtents;
-	m_EigenVectors = finalRotation;
+	SetPosition(newCentroid);
+	GetRadius() = newRadius;
 }
