@@ -271,6 +271,10 @@ void AABBBV::RecalculateBV(AABBBV const& bvL, AABBBV const& bvR)
 		newMin.x = glm::min(p.x, newMin.x);
 		newMin.y = glm::min(p.y, newMin.y);
 		newMin.z = glm::min(p.z, newMin.z);
+
+		newMax.x = glm::max(p.x, newMax.x);
+		newMax.y = glm::max(p.y, newMax.y);
+		newMax.z = glm::max(p.z, newMax.z);
 	}
 
 	GetHalfExtents() = (newMax - newMin) * 0.5f;

@@ -34,6 +34,7 @@ public:
 	static void DestroyBVH(std::unique_ptr<BVHNode>& pNode);
 
 	static EntityList GetSortedEntities(glm::vec3 const& axis);
+	static int Partition(Entity* pEntities, int numEnts);
 	//
 
 	//

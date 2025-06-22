@@ -111,6 +111,88 @@ BVHSystem::EntityList BVHSystem::GetSortedEntities(glm::vec3 const& axis)
 	return std::move(sortedEnts);
 }
 
+int BVHSystem::Partition(Entity* pEntities, int numEnts)
+{
+	if (!pEntities || numEnts <= 0)
+		return 0;
+
+	if (numEnts == 2)
+		return 1;
+
+	// mean split
+	float mean{};
+	for (size_t i = 0; i < numEnts; ++i)
+		mean += pEntities[i].second;
+	mean /= (float)numEnts;
+
+	// so now we partition based on lessthan or morethan centroid
+	int k = 0;
+	for (; k < (int)numEnts; ++k)
+	{
+		// we break as soon as we find that current >= mean
+		if (pEntities[k].second >= mean)
+			break;
+	}
+
+	return k;
+}
+
 void BVHSystem::BVHTree_TopDown(std::unique_ptr<BVHNode>& pNode, Entity* pEntities, int numEnts)
 {
+	if (numEnts <= 0 || !pEntities)
+	{
+		pNode.reset(nullptr);
+		return;
+	}
+
+	pNode = std::make_unique<BVHNode>();
+
+	if (numEnts == 1)
+	{ // At an actual game object, we can simply use the entt handle and set LEAF
+		entt::entity const& handle = pEntities[0].first;
+		pNode->Handle = handle;
+		pNode->SetIsLeaf();
+	}
+	else
+	{ // Is a node,
+		// Partition and recurse, then combine the children BVs to build your own
+		// Set to NODE
+		entt::entity const& handle = EntityManager::CreateEntity<Xform>();
+		pNode->Handle = handle;
+		pNode->SetIsNode();
+
+		int k = Partition(pEntities, numEnts);
+		Entity* pEntitiesL = pEntities;
+		Entity* pEntitiesR = pEntities + k;
+
+		BVHTree_TopDown(pNode->Left, pEntitiesL, k);
+		BVHTree_TopDown(pNode->Right, pEntitiesR, numEnts - k);
+
+		// Now we can merge the BVs
+		// hardcode assuming AABB for now
+#define _RX_X(Klass)																	  \
+		case BV::Klass:																	  \
+		{																				  \
+			EntityManager::AddComponent<BoundingVolume>(handle, BV::Klass);				  \
+			Klass##BV& bv = EntityManager::GetComponent<Klass##BV>(handle);				  \
+			Klass##BV& bvL = EntityManager::GetComponent<Klass##BV>(pNode->Left->Handle); \
+			Klass##BV& bvR = EntityManager::GetComponent<Klass##BV>(pNode->Right->Handle);\
+			bv.RecalculateBV(bvL, bvR);													  \
+			break;																		  \
+		}
+		switch (GetGlobalBVType())
+		{
+			_RX_X(AABB);
+			_RX_X(OBB);
+			_RX_X(Sphere);
+		default: break;
+		}
+#undef _RX_X
+		// We still need the Xform to be updated, so leave it be. But BV is already 
+		// calculated using RecalculateBV, so just force remove DirtyBV component
+		{
+			//EntityManager::RemoveComponent<BoundingVolume::DirtyXform>(handle);
+			EntityManager::RemoveComponent<BoundingVolume::DirtyBV>(handle);
+		}
+	}
 }
