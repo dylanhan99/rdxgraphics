@@ -15,9 +15,7 @@ void Settings::UpdateImpl(float dt)
 	{
 		if (ImGui::Button("Recalculate BVH"))
 		{
-			BVHSystem::DestroyBVH(BVHSystem::GetRoot());
-			auto sortedEntities = BVHSystem::GetSortedEntities();
-			BVHSystem::BVHTree_TopDown(BVHSystem::GetRoot(), sortedEntities.data(), sortedEntities.size());
+			BVHSystem::BuildBVH(BVHSystem::BVHTree_TopDown);
 		}
 
 		if (ImGui::Button("Recalculate ALL BVs"))
