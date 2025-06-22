@@ -13,6 +13,7 @@ void CommonLayer::StartImpl()
 		EntityManager::AddComponent<Xform>(handle, glm::vec3{ 0.f, 5.f, 0.f }, glm::vec3{ 0.3f }, glm::vec3{glm::quarter_pi<float>()});
 		EntityManager::AddComponent<Model>(handle, Shape::Cube);
 		EntityManager::AddComponent<DirectionalLight>(handle);
+		EntityManager::AddComponent<BoundingVolume>(handle, BV::AABB);
 	}
 
 	{
@@ -103,4 +104,6 @@ void CommonLayer::UpdateImpl(float dt)
 
 		light.GetDirection() = glm::normalize(-xform.GetTranslate()); // Look at origin
 	}
+
+	EntityManager::AddComponent<BoundingVolume::DirtyXform>(m_LightHandle);
 }

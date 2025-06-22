@@ -116,9 +116,6 @@ int BVHSystem::Partition(Entity* pEntities, int numEnts)
 	if (!pEntities || numEnts <= 0)
 		return 0;
 
-	if (numEnts == 2)
-		return 1;
-
 	// mean split
 	float mean{};
 	for (size_t i = 0; i < numEnts; ++i)
@@ -133,6 +130,9 @@ int BVHSystem::Partition(Entity* pEntities, int numEnts)
 		if (pEntities[k].second >= mean)
 			break;
 	}
+
+	if (k == 0 || k >= numEnts)
+		return (int)(numEnts / 2);
 
 	return k;
 }

@@ -2,4 +2,5 @@
 #include "ScreenPass.h"
 #include "ModelsPass.h"
 #include "ColliderWireframesPass.h"
-#include "BVWireframesPass.h"
+#include "BVLeafPass.h"
+#include "BVHPass.h"

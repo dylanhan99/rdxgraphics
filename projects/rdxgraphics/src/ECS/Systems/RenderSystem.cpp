@@ -82,15 +82,17 @@ bool RenderSystem::Init()
 
 	auto pModelsPass = RegisterPass<ModelsPass>("Models & Lighting", "Models", true);
 	auto pColliderWireframesPass = RegisterPass<ColliderWireframesPass>("Collider Wireframes", "Colliders", false);
-	auto pBVWireframesPass = RegisterPass<BVWireframesPass>("BV Wireframes", "BVs", true);
+	auto pBVLeafPass = RegisterPass<BVLeafPass>("BV Leafs", "BVLeafs", true);
+	auto pBVHPass = RegisterPass<BVHPass>("BVH", "BVH", true);
 	auto pPiPModelsPass = RegisterPass<ModelsPass>("PiP Models & Lighting", "PiPModels", true);
-	auto pPiPBVWireframesPass = RegisterPass<BVWireframesPass>("PiP BV Wireframes", "PiPBVs", true);
+	auto pPiPBVLeafPass = RegisterPass<BVLeafPass>("PiP BV Leafs", "PiPBVLeafs", true);
 
 	pModelsPass->Init(0, 0, dims.x, dims.y);
 	pColliderWireframesPass->Init(0, 0, dims.x, dims.y);
-	pBVWireframesPass->Init(0, 0, dims.x, dims.y);
+	pBVLeafPass->Init(0, 0, dims.x, dims.y);
+	pBVHPass->Init(0, 0, dims.x, dims.y);
 	pPiPModelsPass->Init(dims.x - 400, dims.y - 400, 400, 400);
-	pPiPBVWireframesPass->Init(dims.x - 400, dims.y - 400, 400, 400);
+	pPiPBVLeafPass->Init(dims.x - 400, dims.y - 400, 400, 400);
 
 	// Must be the final pass
 	RegisterPass<ScreenPass>("Screen", "Screen")->Init(0, 0, dims.x, dims.y);
@@ -102,9 +104,10 @@ bool RenderSystem::Init()
 
 	pModelsPass->RegisterUBOBind(_RX_X("ActiveCam"));
 	pColliderWireframesPass->RegisterUBOBind(_RX_X("ActiveCam"));
-	pBVWireframesPass->RegisterUBOBind(_RX_X("ActiveCam"));
+	pBVLeafPass->RegisterUBOBind(_RX_X("ActiveCam"));
+	pBVHPass->RegisterUBOBind(_RX_X("ActiveCam"));
 	pPiPModelsPass->RegisterUBOBind(_RX_X("PiPCam"));
-	pPiPBVWireframesPass->RegisterUBOBind(_RX_X("PiPCam"));
+	pPiPBVLeafPass->RegisterUBOBind(_RX_X("PiPCam"));
 #undef _RX_X
 
 	return true;

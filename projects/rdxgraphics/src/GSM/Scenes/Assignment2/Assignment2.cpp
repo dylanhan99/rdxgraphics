@@ -45,16 +45,16 @@ void Assignment2::StartImpl()
 		EntityManager::AddComponent<Material>(handle, glm::vec3{ 1.f, 1.f, 1.f });
 		EntityManager::AddComponent<BoundingVolume>(handle, BV::Sphere);
 	}
-	//{
-	//	auto handle = BaseScene::CreateDefaultEntity();
-	//	EntityManager::AddComponent<Metadata>(handle, "Spinny Cube");
-	//	EntityManager::AddComponent<Xform>(handle, glm::vec3{ 0.f, 0.f, 0.f }, glm::vec3{ 1.f });
-	//	EntityManager::AddComponent<Model>(handle, Shape::Cube);
-	//	EntityManager::AddComponent<Material>(handle, glm::vec3{ 1.f, 1.f, 1.f });
-	//	EntityManager::AddComponent<BoundingVolume>(handle, BV::AABB);
-	//
-	//	m_Spinny = handle;
-	//}
+	{
+		auto handle = BaseScene::CreateDefaultEntity();
+		EntityManager::AddComponent<Metadata>(handle, "Spinny Cube");
+		EntityManager::AddComponent<Xform>(handle, glm::vec3{ 0.f, 0.f, 0.f }, glm::vec3{ 1.f });
+		EntityManager::AddComponent<Model>(handle, Shape::Cube);
+		EntityManager::AddComponent<Material>(handle, glm::vec3{ 1.f, 1.f, 1.f });
+		EntityManager::AddComponent<BoundingVolume>(handle, BV::AABB);
+	
+		m_Spinny = handle;
+	}
 
 	GUI::SetSelectedEntity(m_Spinny);
 	BVHSystem::EnforceUniformBVs();
@@ -78,4 +78,6 @@ void Assignment2::UpdateImpl(float dt)
 		if (EntityManager::HasComponent<BoundingVolume>(m_Spinny))
 			EntityManager::GetComponent<BoundingVolume>(m_Spinny).SetDirty();
 	}
+
+	BVHSystem::BuildBVH(BVHSystem::BVHTree_TopDown);
 }

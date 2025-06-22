@@ -5,15 +5,17 @@ in vec2 oTexCoords;
 /////
 uniform sampler2D uModelsTex;
 uniform sampler2D uCollidersTex;
-uniform sampler2D uBVsTex;
+uniform sampler2D uBVLeafsTex;
+uniform sampler2D uBVHTex;
 uniform sampler2D uPiPModelsTex;
-uniform sampler2D uPiPBVsTex;
+uniform sampler2D uPiPBVLeafsTex;
 /////
 uniform bool uHasModels;
 uniform bool uHasColliders;
-uniform bool uHasBVs;
+uniform bool uHasBVLeafs;
+uniform bool uHasBVH;
 uniform bool uHasPiPModels;
-uniform bool uHasPiPBVs;
+uniform bool uHasPiPBVLeafs;
 /////
 
 vec4 BlendColor(bool enabled, vec4 inColor, sampler2D tex, vec2 texCoords)
@@ -30,9 +32,10 @@ void main()
     vec4 finalColor;
     finalColor = BlendColor(uHasModels,     finalColor, uModelsTex,     oTexCoords);
     finalColor = BlendColor(uHasColliders,  finalColor, uCollidersTex,  oTexCoords);
-    finalColor = BlendColor(uHasBVs,        finalColor, uBVsTex,        oTexCoords);
+    finalColor = BlendColor(uHasBVLeafs,    finalColor, uBVLeafsTex,    oTexCoords);
+    finalColor = BlendColor(uHasBVH,        finalColor, uBVHTex,        oTexCoords);
     finalColor = BlendColor(uHasPiPModels,  finalColor, uPiPModelsTex,  oTexCoords);
-    finalColor = BlendColor(uHasPiPBVs,     finalColor, uPiPBVsTex,     oTexCoords);
+    finalColor = BlendColor(uHasPiPBVLeafs, finalColor, uPiPBVLeafsTex, oTexCoords);
     
     oFragColor = vec4(finalColor.rgb, 1.0);
 }
