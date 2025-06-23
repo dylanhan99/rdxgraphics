@@ -58,7 +58,7 @@ void BVHSystem::BuildBVH()
 	}
 }
 
-void BVHSystem::BuildBVH(std::function<void(std::unique_ptr<BVHNode>&, Entity*, int)> fnBuildBVH)
+void BVHSystem::BuildBVH(std::function<void(std::unique_ptr<BVHNode>&, Entity*, int, int)> fnBuildBVH)
 {
 	RX_ASSERT(fnBuildBVH);
 	DestroyBVH(GetRootNode());
@@ -71,7 +71,7 @@ void BVHSystem::BuildBVH(std::function<void(std::unique_ptr<BVHNode>&, Entity*, 
 	}
 
 	EntityList sortedEnts = GetSortedEntities(entities);
-	fnBuildBVH(GetRootNode(), sortedEnts.data(), (int)sortedEnts.size());
+	fnBuildBVH(GetRootNode(), sortedEnts.data(), (int)sortedEnts.size(), 0);
 }
 
 void BVHSystem::DestroyBVH(std::unique_ptr<BVHNode>& pNode)
@@ -162,8 +162,11 @@ int BVHSystem::Partition(Entity* pEntities, int numEnts)
 	return k;
 }
 
-void BVHSystem::BVHTree_TopDown(std::unique_ptr<BVHNode>& pNode, Entity* pEntities, int numEnts)
+void BVHSystem::BVHTree_TopDown(std::unique_ptr<BVHNode>& pNode, Entity* pEntities, int numEnts, int height)
 {
+	constexpr int MAX_OBJS_PER_LEAF = 2;
+	constexpr int MAX_TREE_HEIGHT = 2;
+
 	if (numEnts <= 0 || !pEntities)
 	{
 		pNode.reset(nullptr);
@@ -183,7 +186,9 @@ void BVHSystem::BVHTree_TopDown(std::unique_ptr<BVHNode>& pNode, Entity* pEntiti
 
 	// We can assume Objects is not empty.
 
-	if (numEnts <= GetMaxObjectsPerLeaf())
+	if (numEnts == 1 || 
+		numEnts <= MAX_OBJS_PER_LEAF ||
+		height >= MAX_TREE_HEIGHT)
 	{ // At an actual game object, we can simply use the entt handle and set LEAF
 		// Some function to combine the sizes of the numEnts number of pEntities
 		pNode->SetIsLeaf();
@@ -244,9 +249,9 @@ void BVHSystem::BVHTree_TopDown(std::unique_ptr<BVHNode>& pNode, Entity* pEntiti
 		Entity* pEntitiesL = pEntities;
 		Entity* pEntitiesR = pEntities + k;
 
-
-		BVHTree_TopDown(pNode->Left, pEntitiesL, k);
-		BVHTree_TopDown(pNode->Right, pEntitiesR, numEnts - k);
+		++height;
+		BVHTree_TopDown(pNode->Left, pEntitiesL, k, height);
+		BVHTree_TopDown(pNode->Right, pEntitiesR, numEnts - k, height);
 
 		// Now we can merge the BVs
 		// hardcode assuming AABB for now

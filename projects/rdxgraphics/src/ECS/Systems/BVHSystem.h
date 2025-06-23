@@ -42,21 +42,21 @@ public:
 	inline static BV& GetGlobalBVType() { return g.m_GlobalBVType; }
 	inline static BVHType& GetCurrentTreeType() { return g.m_CurrentTreeType; }
 	inline static BVHAxis& GetCurrentTreeAxis() { return g.m_CurrentTreeAxis; }
-	inline static int& GetMaxObjectsPerLeaf() { return g.m_MaxObjectsPerLeaf; }
 
-	// Helper functions
+	// *** Helper functions *** //
 	static void BuildBVH();
-	static void BuildBVH(std::function<void(std::unique_ptr<BVHNode>&, Entity*, int)> fnBuildBVH);
+	static void BuildBVH(std::function<void(std::unique_ptr<BVHNode>&, Entity*, int, int)> fnBuildBVH);
 	static void DestroyBVH(std::unique_ptr<BVHNode>& pNode);
 
+	// Determines split plane
 	static glm::vec3 GetTreeAxis(std::vector<glm::vec3> const& positions);
 	static EntityList GetSortedEntities(std::vector<entt::entity> const& entities);
 	static int Partition(Entity* pEntities, int numEnts);
-	//
+	// *** *** //
 
-	// Tree building
-	static void BVHTree_TopDown(std::unique_ptr<BVHNode>& pNode, Entity* pEntities, int numEnts);
-	//
+	// *** Tree building *** //
+	static void BVHTree_TopDown(std::unique_ptr<BVHNode>& pNode, Entity* pEntities, int numEnts, int height = 0);
+	// *** *** //
 
 private:
 
@@ -65,5 +65,4 @@ private:
 	BVHType m_CurrentTreeType{ BVHType::TopDown };
 	BVHAxis m_CurrentTreeAxis{ BVHAxis::PCA };
 	std::unique_ptr<BVHNode> m_RootNode{};
-	int m_MaxObjectsPerLeaf{ 1 };
 };

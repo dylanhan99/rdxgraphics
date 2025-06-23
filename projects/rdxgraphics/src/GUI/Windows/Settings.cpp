@@ -13,12 +13,12 @@ void Settings::UpdateImpl(float dt)
 
 	if (ImGui::TreeNodeEx("Bounding Volumes", scnFlags | ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		if (ImGui::InputInt("Max. entities per leaf", &BVHSystem::GetMaxObjectsPerLeaf(), 1, 1))
-		{
-			int& minObjs = BVHSystem::GetMaxObjectsPerLeaf();
-			if (minObjs < 1) minObjs = 1;
-			BVHSystem::BuildBVH();
-		}
+		//if (ImGui::InputInt("Max. entities per leaf", &BVHSystem::GetMaxObjectsPerLeaf(), 1, 1))
+		//{
+		//	int& minObjs = BVHSystem::GetMaxObjectsPerLeaf();
+		//	if (minObjs < 1) minObjs = 1;
+		//	BVHSystem::BuildBVH();
+		//}
 		if (ImGui::Button("Recalculate BVH"))
 		{
 			BVHSystem::BuildBVH();
