@@ -13,15 +13,35 @@ void Settings::UpdateImpl(float dt)
 
 	if (ImGui::TreeNodeEx("Bounding Volumes", scnFlags | ImGuiTreeNodeFlags_DefaultOpen))
 	{
+		if (ImGui::InputInt("Max. entities per leaf", &BVHSystem::GetMaxObjectsPerLeaf(), 1, 1))
+		{
+			int& minObjs = BVHSystem::GetMaxObjectsPerLeaf();
+			if (minObjs < 1) minObjs = 1;
+			BVHSystem::BuildBVH();
+		}
 		if (ImGui::Button("Recalculate BVH"))
 		{
-			BVHSystem::BuildBVH(BVHSystem::BVHTree_TopDown);
+			BVHSystem::BuildBVH();
 		}
 
 		if (ImGui::Button("Recalculate ALL BVs"))
 		{
 			for (auto [handle, boundingVolume] : EntityManager::View<BoundingVolume>().each())
 				boundingVolume.SetDirty();
+		}
+
+		{
+			int* pBV = reinterpret_cast<int*>(&BVHSystem::GetCurrentTreeAxis());
+			ImGui::SeparatorText("BVH Axis Basis");
+			BVHSystem::BVHAxis prevAxis = BVHSystem::GetCurrentTreeAxis();
+			bool isRadiod = false;
+			isRadiod |= ImGui::RadioButton("X", pBV, static_cast<int>(BVHSystem::BVHAxis::X)); ImGui::SameLine();
+			isRadiod |= ImGui::RadioButton("Y", pBV, static_cast<int>(BVHSystem::BVHAxis::Y)); ImGui::SameLine();
+			isRadiod |= ImGui::RadioButton("Z", pBV, static_cast<int>(BVHSystem::BVHAxis::Z)); ImGui::SameLine();
+			isRadiod |= ImGui::RadioButton("PCA##Axis", pBV, static_cast<int>(BVHSystem::BVHAxis::PCA));
+
+			if (isRadiod && ((BVHSystem::BVHAxis)*pBV != prevAxis))
+				BVHSystem::BuildBVH();
 		}
 
 		{

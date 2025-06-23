@@ -79,5 +79,5 @@ void Assignment2::UpdateImpl(float dt)
 			EntityManager::GetComponent<BoundingVolume>(m_Spinny).SetDirty();
 	}
 
-	BVHSystem::BuildBVH(BVHSystem::BVHTree_TopDown);
+	BVHSystem::BuildBVH();
 }

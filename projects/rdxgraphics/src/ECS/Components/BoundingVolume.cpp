@@ -254,6 +254,12 @@ void AABBBV::RecalculateBV()
 	SetPosition((max + min) * 0.5f);
 }
 
+void AABBBV::RecalculateBV(AABBBV const& other)
+{
+	SetPosition(other.GetPosition());
+	GetHalfExtents() = other.GetHalfExtents();
+}
+
 void AABBBV::RecalculateBV(AABBBV const& bvL, AABBBV const& bvR)
 {
 	glm::vec3 newMin{ std::numeric_limits<float>().infinity() };
@@ -308,6 +314,13 @@ inline void OBBBV::RecalculateBV()
 	SetPosition(finalCentroid);
 	GetHalfExtents() = finalHalfExtents;
 	m_EigenVectors = finalRotation;
+}
+
+void OBBBV::RecalculateBV(OBBBV const& other)
+{
+	SetPosition(other.GetPosition());
+	GetHalfExtents() = other.GetHalfExtents();
+	GetOrthonormalBasis() = other.GetOrthonormalBasis();
 }
 
 void OBBBV::RecalculateBV(OBBBV const& bvL, OBBBV const& bvR)
@@ -450,6 +463,12 @@ void SphereBV::RecalculateBV()
 
 	GetRadius() = finalRadius;
 	SetPosition(finalCentroid);
+}
+
+void SphereBV::RecalculateBV(SphereBV const& other)
+{
+	SetPosition(other.GetPosition());
+	GetRadius() = other.GetRadius();
 }
 
 void SphereBV::RecalculateBV(SphereBV const& bvL, SphereBV const& bvR)

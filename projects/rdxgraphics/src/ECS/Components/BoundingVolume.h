@@ -71,6 +71,7 @@ public:
 	FrustumBV() = default;
 	void UpdateXform() override; // Must have it's own beacuse of BasePrimitive
 	void RecalculateBV() override;
+	inline void RecalculateBV(FrustumBV const&) {} // Just filler, not meant to actually do anything
 	inline void RecalculateBV(FrustumBV const&, FrustumBV const&) {}; // Just filler, not meant to actually do anything
 
 	inline std::array<glm::vec4, 8> const& GetPoints() const { return m_Points; }
@@ -89,18 +90,11 @@ private:
 
 class AABBBV : public BaseBV, public AABBPrimitive
 {
-private: inline static void OnConstruct(entt::registry& registry, entt::entity handle) {
-	AABBBV& klass = registry.get<AABBBV>(handle); 
-	klass.SetEntityHandle(handle); 
-	klass.OnConstructImpl();
-} inline static void OnDestroy(entt::registry& registry, entt::entity handle) {
-	AABBBV& klass = registry.get<AABBBV>(handle); klass.OnDestroyImpl();
-} public: inline static void Init(entt::registry& registry) {
-	registry.on_construct<AABBBV>().connect<&AABBBV::OnConstruct>(); registry.on_update<AABBBV>().connect<&AABBBV::OnConstruct>(); registry.on_destroy<AABBBV>().connect<&AABBBV::OnDestroy>();
-} private:;
+	RX_COMPONENT_DEF_HANDLE(AABBBV);
 public:
 	AABBBV() = default;
 	void RecalculateBV() override;
+	void RecalculateBV(AABBBV const&); // This is more of a copy ctor
 	void RecalculateBV(AABBBV const&, AABBBV const&);
 
 private:
@@ -114,6 +108,7 @@ public:
 	OBBBV() = default;
 	void UpdateXform() override;
 	void RecalculateBV() override;
+	void RecalculateBV(OBBBV const&); // This is more of a copy ctor
 	void RecalculateBV(OBBBV const&, OBBBV const&);
 	glm::mat3 const& GetOrthonormalBasis() const { return m_EigenVectors; }
 	glm::mat3& GetOrthonormalBasis() { return m_EigenVectors; }
@@ -138,6 +133,7 @@ public:
 public:
 	SphereBV() = default;
 	void RecalculateBV() override;
+	void RecalculateBV(SphereBV const&); // This is more of a copy ctor
 	void RecalculateBV(SphereBV const&, SphereBV const&);
 
 private:
