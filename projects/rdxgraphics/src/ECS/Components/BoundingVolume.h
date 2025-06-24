@@ -71,8 +71,6 @@ public:
 	FrustumBV() = default;
 	void UpdateXform() override; // Must have it's own beacuse of BasePrimitive
 	void RecalculateBV() override;
-	inline void RecalculateBV(FrustumBV const&) {} // Just filler, not meant to actually do anything
-	inline void RecalculateBV(FrustumBV const&, FrustumBV const&) {}; // Just filler, not meant to actually do anything
 
 	inline std::array<glm::vec4, 8> const& GetPoints() const { return m_Points; }
 	inline std::array<glm::mat4, 12> const& GetEdgeXforms() const { return m_Xforms; }
@@ -108,8 +106,6 @@ public:
 	OBBBV() = default;
 	void UpdateXform() override;
 	void RecalculateBV() override;
-	void RecalculateBV(OBBBV const&); // This is more of a copy ctor
-	void RecalculateBV(OBBBV const&, OBBBV const&);
 	glm::mat3 const& GetOrthonormalBasis() const { return m_EigenVectors; }
 	glm::mat3& GetOrthonormalBasis() { return m_EigenVectors; }
 

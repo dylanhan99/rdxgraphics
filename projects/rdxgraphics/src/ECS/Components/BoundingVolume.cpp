@@ -316,43 +316,6 @@ inline void OBBBV::RecalculateBV()
 	m_EigenVectors = finalRotation;
 }
 
-void OBBBV::RecalculateBV(OBBBV const& other)
-{
-	SetPosition(other.GetPosition());
-	GetHalfExtents() = other.GetHalfExtents();
-	GetOrthonormalBasis() = other.GetOrthonormalBasis();
-}
-
-void OBBBV::RecalculateBV(OBBBV const& bvL, OBBBV const& bvR)
-{
-	std::vector<glm::vec3> points{}; // 16 points
-	{
-		glm::vec3 minL = bvL.GetMinPoint();
-		glm::vec3 maxL = bvL.GetMaxPoint();
-		glm::vec3 minR = bvR.GetMinPoint();
-		glm::vec3 maxR = bvR.GetMaxPoint();
-		for (int x = -1; x <= 1; x+=2)
-		for (int y = -1; y <= 1; y+=2)
-		for (int z = -1; z <= 1; z+=2)
-		{
-			points.emplace_back(glm::vec3{ minL.x * x, minL.y * y, minL.z * z });
-			points.emplace_back(glm::vec3{ maxL.x * x, maxL.y * y, maxL.z * z });
-
-			points.emplace_back(glm::vec3{ minR.x * x, minR.y * y, minR.z * z });
-			points.emplace_back(glm::vec3{ maxR.x * x, maxR.y * y, maxR.z * z });
-		}
-	}
-
-	glm::vec3 finalCentroid{};
-	glm::mat3 finalRotation{};
-	glm::vec3 finalHalfExtents{};
-	Intersection::PCA(points, &finalCentroid, nullptr, &finalRotation, &finalHalfExtents);
-
-	SetPosition(finalCentroid);
-	GetHalfExtents() = finalHalfExtents;
-	m_EigenVectors = finalRotation;
-}
-
 void SphereBV::RecalculateBV()
 {
 	entt::entity const handle = GetEntityHandle();

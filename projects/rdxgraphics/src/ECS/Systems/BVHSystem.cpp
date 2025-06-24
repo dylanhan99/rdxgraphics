@@ -3,6 +3,12 @@
 
 RX_SINGLETON_EXPLICIT(BVHSystem);
 
+
+#define _RX_X(Klass) template<> Klass##BV BVHSystem::ComputeBV<Klass##BV>(Entity* pEntities, int numEnts);
+RX_DO_ALL_BVH_ENUM_M(_RX_X);
+#undef _RX_X
+
+
 void BVHNode::SetIsNode() const
 {
 	if (!EntityManager::HasEntity(Handle))
@@ -63,15 +69,14 @@ void BVHSystem::BuildBVH(std::function<void(std::unique_ptr<BVHNode>&, Entity*, 
 	RX_ASSERT(fnBuildBVH);
 	DestroyBVH(GetRootNode());
 
-	std::vector<entt::entity> entities{};
+	EntityList entities{};
 	{
-		auto view = EntityManager::View<Xform const, BoundingVolume const>(entt::exclude<FrustumBV>);
-		for (auto [handle, _, __] : view.each())
-			entities.emplace_back(handle);
+		auto view = EntityManager::View<Xform, BoundingVolume const>(entt::exclude<FrustumBV>);
+		for (auto [handle, xform, __] : view.each())
+			entities.emplace_back(Entity{ handle, xform });
 	}
 
-	EntityList sortedEnts = GetSortedEntities(entities);
-	fnBuildBVH(GetRootNode(), sortedEnts.data(), (int)sortedEnts.size(), 0);
+	fnBuildBVH(GetRootNode(), entities.data(), (int)entities.size(), 0);
 }
 
 void BVHSystem::DestroyBVH(std::unique_ptr<BVHNode>& pNode)
@@ -86,54 +91,48 @@ void BVHSystem::DestroyBVH(std::unique_ptr<BVHNode>& pNode)
 	pNode.reset(nullptr);
 }
 
-glm::vec3 BVHSystem::GetTreeAxis(std::vector<glm::vec3> const& positions)
+template<> 
+AABBBV BVHSystem::ComputeBV<AABBBV>(Entity* pEntities, int numEnts)
 {
-	switch (GetCurrentTreeAxis())
-	{
-	case BVHAxis::X:
-		return glm::vec3{ 1.f, 0.f, 0.f };
-	case BVHAxis::Y:
-		return glm::vec3{ 0.f, 1.f, 0.f };
-	case BVHAxis::Z:
-		return glm::vec3{ 0.f, 0.f, 1.f };
-	case BVHAxis::PCA:
-	{
-		glm::mat3 eigenVecs{};
-		Intersection::PCA(positions, nullptr, nullptr, &eigenVecs);
-		return eigenVecs[0];
-	}
-	default: return {};
-	}
+	return AABBBV{};
 }
 
-BVHSystem::EntityList BVHSystem::GetSortedEntities(std::vector<entt::entity> const& entities)
+template<> 
+SphereBV BVHSystem::ComputeBV<SphereBV>(Entity* pEntities, int numEnts)
 {
-	std::vector<glm::vec3> positions{};
+	return SphereBV{};
+}
+
+int BVHSystem::FindDominantAxis(Entity* entities, int numEnts)
+{
+	// Find the dominant plane, return 0,1,2 corresponding to x,y,z
+	glm::vec3 aabbExtents{};
 	{
-		for (auto const& handle : entities)
+		glm::vec3 min{ std::numeric_limits<float>().infinity() };
+		glm::vec3 max{ -std::numeric_limits<float>().infinity() };
+
+		for (int i = 0; i < numEnts; ++i)
 		{
-			Xform& xform = EntityManager::GetComponent<Xform>(handle);
-			positions.emplace_back(xform.GetTranslate());
+			Xform& xform = entities[i].second;
+			glm::vec3 const& pos = xform.GetTranslate();
+
+			min.x = glm::min(min.x, pos.x);
+			min.y = glm::min(min.y, pos.y);
+			min.z = glm::min(min.z, pos.z);
+
+			max.x = glm::max(max.x, pos.x);
+			max.y = glm::max(max.y, pos.y);
+			max.z = glm::max(max.z, pos.z);
 		}
-	}
-	glm::vec3 axis = GetTreeAxis(positions);
 
-	EntityList sortedEnts{};
-	for (size_t i = 0; i < entities.size(); ++i)
-	{
-		sortedEnts.emplace_back(Entity{
-			entities[i],
-			glm::dot(axis, positions[i])
-			});
+		aabbExtents = (min - max);
 	}
 
-	std::sort(sortedEnts.begin(), sortedEnts.end(),
-		[](Entity const& lhs, Entity const& rhs)
-		{
-			return lhs.second < rhs.second;
-		});
-
-	return std::move(sortedEnts);
+	if (aabbExtents.x > aabbExtents.y && aabbExtents.x > aabbExtents.z)
+		return 0; // X dom
+	if (aabbExtents.y > aabbExtents.z)
+		return 1; // Y dom
+	return 2; // Z dom
 }
 
 int BVHSystem::Partition(Entity* pEntities, int numEnts)
@@ -141,23 +140,39 @@ int BVHSystem::Partition(Entity* pEntities, int numEnts)
 	if (!pEntities || numEnts <= 0)
 		return 0;
 
-	// mean split
-	float mean{};
-	for (size_t i = 0; i < numEnts; ++i)
-		mean += pEntities[i].second;
-	mean /= (float)numEnts;
+	int axis = FindDominantAxis(pEntities, numEnts);
+	auto span = std::span(pEntities, pEntities + numEnts);
+	std::sort(span.begin(), span.end(),
+		[&axis](Entity const& lhs, Entity const& rhs)
+		{
+			glm::vec3 const& l = lhs.second.GetTranslate();
+			glm::vec3 const& r = rhs.second.GetTranslate();
 
-	// so now we partition based on lessthan or morethan centroid
-	int k = 0;
-	for (; k < (int)numEnts; ++k)
+			return l[axis] < r[axis];
+		});
+
+	float minCost{ std::numeric_limits<float>().infinity() };
+	int k = 1;
+#define _RX_X(Klass)												\
+	case BV::Klass: {												\
+		for (int i = k; i < numEnts; ++i)							\
+		{															\
+			AABBBV bvL = ComputeBV<AABBBV>(pEntities, i);			\
+			AABBBV bvR = ComputeBV<AABBBV>(pEntities, numEnts - i);	\
+																	\
+			float cost = HeuristicCost(bvL, i, bvR, numEnts - i);	\
+			if (cost < minCost)										\
+			{														\
+				minCost = cost;										\
+				k = i;												\
+			}														\
+		}															\
+	} break;
+	switch (GetGlobalBVType())
 	{
-		// we break as soon as we find that current >= mean
-		if (pEntities[k].second >= mean)
-			break;
+		RX_DO_ALL_BVH_ENUM_M(_RX_X);
+	default: RX_ASSERT(false); break;
 	}
-
-	if (k == 0 || k >= numEnts)
-		return (int)(numEnts / 2);
 
 	return k;
 }
@@ -214,9 +229,7 @@ void BVHSystem::BVHTree_TopDown(std::unique_ptr<BVHNode>& pNode, Entity* pEntiti
 		}
 		switch (GetGlobalBVType())
 		{
-			_RX_X(AABB);
-			_RX_X(OBB);
-			_RX_X(Sphere);
+			RX_DO_ALL_BVH_ENUM_M(_RX_X);
 		default: break;
 		}
 #undef _RX_X
@@ -267,9 +280,7 @@ void BVHSystem::BVHTree_TopDown(std::unique_ptr<BVHNode>& pNode, Entity* pEntiti
 		}
 		switch (GetGlobalBVType())
 		{
-			_RX_X(AABB);
-			_RX_X(OBB);
-			_RX_X(Sphere);
+			RX_DO_ALL_BVH_ENUM_M(_RX_X);
 		default: break;
 		}
 #undef _RX_X

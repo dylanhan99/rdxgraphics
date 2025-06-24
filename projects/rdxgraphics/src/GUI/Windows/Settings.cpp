@@ -30,19 +30,19 @@ void Settings::UpdateImpl(float dt)
 				boundingVolume.SetDirty();
 		}
 
-		{
-			int* pBV = reinterpret_cast<int*>(&BVHSystem::GetCurrentTreeAxis());
-			ImGui::SeparatorText("BVH Axis Basis");
-			BVHSystem::BVHAxis prevAxis = BVHSystem::GetCurrentTreeAxis();
-			bool isRadiod = false;
-			isRadiod |= ImGui::RadioButton("X", pBV, static_cast<int>(BVHSystem::BVHAxis::X)); ImGui::SameLine();
-			isRadiod |= ImGui::RadioButton("Y", pBV, static_cast<int>(BVHSystem::BVHAxis::Y)); ImGui::SameLine();
-			isRadiod |= ImGui::RadioButton("Z", pBV, static_cast<int>(BVHSystem::BVHAxis::Z)); ImGui::SameLine();
-			isRadiod |= ImGui::RadioButton("PCA##Axis", pBV, static_cast<int>(BVHSystem::BVHAxis::PCA));
-
-			if (isRadiod && ((BVHSystem::BVHAxis)*pBV != prevAxis))
-				BVHSystem::BuildBVH();
-		}
+		//{
+		//	int* pBV = reinterpret_cast<int*>(&BVHSystem::GetCurrentTreeAxis());
+		//	ImGui::SeparatorText("BVH Axis Basis");
+		//	BVHSystem::BVHAxis prevAxis = BVHSystem::GetCurrentTreeAxis();
+		//	bool isRadiod = false;
+		//	isRadiod |= ImGui::RadioButton("X", pBV, static_cast<int>(BVHSystem::BVHAxis::X)); ImGui::SameLine();
+		//	isRadiod |= ImGui::RadioButton("Y", pBV, static_cast<int>(BVHSystem::BVHAxis::Y)); ImGui::SameLine();
+		//	isRadiod |= ImGui::RadioButton("Z", pBV, static_cast<int>(BVHSystem::BVHAxis::Z)); ImGui::SameLine();
+		//	isRadiod |= ImGui::RadioButton("PCA##Axis", pBV, static_cast<int>(BVHSystem::BVHAxis::PCA));
+		//
+		//	if (isRadiod && ((BVHSystem::BVHAxis)*pBV != prevAxis))
+		//		BVHSystem::BuildBVH();
+		//}
 
 		{
 			int* pBV = reinterpret_cast<int*>(&BVHSystem::GetGlobalBVType());

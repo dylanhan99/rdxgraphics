@@ -29,7 +29,7 @@ public:																		\
 	inline entt::entity GetEntityHandle() const { return m_Handle; }		\
 	inline void SetEntityHandle(entt::entity handle) { m_Handle = handle; } \
 private:																	\
-	entt::entity m_Handle{};
+	entt::entity m_Handle{entt::null};
 
 #define RX_COMPONENT_DEF_HANDLE(Klass)											 \
 private:																		 \
