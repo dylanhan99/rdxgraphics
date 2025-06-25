@@ -85,7 +85,7 @@ void BVHSystem::DestroyBVH(std::unique_ptr<BVHNode>& pNode)
 	pNode.reset(nullptr);
 }
 
-int BVHSystem::FindDominantAxis(Entity* entities, int numEnts)
+int BVHSystem::FindDominantAxis(Entity* entities, int numEnts, AABBBV* pBV)
 {
 	// Find the dominant plane, return 0,1,2 corresponding to x,y,z
 	glm::vec3 aabbExtents{};
@@ -108,6 +108,11 @@ int BVHSystem::FindDominantAxis(Entity* entities, int numEnts)
 		}
 
 		aabbExtents = (min - max);
+		if (pBV)
+		{
+			pBV->GetHalfExtents() = aabbExtents * 0.5f;
+			pBV->SetPosition((min + max) * 0.5f);
+		}
 	}
 
 	if (aabbExtents.x > aabbExtents.y && aabbExtents.x > aabbExtents.z)
@@ -122,7 +127,8 @@ int BVHSystem::Partition(Entity* pEntities, int numEnts)
 	if (!pEntities || numEnts <= 0)
 		return 0;
 
-	int axis = FindDominantAxis(pEntities, numEnts);
+	AABBBV totalBV{}; // This simply caches the info of encompassing BV, be it Sphere or AABB
+	int axis = FindDominantAxis(pEntities, numEnts, &totalBV);
 	auto span = std::span(pEntities, pEntities + numEnts);
 	std::sort(span.begin(), span.end(),
 		[&axis](Entity const& lhs, Entity const& rhs)
@@ -133,22 +139,66 @@ int BVHSystem::Partition(Entity* pEntities, int numEnts)
 			return l[axis] < r[axis];
 		});
 
+	int k{};
+	switch (GetCurrentSplitPointStrat())
+	{
+	case SplitPointStrat::MedianCenters:
+		k = Heuristic_MedianCenters(pEntities, numEnts);
+		break;
+	case SplitPointStrat::MedianExtents:
+		k = Heuristic_MedianExtents(pEntities, numEnts, , axis);
+		break;
+	case SplitPointStrat::KEvenSplits:
+		k = Heuristic_KEvenSplits(pEntities, numEnts);
+		break;
+	case SplitPointStrat::SmallestSFA:
+		k = Heuristic_SmallestSFA(pEntities, numEnts);
+		break;
+	default: break;
+	}
+	return k;
+}
+
+int BVHSystem::Heuristic_MedianCenters(Entity* pEntities, int numEnts)
+{
+	return numEnts / 2;
+}
+
+int BVHSystem::Heuristic_MedianExtents(Entity* pEntities, int numEnts, int axis, AABBBV const& totalBV)
+{
+	float splitPoint = totalBV.GetPosition()[axis]; // Median
+	for (int k = 0; k < numEnts; ++k)
+	{
+		if (pEntities[i].second.GetTranslate()[axis] > splitPoint)
+			return k;
+	}
+
+	return Heuristic_MedianCenters(pEntities, numEnts);
+}
+
+int BVHSystem::Heuristic_KEvenSplits(Entity* pEntities, int numEnts)
+{
+	return 1;
+}
+
+int BVHSystem::Heuristic_SmallestSFA(Entity* pEntities, int numEnts)
+{
 	float minCost{ std::numeric_limits<float>().infinity() };
 	int k = 1;
-#define _RX_X(Klass)												\
-	case BV::Klass: {												\
-		Klass##BV bvTotal = ComputeBV<Klass##BV>(pEntities, numEnts);\
-		for (int i = k; i < numEnts; ++i)							\
-		{															\
-			Klass##BV bvL = ComputeBV<Klass##BV>(pEntities, i);			 \
-			Klass##BV bvR = ComputeBV<Klass##BV>(pEntities, numEnts - i);\
+#define _RX_X(Klass)														\
+	case BV::Klass: {														\
+		Klass##BV bvTotal = ComputeBV<Klass##BV>(pEntities, numEnts);		\
+		for (int i = k; i < numEnts; ++i)									\
+		{																	\
+			Klass##BV bvL = ComputeBV<Klass##BV>(pEntities, i);				\
+			Klass##BV bvR = ComputeBV<Klass##BV>(pEntities, numEnts - i);	\
 			float cost = HeuristicCost(bvL, i, bvR, numEnts - i, bvTotal);	\
-			if (cost < minCost)										\
-			{														\
-				minCost = cost;										\
-				k = i;												\
-			}														\
-		}															\
+			if (cost < minCost)												\
+			{																\
+				minCost = cost;												\
+				k = i;														\
+			}																\
+		}																	\
 	} break;
 	switch (GetGlobalBVType())
 	{
@@ -237,20 +287,6 @@ void BVHSystem::BVHTree_TopDown(std::unique_ptr<BVHNode>& pNode, Entity* pEntiti
 		// Partition and recurse, then combine the children BVs to build your own
 		// Set to NODE
 		pNode->SetIsNode();
-
-		//std::vector<entt::entity> subset{};
-		//std::ranges::transform(
-		//	std::span(pEntities, pEntities + numEnts), 
-		//	std::back_inserter(subset),
-		//	[](Entity const& e)
-		//	{
-		//		return e.first;
-		//	});
-		//EntityList newSubset = GetSortedEntities(subset);
-		//int k = Partition(newSubset.data(), numEnts);
-		//
-		//Entity* pEntitiesL = newSubset.data();
-		//Entity* pEntitiesR = newSubset.data() + k;
 
 		int k = Partition(pEntities, numEnts);
 		Entity* pEntitiesL = pEntities;

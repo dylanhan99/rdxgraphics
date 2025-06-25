@@ -29,6 +29,12 @@ public:
 		TwoEntitiesMax,
 		TreeHeightTwo
 	};
+	enum class SplitPointStrat {
+		MedianCenters,
+		MedianExtents,
+		KEvenSplits,
+		SmallestSFA
+	};
 
 private:
 	using Entity = std::pair<entt::entity, Xform&>;
@@ -41,19 +47,23 @@ public:
 	inline static BV& GetGlobalBVType() { return g.m_GlobalBVType; }
 	inline static BVHType& GetCurrentTreeType() { return g.m_CurrentTreeType; }
 	inline static LeafCondition& GetCurrentLeafCondition() { return g.m_CurrentLeafCondition; }
+	inline static SplitPointStrat& GetCurrentSplitPointStrat() { return g.m_CurrentSplitPointStrat; }
 
 	// *** Helper functions *** //
 	static void BuildBVH();
 	static void BuildBVH(std::function<void(std::unique_ptr<BVHNode>&, Entity*, int, int)> fnBuildBVH);
 	static void DestroyBVH(std::unique_ptr<BVHNode>& pNode);
 
-	// Determines split plane
 	template <typename T>
 	static T ComputeBV(Entity*, int);
 	template <typename T>
 	static float HeuristicCost(T const& bvL, int const numL, T const& bvR, int const numR, T const& bvTotal);
-	static int FindDominantAxis(Entity* entities, int numEnts);
+	static int FindDominantAxis(Entity* entities, int numEnts, AABBBV* pBV = nullptr);
 	static int Partition(Entity* pEntities, int numEnts);
+	static int Heuristic_MedianCenters(Entity* pEntities, int numEnts);
+	static int Heuristic_MedianExtents(Entity* pEntities, int numEnts, int axis, AABBBV const& totalBV);
+	static int Heuristic_KEvenSplits(Entity* pEntities, int numEnts);
+	static int Heuristic_SmallestSFA(Entity* pEntities, int numEnts);
 	// *** *** //
 
 	// *** Tree building *** //
@@ -66,6 +76,7 @@ private:
 	BV m_GlobalBVType{ BV::AABB };
 	BVHType m_CurrentTreeType{ BVHType::TopDown };
 	LeafCondition m_CurrentLeafCondition{ LeafCondition::OneEntity };
+	SplitPointStrat m_CurrentSplitPointStrat{ SplitPointStrat::MedianCenters };
 	std::unique_ptr<BVHNode> m_RootNode{};
 };
 

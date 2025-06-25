@@ -33,26 +33,40 @@ void Settings::UpdateImpl(float dt)
 		{
 			int* pBV = reinterpret_cast<int*>(&BVHSystem::GetCurrentLeafCondition());
 			ImGui::SeparatorText("BVH Termination Condition");
-			BVHSystem::LeafCondition prevAxis = BVHSystem::GetCurrentLeafCondition();
+			BVHSystem::LeafCondition prev = BVHSystem::GetCurrentLeafCondition();
 			bool isRadiod = false;
 			isRadiod |= ImGui::RadioButton("OneEntity", pBV, static_cast<int>(BVHSystem::LeafCondition::OneEntity)); ImGui::SameLine();
 			isRadiod |= ImGui::RadioButton("TwoEntitiesMax", pBV, static_cast<int>(BVHSystem::LeafCondition::TwoEntitiesMax)); ImGui::SameLine();
 			isRadiod |= ImGui::RadioButton("TreeHeightTwo", pBV, static_cast<int>(BVHSystem::LeafCondition::TreeHeightTwo));
 		
-			if (isRadiod && ((BVHSystem::LeafCondition)*pBV != prevAxis))
+			if (isRadiod && ((BVHSystem::LeafCondition)*pBV != prev))
+				BVHSystem::BuildBVH();
+		}
+
+		{
+			int* pBV = reinterpret_cast<int*>(&BVHSystem::GetCurrentSplitPointStrat());
+			ImGui::SeparatorText("BVH Split Point Strategy");
+			BVHSystem::SplitPointStrat prev = BVHSystem::GetCurrentSplitPointStrat();
+			bool isRadiod = false;
+			isRadiod |= ImGui::RadioButton("MedianCenters", pBV, static_cast<int>(BVHSystem::SplitPointStrat::MedianCenters)); ImGui::SameLine();
+			isRadiod |= ImGui::RadioButton("MedianExtents", pBV, static_cast<int>(BVHSystem::SplitPointStrat::MedianExtents)); ImGui::SameLine();
+			isRadiod |= ImGui::RadioButton("KEvenSplits", pBV, static_cast<int>(BVHSystem::SplitPointStrat::KEvenSplits)); ImGui::SameLine();
+			isRadiod |= ImGui::RadioButton("SmallestSFA", pBV, static_cast<int>(BVHSystem::SplitPointStrat::SmallestSFA));
+		
+			if (isRadiod && ((BVHSystem::SplitPointStrat)*pBV != prev))
 				BVHSystem::BuildBVH();
 		}
 
 		{
 			int* pBV = reinterpret_cast<int*>(&BVHSystem::GetGlobalBVType());
 			ImGui::SeparatorText("CurrentBV Option");
-			BV prevGlobalBV = BVHSystem::GetGlobalBVType();
+			BV prev = BVHSystem::GetGlobalBVType();
 			bool isRadiod = false;
 			isRadiod |= ImGui::RadioButton("AABB", pBV, static_cast<int>(BV::AABB)); ImGui::SameLine();
 			isRadiod |= ImGui::RadioButton("OBB", pBV, static_cast<int>(BV::OBB)); ImGui::SameLine();
 			isRadiod |= ImGui::RadioButton("Sphere", pBV, static_cast<int>(BV::Sphere));
 
-			if (isRadiod && ((BV)*pBV != prevGlobalBV))
+			if (isRadiod && ((BV)*pBV != prev))
 				BVHSystem::EnforceUniformBVs();
 		}
 
