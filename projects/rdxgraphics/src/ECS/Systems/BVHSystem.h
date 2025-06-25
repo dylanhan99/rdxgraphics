@@ -43,9 +43,9 @@ public:
 
 	// Determines split plane
 	template <typename T>
-	static T ComputeBV(Entity*, int) { static_assert(false); return T{}; }
+	static T ComputeBV(Entity*, int);
 	template <typename T>
-	static float HeuristicCost(T const& bvL, int numL, T const& bvR, int numR);
+	static float HeuristicCost(T const& bvL, int const numL, T const& bvR, int const numR, T const& bvTotal);
 	static int FindDominantAxis(Entity* entities, int numEnts);
 	static int Partition(Entity* pEntities, int numEnts);
 	// *** *** //
@@ -63,9 +63,30 @@ private:
 };
 
 template <typename T>
-static float BVHSystem::HeuristicCost(T const& bvL, int numL, T const& bvR, int numR)
+static T BVHSystem::ComputeBV(Entity* pEntities, int numEnts)
 {
-	//bvL.GetVolume();
-	//bvR.GetVolume();
-	return 0.f;
+	T ret{};
+	for (int i = 0; i < numEnts; ++i)
+	{
+		T& bv = EntityManager::GetComponent<T>(pEntities[i].first);
+		if (i == 0)
+		{
+			ret.RecalculateBV(bv);
+			continue;
+		}
+
+		ret.RecalculateBV(ret, bv);
+	}
+
+	return std::move(ret);
+}
+
+template <typename T>
+static float BVHSystem::HeuristicCost(T const& bvL, int const numL, T const& bvR, int const numR, T const& bvTotal)
+{
+	float const invAll = 1.f / bvTotal.GetSurfaceArea();
+	float const normL = bvL.GetSurfaceArea() * invAll;
+	float const normR = bvR.GetSurfaceArea() * invAll;
+
+	return numL * normL + numR * normR;
 }

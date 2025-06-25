@@ -95,6 +95,9 @@ public:
 	void RecalculateBV(AABBBV const&); // This is more of a copy ctor
 	void RecalculateBV(AABBBV const&, AABBBV const&);
 
+	float GetSurfaceArea() const;
+	float GetVolume() const;
+
 private:
 
 };
@@ -131,6 +134,9 @@ public:
 	void RecalculateBV() override;
 	void RecalculateBV(SphereBV const&); // This is more of a copy ctor
 	void RecalculateBV(SphereBV const&, SphereBV const&);
+
+	float GetSurfaceArea() const;
+	float GetVolume() const;
 
 private:
 };

@@ -3,12 +3,6 @@
 
 RX_SINGLETON_EXPLICIT(BVHSystem);
 
-
-#define _RX_X(Klass) template<> Klass##BV BVHSystem::ComputeBV<Klass##BV>(Entity* pEntities, int numEnts);
-RX_DO_ALL_BVH_ENUM_M(_RX_X);
-#undef _RX_X
-
-
 void BVHNode::SetIsNode() const
 {
 	if (!EntityManager::HasEntity(Handle))
@@ -91,18 +85,6 @@ void BVHSystem::DestroyBVH(std::unique_ptr<BVHNode>& pNode)
 	pNode.reset(nullptr);
 }
 
-template<> 
-AABBBV BVHSystem::ComputeBV<AABBBV>(Entity* pEntities, int numEnts)
-{
-	return AABBBV{};
-}
-
-template<> 
-SphereBV BVHSystem::ComputeBV<SphereBV>(Entity* pEntities, int numEnts)
-{
-	return SphereBV{};
-}
-
 int BVHSystem::FindDominantAxis(Entity* entities, int numEnts)
 {
 	// Find the dominant plane, return 0,1,2 corresponding to x,y,z
@@ -155,12 +137,12 @@ int BVHSystem::Partition(Entity* pEntities, int numEnts)
 	int k = 1;
 #define _RX_X(Klass)												\
 	case BV::Klass: {												\
+		Klass##BV bvTotal = ComputeBV<Klass##BV>(pEntities, numEnts);\
 		for (int i = k; i < numEnts; ++i)							\
 		{															\
-			AABBBV bvL = ComputeBV<AABBBV>(pEntities, i);			\
-			AABBBV bvR = ComputeBV<AABBBV>(pEntities, numEnts - i);	\
-																	\
-			float cost = HeuristicCost(bvL, i, bvR, numEnts - i);	\
+			Klass##BV bvL = ComputeBV<Klass##BV>(pEntities, i);			 \
+			Klass##BV bvR = ComputeBV<Klass##BV>(pEntities, numEnts - i);\
+			float cost = HeuristicCost(bvL, i, bvR, numEnts - i, bvTotal);	\
 			if (cost < minCost)										\
 			{														\
 				minCost = cost;										\
@@ -201,9 +183,9 @@ void BVHSystem::BVHTree_TopDown(std::unique_ptr<BVHNode>& pNode, Entity* pEntiti
 
 	// We can assume Objects is not empty.
 
-	if (numEnts == 1 || 
-		numEnts <= MAX_OBJS_PER_LEAF ||
-		height >= MAX_TREE_HEIGHT)
+	if (numEnts == 1)// ||
+		//numEnts <= MAX_OBJS_PER_LEAF ||
+		//height >= MAX_TREE_HEIGHT)
 	{ // At an actual game object, we can simply use the entt handle and set LEAF
 		// Some function to combine the sizes of the numEnts number of pEntities
 		pNode->SetIsLeaf();

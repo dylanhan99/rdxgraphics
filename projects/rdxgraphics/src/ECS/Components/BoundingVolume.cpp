@@ -287,6 +287,21 @@ void AABBBV::RecalculateBV(AABBBV const& bvL, AABBBV const& bvR)
 	SetPosition((newMin + newMax) * 0.5f);
 }
 
+float AABBBV::GetSurfaceArea() const
+{
+	glm::vec3 extents = 2.f * GetHalfExtents();
+	return
+		2.f * extents.x * extents.y +
+		2.f * extents.x * extents.z +
+		2.f * extents.y * extents.z;
+}
+
+float AABBBV::GetVolume() const
+{
+	glm::vec3 extents = 2.f * GetHalfExtents();
+	return extents.x * extents.y * extents.z;
+}
+
 inline void OBBBV::UpdateXform()
 {
 	m_Xform = glm::translate(GetPosition()) * glm::mat4(m_EigenVectors) * glm::scale(2.f * GetHalfExtents());
@@ -443,4 +458,15 @@ void SphereBV::RecalculateBV(SphereBV const& bvL, SphereBV const& bvR)
 
 	SetPosition(newCentroid);
 	GetRadius() = newRadius;
+}
+
+float SphereBV::GetSurfaceArea() const
+{
+	return 4 * glm::pi<float>() * glm::pow(GetRadius(), 2.f);
+}
+
+float SphereBV::GetVolume() const
+{
+	constexpr float four_over_three = 4.f / 3.f;
+	return four_over_three * glm::pi<float>() * glm::pow(GetRadius(), 3.f);
 }
