@@ -24,6 +24,11 @@ public:
 	enum class BVHType {
 		TopDown,
 	};
+	enum class LeafCondition {
+		OneEntity,
+		TwoEntitiesMax,
+		TreeHeightTwo
+	};
 
 private:
 	using Entity = std::pair<entt::entity, Xform&>;
@@ -35,6 +40,7 @@ public:
 	inline static std::unique_ptr<BVHNode>& GetRootNode() { return g.m_RootNode; }
 	inline static BV& GetGlobalBVType() { return g.m_GlobalBVType; }
 	inline static BVHType& GetCurrentTreeType() { return g.m_CurrentTreeType; }
+	inline static LeafCondition& GetCurrentLeafCondition() { return g.m_CurrentLeafCondition; }
 
 	// *** Helper functions *** //
 	static void BuildBVH();
@@ -59,6 +65,7 @@ private:
 private:
 	BV m_GlobalBVType{ BV::AABB };
 	BVHType m_CurrentTreeType{ BVHType::TopDown };
+	LeafCondition m_CurrentLeafCondition{ LeafCondition::OneEntity };
 	std::unique_ptr<BVHNode> m_RootNode{};
 };
 

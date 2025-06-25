@@ -161,9 +161,6 @@ int BVHSystem::Partition(Entity* pEntities, int numEnts)
 
 void BVHSystem::BVHTree_TopDown(std::unique_ptr<BVHNode>& pNode, Entity* pEntities, int numEnts, int height)
 {
-	constexpr int MAX_OBJS_PER_LEAF = 2;
-	constexpr int MAX_TREE_HEIGHT = 2;
-
 	if (numEnts <= 0 || !pEntities)
 	{
 		pNode.reset(nullptr);
@@ -182,10 +179,25 @@ void BVHSystem::BVHTree_TopDown(std::unique_ptr<BVHNode>& pNode, Entity* pEntiti
 	}
 
 	// We can assume Objects is not empty.
+	constexpr int MAX_OBJS_PER_LEAF = 2;
+	constexpr int MAX_TREE_HEIGHT = 2;
 
-	if (numEnts == 1)// ||
-		//numEnts <= MAX_OBJS_PER_LEAF ||
-		//height >= MAX_TREE_HEIGHT)
+	bool leafCondition = false;
+	switch (GetCurrentLeafCondition())
+	{
+	case LeafCondition::OneEntity:
+		leafCondition = numEnts == 1;
+		break;
+	case LeafCondition::TwoEntitiesMax:
+		leafCondition = numEnts <= MAX_OBJS_PER_LEAF;
+		break;
+	case LeafCondition::TreeHeightTwo:
+		leafCondition = height >= MAX_TREE_HEIGHT;
+		break;
+	default: break;
+	}
+
+	if (leafCondition)
 	{ // At an actual game object, we can simply use the entt handle and set LEAF
 		// Some function to combine the sizes of the numEnts number of pEntities
 		pNode->SetIsLeaf();
