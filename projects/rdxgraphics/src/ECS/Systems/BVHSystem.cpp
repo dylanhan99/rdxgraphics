@@ -146,7 +146,7 @@ int BVHSystem::Partition(Entity* pEntities, int numEnts)
 		k = Heuristic_MedianCenters(pEntities, numEnts);
 		break;
 	case SplitPointStrat::MedianExtents:
-		k = Heuristic_MedianExtents(pEntities, numEnts, , axis);
+		k = Heuristic_MedianExtents(pEntities, numEnts, axis, totalBV);
 		break;
 	case SplitPointStrat::KEvenSplits:
 		k = Heuristic_KEvenSplits(pEntities, numEnts);
@@ -169,7 +169,7 @@ int BVHSystem::Heuristic_MedianExtents(Entity* pEntities, int numEnts, int axis,
 	float splitPoint = totalBV.GetPosition()[axis]; // Median
 	for (int k = 0; k < numEnts; ++k)
 	{
-		if (pEntities[i].second.GetTranslate()[axis] > splitPoint)
+		if (pEntities[k].second.GetTranslate()[axis] > splitPoint)
 			return k;
 	}
 
