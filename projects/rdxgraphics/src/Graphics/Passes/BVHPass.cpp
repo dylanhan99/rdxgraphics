@@ -5,16 +5,41 @@
 #include "Graphics/Object.h"
 #include "ECS/Systems/BVHSystem.h"
 
+static glm::vec4 GetLayerColor(int layer)
+{
+	layer %= 8; // 2^8 = 256
+	float x = 0.f;
+	float y = 1.f;
+	float z = 0.f;
+	return glm::vec4{ x, y, z ,1.f };
+}
+
 static void DrawBVH(std::unique_ptr<BVHNode>& pNode, int layer)
 {
 	if (!pNode)
 		return;
 
-	// Draw shape
-	AABBBV& bv = EntityManager::GetComponent<AABBBV>(pNode->Handle);
-	auto& obj = RenderSystem::GetObjekt(Shape::Cube);
-	obj.Submit<VertexBasic::Xform>(bv.GetXform());
-	obj.Submit<VertexBasic::Color>(glm::vec4{0.f,1.f,0.f,1.f});// GetBVColor(bv.GetBVState()));
+	switch (BVHSystem::GetGlobalBVType())
+	{
+	case BV::AABB:
+	{
+		AABBBV& bv = EntityManager::GetComponent<AABBBV>(pNode->Handle);
+		auto& obj = RenderSystem::GetObjekt(Shape::Cube);
+		obj.Submit<VertexBasic::Xform>(bv.GetXform());
+		obj.Submit<VertexBasic::Color>(GetLayerColor(layer));
+		break;
+	}
+	case BV::Sphere:
+	{
+		SphereBV& bv = EntityManager::GetComponent<SphereBV>(pNode->Handle);
+		auto& obj = RenderSystem::GetObjekt(Shape::Sphere);
+		obj.Submit<VertexBasic::Xform>(bv.GetXform());
+		obj.Submit<VertexBasic::Color>(GetLayerColor(layer));
+		break;
+	}
+	default:
+		break;
+	}
 
 	if (!pNode->IsLeaf())
 	{

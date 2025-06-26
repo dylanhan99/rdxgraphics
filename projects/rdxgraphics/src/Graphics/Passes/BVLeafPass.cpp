@@ -25,7 +25,7 @@ static glm::vec4 GetBVColor(BVState state)
 void BVLeafPass::DrawImpl() const
 {
 	{
-		auto bvView = EntityManager::View<const FrustumBV>(entt::exclude<BVHNode::TypeNode>);
+		auto bvView = EntityManager::View<const FrustumBV>();
 		auto& obj = RenderSystem::GetObjekt(Shape::Line);
 		for (auto [handle, bv] : bvView.each())
 		{
@@ -50,7 +50,7 @@ void BVLeafPass::DrawImpl() const
 		}
 	}
 	{
-		auto bvView = EntityManager::View<AABBBV>(entt::exclude<BVHNode::TypeNode>);
+		auto bvView = EntityManager::View<AABBBV>(entt::exclude<BVHNode::TypeNode, BVHNode::TypeLeaf>);
 		for (auto [handle, bv] : bvView.each())
 		{
 			auto& obj = RenderSystem::GetObjekt(Shape::Cube);
@@ -59,7 +59,7 @@ void BVLeafPass::DrawImpl() const
 		}
 	}
 	{
-		auto bvView = EntityManager::View<OBBBV>(entt::exclude<BVHNode::TypeNode>);
+		auto bvView = EntityManager::View<OBBBV>(entt::exclude<BVHNode::TypeNode, BVHNode::TypeLeaf>);
 		for (auto [handle, bv] : bvView.each())
 		{
 			auto& obj = RenderSystem::GetObjekt(Shape::Cube);
@@ -68,7 +68,7 @@ void BVLeafPass::DrawImpl() const
 		}
 	}
 	{
-		auto bvView = EntityManager::View<SphereBV>(entt::exclude<BVHNode::TypeNode>);
+		auto bvView = EntityManager::View<SphereBV>(entt::exclude<BVHNode::TypeNode, BVHNode::TypeLeaf>);
 		for (auto [handle, bv] : bvView.each())
 		{
 			auto& obj = RenderSystem::GetObjekt(Shape::Sphere);
