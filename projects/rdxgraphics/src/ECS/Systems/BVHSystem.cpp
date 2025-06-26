@@ -232,17 +232,17 @@ void BVHSystem::BVHTree_TopDown(std::unique_ptr<BVHNode>& pNode, Entity* pEntiti
 	constexpr int MAX_OBJS_PER_LEAF = 2;
 	constexpr int MAX_TREE_HEIGHT = 2;
 
-	bool leafCondition = false;
+	bool leafCondition = numEnts == 1; // Default condition
 	switch (GetCurrentLeafCondition())
 	{
 	case LeafCondition::OneEntity:
-		leafCondition = numEnts == 1;
+		//leafCondition = numEnts == 1;
 		break;
 	case LeafCondition::TwoEntitiesMax:
-		leafCondition = numEnts <= MAX_OBJS_PER_LEAF;
+		leafCondition |= numEnts <= MAX_OBJS_PER_LEAF;
 		break;
 	case LeafCondition::TreeHeightTwo:
-		leafCondition = height >= MAX_TREE_HEIGHT;
+		leafCondition |= height >= MAX_TREE_HEIGHT;
 		break;
 	default: break;
 	}
