@@ -50,6 +50,7 @@ void BVHSystem::EnforceUniformBVs()
 void BVHSystem::BuildBVH()
 {
 	DestroyBVH(GetRootNode());
+	g.m_BVHHeight = -std::numeric_limits<int>().infinity();
 
 	EntityList entities{};
 	{
@@ -257,18 +258,16 @@ void BVHSystem::BVHTree_TopDown(std::unique_ptr<BVHNode>& pNode, Entity* pEntiti
 		{																			\
 			EntityManager::AddComponent<BoundingVolume>(handle, BV::Klass);			\
 			Klass##BV& bv = EntityManager::GetComponent<Klass##BV>(handle);			\
+			for (size_t i = 0; i < objs.size(); ++i)								\
 			{																		\
-				Klass##BV& other = EntityManager::GetComponent<Klass##BV>(objs[0]);	\
-				bv.RecalculateBV(other);											\
-			}																		\
-			if (pNode->Objects.size() > 1)											\
-			{																		\
-				for (size_t i = 0; i < objs.size(); ++i)							\
+				entt::entity const& ent = objs[i];									\
+				Klass##BV& other = EntityManager::GetComponent<Klass##BV>(ent);		\
+				if (i == 0)															\
 				{																	\
-					entt::entity const& ent = objs[i];								\
-					Klass##BV& other = EntityManager::GetComponent<Klass##BV>(ent);	\
-					bv.RecalculateBV(bv, other);									\
+					bv.RecalculateBV(other);										\
+					continue;														\
 				}																	\
+				bv.RecalculateBV(bv, other);										\
 			}																		\
 			break;																	\
 		}
@@ -282,6 +281,10 @@ void BVHSystem::BVHTree_TopDown(std::unique_ptr<BVHNode>& pNode, Entity* pEntiti
 		//entt::entity const& handle = pEntities[0].first;
 		//pNode->Handle = handle;
 		//pNode->SetIsLeaf();
+
+		// updating height
+		if (height > g.m_BVHHeight)
+			g.m_BVHHeight = height;
 	}
 	else
 	{ // Is a node,

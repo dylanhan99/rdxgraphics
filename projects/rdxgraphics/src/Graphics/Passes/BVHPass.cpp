@@ -7,11 +7,19 @@
 
 static glm::vec4 GetLayerColor(int layer)
 {
-	layer %= 8; // 2^8 = 256
-	float x = 0.f;
-	float y = 1.f;
-	float z = 0.f;
-	return glm::vec4{ x, y, z ,1.f };
+	constexpr float inv255 = 1.f / 255.f;
+	constexpr glm::vec4 colors[]{
+		glm::vec4{1.f, 0.f, 0.f, 1.f},
+		glm::vec4{0.f, 1.f, 0.f, 1.f},
+		glm::vec4{1.f, 0.7f, 0.f, 1.f},
+		glm::vec4{1.f, 1.f, 0.f, 1.f},
+		glm::vec4{1.f, 0.f, 1.f, 1.f},
+		glm::vec4{0.f, 1.f, 1.f, 1.f},
+		glm::vec4{0.5f, 0.65f, 1.f, 1.f},
+	};
+	constexpr int colorsLen = 7;
+
+	return colors[layer % colorsLen];
 }
 
 static void DrawBVH(std::unique_ptr<BVHNode>& pNode, int layer)
@@ -19,26 +27,29 @@ static void DrawBVH(std::unique_ptr<BVHNode>& pNode, int layer)
 	if (!pNode)
 		return;
 
-	switch (BVHSystem::GetGlobalBVType())
+	if (BVHSystem::GetDrawLayers() & (0x1 << layer))
 	{
-	case BV::AABB:
-	{
-		AABBBV& bv = EntityManager::GetComponent<AABBBV>(pNode->Handle);
-		auto& obj = RenderSystem::GetObjekt(Shape::Cube);
-		obj.Submit<VertexBasic::Xform>(bv.GetXform());
-		obj.Submit<VertexBasic::Color>(GetLayerColor(layer));
-		break;
-	}
-	case BV::Sphere:
-	{
-		SphereBV& bv = EntityManager::GetComponent<SphereBV>(pNode->Handle);
-		auto& obj = RenderSystem::GetObjekt(Shape::Sphere);
-		obj.Submit<VertexBasic::Xform>(bv.GetXform());
-		obj.Submit<VertexBasic::Color>(GetLayerColor(layer));
-		break;
-	}
-	default:
-		break;
+		switch (BVHSystem::GetGlobalBVType())
+		{
+		case BV::AABB:
+		{
+			AABBBV& bv = EntityManager::GetComponent<AABBBV>(pNode->Handle);
+			auto& obj = RenderSystem::GetObjekt(Shape::Cube);
+			obj.Submit<VertexBasic::Xform>(bv.GetXform());
+			obj.Submit<VertexBasic::Color>(GetLayerColor(layer));
+			break;
+		}
+		case BV::Sphere:
+		{
+			SphereBV& bv = EntityManager::GetComponent<SphereBV>(pNode->Handle);
+			auto& obj = RenderSystem::GetObjekt(Shape::Sphere);
+			obj.Submit<VertexBasic::Xform>(bv.GetXform());
+			obj.Submit<VertexBasic::Color>(GetLayerColor(layer));
+			break;
+		}
+		default:
+			break;
+		}
 	}
 
 	if (!pNode->IsLeaf())

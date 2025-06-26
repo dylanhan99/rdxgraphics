@@ -454,7 +454,7 @@ void SphereBV::RecalculateBV(SphereBV const& bvL, SphereBV const& bvR)
 	glm::vec3 posL = bvL.GetPosition();
 	glm::vec3 posR = bvR.GetPosition();
 	glm::vec3 newCentroid = (posL + posR) * 0.5f;
-	float newRadius = bvL.GetRadius() + bvR.GetRadius() + glm::distance(posL, posR);
+	float newRadius = (bvL.GetRadius() + bvR.GetRadius() + glm::distance(posL, posR)) * 0.5f;
 
 	SetPosition(newCentroid);
 	GetRadius() = newRadius;

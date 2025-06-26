@@ -49,6 +49,8 @@ public:
 	inline static BVHType& GetCurrentTreeType() { return g.m_CurrentTreeType; }
 	inline static LeafCondition& GetCurrentLeafCondition() { return g.m_CurrentLeafCondition; }
 	inline static SplitPointStrat& GetCurrentSplitPointStrat() { return g.m_CurrentSplitPointStrat; }
+	inline static int& GetDrawLayers() { return g.m_DrawLayers; }
+	inline static int& GetBVHHeight() { return g.m_BVHHeight; }
 
 	// *** Helper functions *** //
 	static void BuildBVH();
@@ -79,6 +81,9 @@ private:
 	LeafCondition m_CurrentLeafCondition{ LeafCondition::OneEntity };
 	SplitPointStrat m_CurrentSplitPointStrat{ SplitPointStrat::MedianCenters };
 	std::unique_ptr<BVHNode> m_RootNode{};
+
+	int m_DrawLayers{ INT_MAX }; // Enable all layers by default
+	int m_BVHHeight{ 0 }; // Just a cache of the current BVH's height for rendering and stuff
 };
 
 template <typename T>

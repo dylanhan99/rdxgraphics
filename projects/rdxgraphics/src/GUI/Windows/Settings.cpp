@@ -41,6 +41,23 @@ void Settings::UpdateImpl(float dt)
 		}
 
 		{
+			ImGui::SeparatorText("BVH Layers");
+			for (int i = 0; i <= BVHSystem::GetBVHHeight(); ++i)
+			{
+				bool b = (BVHSystem::GetDrawLayers() >> i) & 0x1;
+				if (ImGui::Checkbox((std::to_string(i) + "##togglebvhlayer").c_str(), &b))
+				{
+					if (b)
+						BVHSystem::GetDrawLayers() |= 0x1 << i;
+					else
+						BVHSystem::GetDrawLayers() &= ~(0x1 << i);
+				}
+				if (i != BVHSystem::GetBVHHeight())
+					ImGui::SameLine();
+			}
+		}
+
+		{
 			int* pBV = reinterpret_cast<int*>(&BVHSystem::GetCurrentLeafCondition());
 			ImGui::SeparatorText("BVH Termination Condition");
 			BVHSystem::LeafCondition prev = BVHSystem::GetCurrentLeafCondition();
