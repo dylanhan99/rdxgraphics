@@ -23,6 +23,7 @@ class BVHSystem : public BaseSingleton<BVHSystem>
 public:
 	enum class BVHType {
 		TopDown,
+		BottomUp
 	};
 	enum class LeafCondition {
 		OneEntity,
@@ -51,7 +52,6 @@ public:
 
 	// *** Helper functions *** //
 	static void BuildBVH();
-	static void BuildBVH(std::function<void(std::unique_ptr<BVHNode>&, Entity*, int, int)> fnBuildBVH);
 	static void DestroyBVH(std::unique_ptr<BVHNode>& pNode);
 
 	template <typename T>
@@ -68,6 +68,7 @@ public:
 
 	// *** Tree building *** //
 	static void BVHTree_TopDown(std::unique_ptr<BVHNode>& pNode, Entity* pEntities, int numEnts, int height = 0);
+	static std::unique_ptr<BVHNode> BVHTree_BottomUp(Entity* pEntities, int numEnts);
 	// *** *** //
 
 private:

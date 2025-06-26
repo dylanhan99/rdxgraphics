@@ -49,18 +49,6 @@ void BVHSystem::EnforceUniformBVs()
 
 void BVHSystem::BuildBVH()
 {
-	switch (GetCurrentTreeType())
-	{
-	case BVHType::TopDown:
-		BuildBVH(BVHTree_TopDown);
-		break;
-	default: break;
-	}
-}
-
-void BVHSystem::BuildBVH(std::function<void(std::unique_ptr<BVHNode>&, Entity*, int, int)> fnBuildBVH)
-{
-	RX_ASSERT(fnBuildBVH);
 	DestroyBVH(GetRootNode());
 
 	EntityList entities{};
@@ -70,7 +58,20 @@ void BVHSystem::BuildBVH(std::function<void(std::unique_ptr<BVHNode>&, Entity*, 
 			entities.emplace_back(Entity{ handle, xform });
 	}
 
-	fnBuildBVH(GetRootNode(), entities.data(), (int)entities.size(), 0);
+	switch (GetCurrentTreeType())
+	{
+	case BVHType::TopDown:
+	{
+		BVHTree_TopDown(GetRootNode(), entities.data(), (int)entities.size(), 0);
+		break;
+	}
+	case BVHType::BottomUp:
+	{
+		g.m_RootNode = BVHTree_BottomUp(entities.data(), (int)entities.size());
+		break;
+	}
+	default: break;
+	}
 }
 
 void BVHSystem::DestroyBVH(std::unique_ptr<BVHNode>& pNode)
@@ -322,4 +323,9 @@ void BVHSystem::BVHTree_TopDown(std::unique_ptr<BVHNode>& pNode, Entity* pEntiti
 		//EntityManager::RemoveComponent<BoundingVolume::DirtyXform>(handle);
 		EntityManager::RemoveComponent<BoundingVolume::DirtyBV>(handle);
 	}
+}
+
+std::unique_ptr<BVHNode> BVHSystem::BVHTree_BottomUp(Entity* pEntities, int numEnts)
+{
+	return std::unique_ptr<BVHNode>();
 }
