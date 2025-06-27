@@ -94,8 +94,8 @@ void Viewport::EngineView()
 		imageSize,
 		{ 0.f, 1.f }, { 1.f, 0.f }); // It's flipped vertically
 
-	Picking(imagePosAbs, imageSize, bufDims);
-	Guizmos(imagePosAbs, imageSize);
+	if (!Guizmos(imagePosAbs, imageSize))
+		Picking(imagePosAbs, imageSize, bufDims); // Only pick if not interacting with gizmos
 }
 
 void Viewport::Picking(ImVec2 const& imagePos, ImVec2 const& imageSize, glm::vec2 const& actualBufferSize)
@@ -235,7 +235,7 @@ void Viewport::Picking(ImVec2 const& imagePos, ImVec2 const& imageSize, glm::vec
 	}
 }
 
-void Viewport::Guizmos(ImVec2 const& imagePos, ImVec2 const& imageSize)
+bool Viewport::Guizmos(ImVec2 const& imagePos, ImVec2 const& imageSize)
 {
 	entt::entity const selectedEntity = GUI::GetSelectedEntity();
 	Camera& cam = EntityManager::GetComponent<Camera>(RenderSystem::GetActiveCamera());
@@ -268,4 +268,6 @@ void Viewport::Guizmos(ImVec2 const& imagePos, ImVec2 const& imageSize)
 			xform.SetEulerOrientation(glm::eulerAngles(rotation));
 		}
 	}
+
+	return ImGuizmo::IsOver();
 }
