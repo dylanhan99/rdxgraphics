@@ -55,8 +55,8 @@ void BVHSystem::BuildBVH()
 	EntityList entities{};
 	{
 		auto view = EntityManager::View<Xform, BoundingVolume const>(entt::exclude<FrustumBV>);
-		for (auto [handle, xform, __] : view.each())
-			entities.emplace_back(Entity{ handle, xform });
+		for (auto [handle, _, __] : view.each())
+			entities.emplace_back(Entity{ handle });
 	}
 
 	switch (GetCurrentTreeType())
@@ -97,7 +97,7 @@ int BVHSystem::FindDominantAxis(Entity* entities, int numEnts, AABBBV* pBV)
 
 		for (int i = 0; i < numEnts; ++i)
 		{
-			Xform& xform = entities[i].second;
+			Xform const& xform = EntityManager::GetComponent<Xform const>(entities[i]);
 			glm::vec3 const& pos = xform.GetTranslate();
 
 			min.x = glm::min(min.x, pos.x);
@@ -132,14 +132,23 @@ int BVHSystem::Partition(Entity* pEntities, int numEnts)
 	AABBBV totalBV{}; // This simply caches the info of encompassing BV, be it Sphere or AABB
 	int axis = FindDominantAxis(pEntities, numEnts, &totalBV);
 	auto span = std::span(pEntities, pEntities + numEnts);
+#define _RX_X(Klass)												     \
+	case BV::Klass:													     \
+	{																     \
+		Klass##BV const& l = EntityManager::GetComponent<Klass##BV>(lhs);\
+		Klass##BV const& r = EntityManager::GetComponent<Klass##BV>(rhs);\
+		return l.GetPosition()[axis] < r.GetPosition()[axis];			 \
+	}
 	std::sort(span.begin(), span.end(),
-		[&axis](Entity const& lhs, Entity const& rhs)
+		[axis](Entity const& lhs, Entity const& rhs)
 		{
-			glm::vec3 const& l = lhs.second.GetTranslate();
-			glm::vec3 const& r = rhs.second.GetTranslate();
-
-			return l[axis] < r[axis];
+			switch (GetGlobalBVType())
+			{
+				RX_DO_ALL_BVH_ENUM_M(_RX_X);
+			default: return false;
+			}
 		});
+#undef _RX_X
 
 	int k{};
 	switch (GetCurrentSplitPointStrat())
@@ -171,7 +180,8 @@ int BVHSystem::Heuristic_MedianExtents(Entity* pEntities, int numEnts, int axis,
 	float splitPoint = totalBV.GetPosition()[axis]; // Median
 	for (int k = 0; k < numEnts; ++k)
 	{
-		if (pEntities[k].second.GetTranslate()[axis] > splitPoint)
+		Xform const& xform = EntityManager::GetComponent<Xform const>(pEntities[k]);
+		if (xform.GetTranslate()[axis] > splitPoint)
 			return k;
 	}
 
@@ -227,7 +237,7 @@ void BVHSystem::BVHTree_TopDown(std::unique_ptr<BVHNode>& pNode, Entity* pEntiti
 		objs.clear();
 		objs.resize(numEnts);
 		for (int i = 0; i < numEnts; ++i)
-			objs[i] = pEntities[i].first; // Crappy copy
+			objs[i] = pEntities[i]; // Crappy copy
 	}
 
 	// We can assume Objects is not empty.

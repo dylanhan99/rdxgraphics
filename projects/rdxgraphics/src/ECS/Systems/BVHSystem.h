@@ -38,7 +38,7 @@ public:
 	};
 
 private:
-	using Entity = std::pair<entt::entity, Xform&>;
+	using Entity = entt::entity;
 	using EntityList = std::vector<Entity>;
 
 public:
@@ -92,7 +92,7 @@ static T BVHSystem::ComputeBV(Entity* pEntities, int numEnts)
 	T ret{};
 	for (int i = 0; i < numEnts; ++i)
 	{
-		T& bv = EntityManager::GetComponent<T>(pEntities[i].first);
+		T& bv = EntityManager::GetComponent<T>(pEntities[i]);
 		if (i == 0)
 		{
 			ret.RecalculateBV(bv);
