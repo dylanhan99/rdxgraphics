@@ -136,34 +136,102 @@ void Viewport::Picking(ImVec2 const& imagePos, ImVec2 const& imageSize, glm::vec
 
 		// For each BV, if is OUT, skip
 		// Else do check
-		auto view = EntityManager::View<BoundingVolume>(entt::exclude<FrustumBV>);
-#define _RX_X(Klass)													   \
-		case BV::Klass:													   \
-		{																   \
-			Klass##BV& bv = EntityManager::GetComponent<Klass##BV>(handle);\
-			if (bv.GetBVState() == BVState::Out) continue;				   \
-			float tE{}; /* time of entry */								   \
-			bool intersect = CollisionSystem::CheckCollision(ray, bv, &tE);\
-			if (intersect)												   \
-				tEs.emplace(tE, handle);								   \
-			break;														   \
-		}
-
-		std::map<float, entt::entity const> tEs{};
-		for (auto [handle, boundingVolume] : view.each())
-		{
-			switch (boundingVolume.GetBVType())
+		std::map<float, BVHNode const> tEs{};
+		std::function<void(std::unique_ptr<BVHNode>&)> pick;
+		pick = 
+			[&ray, &tEs, &pick](std::unique_ptr<BVHNode>& pNode)
 			{
-				RX_DO_ALL_BV_ENUM;
-				//_RX_X(AABB);
-				//_RX_X(Sphere);
-			default: break;
-			}
-		}
-		EntityManager::Destroy(rayHandle);
+				if (!pNode)
+					return;
+
+				BoundingVolume& boundingVolume = EntityManager::GetComponent<BoundingVolume>(pNode->Handle);
+				if (pNode->IsLeaf())
+				{
+#define _RX_X(Klass)																   \
+					case BV::Klass:													   \
+					{																   \
+						Klass##BV& bv = EntityManager::GetComponent<Klass##BV>(pNode->Handle);\
+						if (bv.GetBVState() == BVState::Out) return;				   \
+						float tE{}; /* time of entry */								   \
+						bool intersect = CollisionSystem::CheckCollision(ray, bv, &tE);\
+						if (intersect)												   \
+							tEs.emplace(tE, BVHNode{*pNode});						   \
+						break;														   \
+					}
+
+					switch (boundingVolume.GetBVType())
+					{
+						RX_DO_ALL_BVH_ENUM_M(_RX_X);
+					default: break;
+					}
 #undef _RX_X
-		auto it = tEs.begin();
-		GUI::SetSelectedEntity(it != tEs.end() ? it->second : entt::null);
+				}
+				else // Node
+				{
+#define _RX_X(Klass)																   \
+					case BV::Klass:													   \
+					{																   \
+						Klass##BV& bv = EntityManager::GetComponent<Klass##BV>(pNode->Handle);\
+						if (bv.GetBVState() == BVState::Out) return;				   \
+						bool intersect = CollisionSystem::CheckCollision(ray, bv);	   \
+						if (intersect)												   \
+						{															   \
+							pick(pNode->Left);										   \
+							pick(pNode->Right);										   \
+						}															   \
+						break;														   \
+					}
+
+					switch (boundingVolume.GetBVType())
+					{
+						RX_DO_ALL_BVH_ENUM_M(_RX_X);
+					default: break;
+					}
+#undef _RX_X
+				}
+			};
+
+		pick(BVHSystem::GetRootNode()); // Recursively pick the leaf node of interest
+
+		entt::entity selectedEntity = entt::null;
+		// Then iterate over the objects in the leaf node to determine your target
+		for (auto const& [tE, node] : tEs)
+		{
+			std::map<float, entt::entity const> finaltEs{};
+			for (auto const& handle : node.Objects)
+			{
+				BoundingVolume& boundingVolume = EntityManager::GetComponent<BoundingVolume>(handle);
+#define _RX_X(Klass)															   \
+				case BV::Klass:													   \
+				{																   \
+					Klass##BV& bv = EntityManager::GetComponent<Klass##BV>(handle);\
+					if (bv.GetBVState() == BVState::Out) continue;				   \
+					float tE{}; /* time of entry */								   \
+					bool intersect = CollisionSystem::CheckCollision(ray, bv, &tE);\
+					if (intersect)												   \
+						finaltEs.emplace(tE, handle);							   \
+					break;														   \
+				}
+
+				switch (boundingVolume.GetBVType())
+				{
+					RX_DO_ALL_BVH_ENUM_M(_RX_X);
+				default: break;
+				}
+#undef _RX_X
+				auto it = finaltEs.begin();
+				if (it != finaltEs.end())
+				{
+					selectedEntity = it->second;
+					break;
+				}
+			}
+
+			if (selectedEntity != entt::null)
+				break;
+		}
+		GUI::SetSelectedEntity(selectedEntity);
+		EntityManager::Destroy(rayHandle);
 	}
 }
 

@@ -4,6 +4,16 @@
 
 struct BVHNode
 {
+	// Becareful when using this, left and right are not copied cus lazy.
+	inline BVHNode() = default;
+	inline BVHNode(BVHNode const& other)
+	{
+		Handle = other.Handle;
+		Left = nullptr;
+		Right = nullptr;
+		Objects = other.Objects;
+	}
+
 	struct TypeNode : public BaseComponent { char _{}; };
 	struct TypeLeaf : public BaseComponent { char _{}; };
 
