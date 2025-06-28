@@ -13,29 +13,87 @@ void Settings::UpdateImpl(float dt)
 
 	if (ImGui::TreeNodeEx("Bounding Volumes", scnFlags | ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		if (ImGui::Button("Recalculate BVH"))
 		{
-			BVHSystem::DestroyBVH(BVHSystem::GetRoot());
-			auto sortedEntities = BVHSystem::GetSortedEntities();
-			BVHSystem::BVHTree_TopDown(BVHSystem::GetRoot(), sortedEntities.data(), sortedEntities.size());
+			if (ImGui::Button("Recalculate BVH"))
+			{
+				BVHSystem::BuildBVH();
+			}
+			ImGui::SameLine();
+			ImGui::Text("|");
+			ImGui::SameLine();
+			if (ImGui::Button("Recalculate ALL BVs"))
+			{
+				for (auto [handle, boundingVolume] : EntityManager::View<BoundingVolume>().each())
+					boundingVolume.SetDirty();
+			}
 		}
 
-		if (ImGui::Button("Recalculate ALL BVs"))
 		{
-			for (auto [handle, boundingVolume] : EntityManager::View<BoundingVolume>().each())
-				boundingVolume.SetDirty();
+			int* pBV = reinterpret_cast<int*>(&BVHSystem::GetCurrentTreeType());
+			ImGui::SeparatorText("BVH Method");
+			BVHSystem::BVHType prev = BVHSystem::GetCurrentTreeType();
+			bool isRadiod = false;
+			isRadiod |= ImGui::RadioButton("TopDown", pBV, static_cast<int>(BVHSystem::BVHType::TopDown)); ImGui::SameLine();
+			isRadiod |= ImGui::RadioButton("BottomUp", pBV, static_cast<int>(BVHSystem::BVHType::BottomUp));
+
+			if (isRadiod && ((BVHSystem::BVHType)*pBV != prev))
+				BVHSystem::BuildBVH();
+		}
+
+		{
+			ImGui::SeparatorText("BVH Layers");
+			for (int i = 0; i <= BVHSystem::GetBVHHeight(); ++i)
+			{
+				bool b = (BVHSystem::GetDrawLayers() >> i) & 0x1;
+				if (ImGui::Checkbox((std::to_string(i) + "##togglebvhlayer").c_str(), &b))
+				{
+					if (b)
+						BVHSystem::GetDrawLayers() |= 0x1 << i;
+					else
+						BVHSystem::GetDrawLayers() &= ~(0x1 << i);
+				}
+				if (i != BVHSystem::GetBVHHeight())
+					ImGui::SameLine();
+			}
+		}
+
+		{
+			int* pBV = reinterpret_cast<int*>(&BVHSystem::GetCurrentLeafCondition());
+			ImGui::SeparatorText("BVH Termination Condition");
+			BVHSystem::LeafCondition prev = BVHSystem::GetCurrentLeafCondition();
+			bool isRadiod = false;
+			isRadiod |= ImGui::RadioButton("OneEntity", pBV, static_cast<int>(BVHSystem::LeafCondition::OneEntity)); ImGui::SameLine();
+			isRadiod |= ImGui::RadioButton("TwoEntitiesMax", pBV, static_cast<int>(BVHSystem::LeafCondition::TwoEntitiesMax)); ImGui::SameLine();
+			isRadiod |= ImGui::RadioButton("TreeHeightTwo", pBV, static_cast<int>(BVHSystem::LeafCondition::TreeHeightTwo));
+		
+			if (isRadiod && ((BVHSystem::LeafCondition)*pBV != prev))
+				BVHSystem::BuildBVH();
+		}
+
+		{
+			int* pBV = reinterpret_cast<int*>(&BVHSystem::GetCurrentSplitPointStrat());
+			ImGui::SeparatorText("BVH Split Point Strategy");
+			BVHSystem::SplitPointStrat prev = BVHSystem::GetCurrentSplitPointStrat();
+			bool isRadiod = false;
+			isRadiod |= ImGui::RadioButton("MedianCenters", pBV, static_cast<int>(BVHSystem::SplitPointStrat::MedianCenters)); ImGui::SameLine();
+			isRadiod |= ImGui::RadioButton("MedianExtents", pBV, static_cast<int>(BVHSystem::SplitPointStrat::MedianExtents)); ImGui::SameLine();
+			isRadiod |= ImGui::RadioButton("KEvenSplits", pBV, static_cast<int>(BVHSystem::SplitPointStrat::KEvenSplits)); ImGui::SameLine();
+			isRadiod |= ImGui::RadioButton("SmallestSFA", pBV, static_cast<int>(BVHSystem::SplitPointStrat::SmallestSFA));
+		
+			if (isRadiod && ((BVHSystem::SplitPointStrat)*pBV != prev))
+				BVHSystem::BuildBVH();
 		}
 
 		{
 			int* pBV = reinterpret_cast<int*>(&BVHSystem::GetGlobalBVType());
 			ImGui::SeparatorText("CurrentBV Option");
-			BV prevGlobalBV = BVHSystem::GetGlobalBVType();
+			BV prev = BVHSystem::GetGlobalBVType();
 			bool isRadiod = false;
 			isRadiod |= ImGui::RadioButton("AABB", pBV, static_cast<int>(BV::AABB)); ImGui::SameLine();
 			isRadiod |= ImGui::RadioButton("OBB", pBV, static_cast<int>(BV::OBB)); ImGui::SameLine();
 			isRadiod |= ImGui::RadioButton("Sphere", pBV, static_cast<int>(BV::Sphere));
 
-			if (isRadiod && ((BV)*pBV != prevGlobalBV))
+			if (isRadiod && ((BV)*pBV != prev))
 				BVHSystem::EnforceUniformBVs();
 		}
 

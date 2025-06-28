@@ -103,8 +103,7 @@ void CommonLayer::UpdateImpl(float dt)
 		pos.z = glm::sin(angle) * radius;
 
 		light.GetDirection() = glm::normalize(-xform.GetTranslate()); // Look at origin
-
-		if (EntityManager::HasComponent<BoundingVolume>(m_LightHandle))
-			EntityManager::GetComponent<BoundingVolume>(m_LightHandle).SetDirtyXform();
 	}
+
+	EntityManager::AddComponent<BoundingVolume::DirtyXform>(m_LightHandle);
 }

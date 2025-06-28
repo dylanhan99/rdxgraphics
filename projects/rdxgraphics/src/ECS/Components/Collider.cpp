@@ -63,14 +63,22 @@ glm::vec3 Collider::RemovePrimitive()
 
 glm::vec3 BasePrimitive::GetPosition() const
 {
-	return EntityManager::GetComponent<const Xform>(GetEntityHandle()).GetTranslate() + m_Offset;
+	if (GetEntityHandle() != entt::null)
+		return EntityManager::GetComponent<const Xform>(GetEntityHandle()).GetTranslate() + m_Offset;
+	else 
+		return m_Offset;
 }
 
 void BasePrimitive::SetPosition(glm::vec3 pos)
 {
-	SetDirtyXform();
-	glm::vec3 position = EntityManager::GetComponent<const Xform>(GetEntityHandle()).GetTranslate();
-	m_Offset = pos - position;
+	if (GetEntityHandle() != entt::null)
+	{
+		SetDirtyXform();
+		glm::vec3 position = EntityManager::GetComponent<const Xform>(GetEntityHandle()).GetTranslate();
+		m_Offset = pos - position;
+	}
+	else
+		m_Offset = pos;
 }
 
 void BasePrimitive::SetDirtyXform() const

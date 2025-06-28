@@ -73,6 +73,9 @@ enum class Primitive
 };
 #undef _RX_X
 
+#define RX_DO_ALL_BVH_ENUM_M(F_O_O, ...)\
+	F_O_O(AABB, ##__VA_ARGS__)		\
+	F_O_O(Sphere, ##__VA_ARGS__)
 #define RX_DO_ALL_BV_ENUM_M(F_O_O, ...)\
 	F_O_O(Frustum, ##__VA_ARGS__)		\
 	F_O_O(AABB, ##__VA_ARGS__)			\

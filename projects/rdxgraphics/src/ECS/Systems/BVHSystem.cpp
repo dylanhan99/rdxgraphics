@@ -47,160 +47,298 @@ void BVHSystem::EnforceUniformBVs()
 		bv.SetBVType(BVHSystem::GetGlobalBVType());
 }
 
-void BVHSystem::BVHTree_TopDown(std::unique_ptr<BVHNode>& pNode, Entity* entities, size_t numEnts)
-{ // page 240 (279 in pdf)
-	if (numEnts <= 0)
-	{ // in case there arn't any entities for some reason
-		pNode.reset(nullptr);
-		return;
+void BVHSystem::BuildBVH()
+{
+	DestroyBVH(GetRootNode());
+	g.m_BVHHeight = -std::numeric_limits<int>().infinity();
+
+	EntityList entities{};
+	{
+		auto view = EntityManager::View<Xform, BoundingVolume const>(entt::exclude<FrustumBV>);
+		for (auto [handle, _, __] : view.each())
+			entities.emplace_back(Entity{ handle });
 	}
 
-	pNode = std::make_unique<BVHNode>();
-
-	if (numEnts == 1)
-	{ // Leaf, just recalc, setup whatever vars in BVHNode
-		entt::entity const handle = (*entities).first;
-		pNode->Handle = handle;
-
-		EntityManager::GetComponent<BoundingVolume>(handle).RecalculateBV();
-		EntityManager::AddComponent<BVHNode::TypeLeaf>(handle);
-
-		pNode->Left.reset(nullptr);
-		pNode->Right.reset(nullptr);
-		// Ends the recursion for this leaf.
+	switch (GetCurrentTreeType())
+	{
+	case BVHType::TopDown:
+	{
+		BVHTree_TopDown(GetRootNode(), entities.data(), (int)entities.size(), 0);
+		break;
 	}
-	else
-	{ // Node, create entt::entity and add BV. Then calculate pos and bv data after recursing LHS and RHS
-		entt::entity const handle = EntityManager::CreateEntity();
-		pNode->Handle = handle;
-
-		EntityManager::AddComponent<Xform>(handle);
-		EntityManager::AddComponent<BVHNode::TypeNode>(handle);
-		BoundingVolume& boundingVolume = 
-			EntityManager::AddComponent<BoundingVolume>(handle, GetGlobalBVType());
-		// Can we remove the DirtyBV and DirtyBVXform here?
-
-		// Split the entities
-		// Based on some partition strategy,
-		// entities[0, k-1] and entities[k, size-1]
-		int k = PartitionEntities(entities, numEnts);
-		Entity* entities_L = entities;		// [0, k-1]
-		Entity* entities_R = entities + k;	// [k, numEnts-1]
-
-		BVHTree_TopDown(pNode->Left,  entities_L, k);
-		BVHTree_TopDown(pNode->Right, entities_R, numEnts - k);
-
-		//if (pNode->Left && !pNode->Right)
-		//{
-		//
-		//}
-		//else if (!pNode->Left && pNode->Right)
-		//{
-		//
-		//}
-		//else
-		{
-			AABBBV bv = EntityManager::GetComponent<AABBBV>(handle);
-			AABBBV bvL = EntityManager::GetComponent<AABBBV>(pNode->Left->Handle);
-			AABBBV bvR = EntityManager::GetComponent<AABBBV>(pNode->Right->Handle);
-			bv.RecalculateBV(bvL, bvR);
-		}
-
-		//switch (boundingVolume.GetBVType())
-		//{
-		//default: break;
-		//}
-
-		/*
-		Klass##BV bv = GetComp<Klass##BV>(handle);
-		BVTree_TopDown(pp->Left, leftEntities);
-		BVTree_TopDown(pp->Right, rightEntities);
-
-		Klass##BV bvL = GetComp<Klass##BV>(pp->Left->Handle);
-		Klass##BV bvR = GetComp<Klass##BV>(pp->Right->Handle);
-
-		bv.RecalculateByCombination(bvL, bvR);
-		*/
+	case BVHType::BottomUp:
+	{
+		g.m_RootNode = BVHTree_BottomUp(entities.data(), (int)entities.size());
+		break;
+	}
+	default: break;
 	}
 }
 
-// Just destroy anything DO NOT recalculate anything here. 
-// We'll take the inefficiency of not doing everything in place for the 
-// sake of redability.
 void BVHSystem::DestroyBVH(std::unique_ptr<BVHNode>& pNode)
 {
 	if (!pNode)
 		return;
 
-	entt::entity const& handle = pNode->Handle;
-	if (EntityManager::HasComponent<BVHNode::TypeLeaf>(handle))
-	{
-		EntityManager::RemoveComponent<BVHNode::TypeLeaf>(handle);
-	}
-	if (EntityManager::HasComponent<BVHNode::TypeNode>(handle))
-	{
-		EntityManager::RemoveComponent<BVHNode::TypeNode>(handle);
-		EntityManager::RemoveComponent<BoundingVolume>(handle);
-	}
-
+	EntityManager::Destroy(pNode->Handle);
 	DestroyBVH(pNode->Left);
 	DestroyBVH(pNode->Right);
-	pNode.release();
+	pNode->Objects.clear();
+	pNode.reset(nullptr);
 }
 
-BVHSystem::EntityList BVHSystem::GetSortedEntities()
+int BVHSystem::FindDominantAxis(Entity* entities, int numEnts, AABBBV* pBV)
 {
-	std::vector<entt::entity> entities{};
-	std::vector<glm::vec3> positions{};
+	// Find the dominant plane, return 0,1,2 corresponding to x,y,z
+	glm::vec3 aabbExtents{};
 	{
-		auto view = EntityManager::View<Xform const, BoundingVolume const>(entt::exclude<FrustumBV>);
-		for (auto [handle, xform, __] : view.each())
+		glm::vec3 min{ std::numeric_limits<float>().infinity() };
+		glm::vec3 max{ -std::numeric_limits<float>().infinity() };
+
+		for (int i = 0; i < numEnts; ++i)
 		{
-			entities.emplace_back(handle);
-			positions.emplace_back(xform.GetTranslate());
+			Xform const& xform = EntityManager::GetComponent<Xform const>(entities[i]);
+			glm::vec3 const& pos = xform.GetTranslate();
+
+			min.x = glm::min(min.x, pos.x);
+			min.y = glm::min(min.y, pos.y);
+			min.z = glm::min(min.z, pos.z);
+
+			max.x = glm::max(max.x, pos.x);
+			max.y = glm::max(max.y, pos.y);
+			max.z = glm::max(max.z, pos.z);
+		}
+
+		aabbExtents = (min - max);
+		if (pBV)
+		{
+			pBV->GetHalfExtents() = aabbExtents * 0.5f;
+			pBV->SetPosition((min + max) * 0.5f);
 		}
 	}
 
-	glm::mat3 eigenVecs{};
-	Intersection::PCA(positions, nullptr, nullptr, &eigenVecs);
-	glm::vec3 const& principalAxis = eigenVecs[0];
-
-	// Sorted along the principalAxis
-	EntityList sortedEntities{};
-	for (size_t i = 0; i < entities.size(); ++i)
-	{
-		float proj = glm::dot(positions[i], principalAxis);
-		sortedEntities.emplace_back(std::make_pair(entities[i], proj));
-	}
-
-	// Sort in ascending order, the dot product
-	std::sort(sortedEntities.begin(), sortedEntities.end(),
-		[](Entity const& L, Entity const& R) -> bool
-		{
-			return L.second < R.second;
-		});
-
-	return std::move(sortedEntities);
+	if (aabbExtents.x > aabbExtents.y && aabbExtents.x > aabbExtents.z)
+		return 0; // X dom
+	if (aabbExtents.y > aabbExtents.z)
+		return 1; // Y dom
+	return 2; // Z dom
 }
 
-int BVHSystem::PartitionEntities(Entity* entities, size_t numEnts)
+int BVHSystem::Partition(Entity* pEntities, int numEnts)
 {
-	RX_ASSERT(entities);
+	if (!pEntities || numEnts <= 0)
+		return 0;
 
-	// mean split
-	float mean{};
-	for (size_t i = 0; i < numEnts; ++i)
-		mean += entities[i].second;
-	mean /= (float)numEnts;
+	AABBBV totalBV{}; // This simply caches the info of encompassing BV, be it Sphere or AABB
+	int axis = FindDominantAxis(pEntities, numEnts, &totalBV);
+	auto span = std::span(pEntities, pEntities + numEnts);
+#define _RX_X(Klass)												     \
+	case BV::Klass:													     \
+	{																     \
+		Klass##BV const& l = EntityManager::GetComponent<Klass##BV>(lhs);\
+		Klass##BV const& r = EntityManager::GetComponent<Klass##BV>(rhs);\
+		return l.GetPosition()[axis] < r.GetPosition()[axis];			 \
+	}
+	std::sort(span.begin(), span.end(),
+		[axis](Entity const& lhs, Entity const& rhs)
+		{
+			switch (GetGlobalBVType())
+			{
+				RX_DO_ALL_BVH_ENUM_M(_RX_X);
+			default: return false;
+			}
+		});
+#undef _RX_X
 
-	// so now we partition based on lessthan or morethan centroid
-	int k = 0;
-	for (; k < (int)numEnts; ++k)
+	int k{};
+	switch (GetCurrentSplitPointStrat())
 	{
-		// we break as soon as we find that current >= mean
-		if (entities[k].second >= mean)
-			break;
+	case SplitPointStrat::MedianCenters:
+		k = Heuristic_MedianCenters(pEntities, numEnts);
+		break;
+	case SplitPointStrat::MedianExtents:
+		k = Heuristic_MedianExtents(pEntities, numEnts, axis, totalBV);
+		break;
+	case SplitPointStrat::KEvenSplits:
+		k = Heuristic_KEvenSplits(pEntities, numEnts);
+		break;
+	case SplitPointStrat::SmallestSFA:
+		k = Heuristic_SmallestSFA(pEntities, numEnts);
+		break;
+	default: break;
+	}
+	return k;
+}
+
+int BVHSystem::Heuristic_MedianCenters(Entity* pEntities, int numEnts)
+{
+	return numEnts / 2;
+}
+
+int BVHSystem::Heuristic_MedianExtents(Entity* pEntities, int numEnts, int axis, AABBBV const& totalBV)
+{
+	float splitPoint = totalBV.GetPosition()[axis]; // Median
+	for (int k = 0; k < numEnts; ++k)
+	{
+		Xform const& xform = EntityManager::GetComponent<Xform const>(pEntities[k]);
+		if (xform.GetTranslate()[axis] > splitPoint)
+			return k;
+	}
+
+	return Heuristic_MedianCenters(pEntities, numEnts);
+}
+
+int BVHSystem::Heuristic_KEvenSplits(Entity* pEntities, int numEnts)
+{
+	return 1;
+}
+
+int BVHSystem::Heuristic_SmallestSFA(Entity* pEntities, int numEnts)
+{
+	float minCost{ std::numeric_limits<float>().infinity() };
+	int k = 1;
+#define _RX_X(Klass)														\
+	case BV::Klass: {														\
+		Klass##BV bvTotal = ComputeBV<Klass##BV>(pEntities, numEnts);		\
+		for (int i = k; i < numEnts; ++i)									\
+		{																	\
+			Klass##BV bvL = ComputeBV<Klass##BV>(pEntities, i);				\
+			Klass##BV bvR = ComputeBV<Klass##BV>(pEntities, numEnts - i);	\
+			float cost = HeuristicCost(bvL, i, bvR, numEnts - i, bvTotal);	\
+			if (cost < minCost)												\
+			{																\
+				minCost = cost;												\
+				k = i;														\
+			}																\
+		}																	\
+	} break;
+	switch (GetGlobalBVType())
+	{
+		RX_DO_ALL_BVH_ENUM_M(_RX_X);
+	default: RX_ASSERT(false); break;
 	}
 
 	return k;
+}
+
+void BVHSystem::BVHTree_TopDown(std::unique_ptr<BVHNode>& pNode, Entity* pEntities, int numEnts, int height)
+{
+	if (numEnts <= 0 || !pEntities)
+	{
+		pNode.reset(nullptr);
+		return;
+	}
+
+	pNode = std::make_unique<BVHNode>();
+	entt::entity const& handle = EntityManager::CreateEntity<Xform>();
+	pNode->Handle = handle;
+	auto& objs = pNode->Objects;
+	{ // Objects. This is kinda bad cus it's so much extra copied memory
+		objs.clear();
+		objs.resize(numEnts);
+		for (int i = 0; i < numEnts; ++i)
+			objs[i] = pEntities[i]; // Crappy copy
+	}
+
+	// We can assume Objects is not empty.
+	constexpr int MAX_OBJS_PER_LEAF = 2;
+	constexpr int MAX_TREE_HEIGHT = 2;
+
+	bool leafCondition = numEnts == 1; // Default condition
+	switch (GetCurrentLeafCondition())
+	{
+	case LeafCondition::OneEntity:
+		//leafCondition = numEnts == 1;
+		break;
+	case LeafCondition::TwoEntitiesMax:
+		leafCondition |= numEnts <= MAX_OBJS_PER_LEAF;
+		break;
+	case LeafCondition::TreeHeightTwo:
+		leafCondition |= height >= MAX_TREE_HEIGHT;
+		break;
+	default: break;
+	}
+
+	if (leafCondition)
+	{ // At an actual game object, we can simply use the entt handle and set LEAF
+		// Some function to combine the sizes of the numEnts number of pEntities
+		pNode->SetIsLeaf();
+#define _RX_X(Klass)																\
+		case BV::Klass:																\
+		{																			\
+			EntityManager::AddComponent<BoundingVolume>(handle, BV::Klass);			\
+			Klass##BV& bv = EntityManager::GetComponent<Klass##BV>(handle);			\
+			for (size_t i = 0; i < objs.size(); ++i)								\
+			{																		\
+				entt::entity const& ent = objs[i];									\
+				Klass##BV& other = EntityManager::GetComponent<Klass##BV>(ent);		\
+				if (i == 0)															\
+				{																	\
+					bv.RecalculateBV(other);										\
+					continue;														\
+				}																	\
+				bv.RecalculateBV(bv, other);										\
+			}																		\
+			break;																	\
+		}
+		switch (GetGlobalBVType())
+		{
+			RX_DO_ALL_BVH_ENUM_M(_RX_X);
+		default: break;
+		}
+#undef _RX_X
+
+		//entt::entity const& handle = pEntities[0].first;
+		//pNode->Handle = handle;
+		//pNode->SetIsLeaf();
+
+		// updating height
+		if (height > g.m_BVHHeight)
+			g.m_BVHHeight = height;
+	}
+	else
+	{ // Is a node,
+		// Partition and recurse, then combine the children BVs to build your own
+		// Set to NODE
+		pNode->SetIsNode();
+
+		int k = Partition(pEntities, numEnts);
+		Entity* pEntitiesL = pEntities;
+		Entity* pEntitiesR = pEntities + k;
+
+		++height;
+		BVHTree_TopDown(pNode->Left, pEntitiesL, k, height);
+		BVHTree_TopDown(pNode->Right, pEntitiesR, numEnts - k, height);
+
+		// Now we can merge the BVs
+		// hardcode assuming AABB for now
+#define _RX_X(Klass)																	  \
+		case BV::Klass:																	  \
+		{																				  \
+			EntityManager::AddComponent<BoundingVolume>(handle, BV::Klass);				  \
+			Klass##BV& bv = EntityManager::GetComponent<Klass##BV>(handle);				  \
+			Klass##BV& bvL = EntityManager::GetComponent<Klass##BV>(pNode->Left->Handle); \
+			Klass##BV& bvR = EntityManager::GetComponent<Klass##BV>(pNode->Right->Handle);\
+			bv.RecalculateBV(bvL, bvR);													  \
+			break;																		  \
+		}
+		switch (GetGlobalBVType())
+		{
+			RX_DO_ALL_BVH_ENUM_M(_RX_X);
+		default: break;
+		}
+#undef _RX_X
+	}
+
+	// We still need the Xform to be updated, so leave it be. But BV is already 
+	// calculated using RecalculateBV, so just force remove DirtyBV component
+	{
+		//EntityManager::RemoveComponent<BoundingVolume::DirtyXform>(handle);
+		EntityManager::RemoveComponent<BoundingVolume::DirtyBV>(handle);
+	}
+}
+
+std::unique_ptr<BVHNode> BVHSystem::BVHTree_BottomUp(Entity* pEntities, int numEnts)
+{
+	return std::unique_ptr<BVHNode>();
 }

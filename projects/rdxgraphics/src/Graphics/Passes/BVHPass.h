@@ -1,9 +1,9 @@
 #pragma once
 #include "Graphics/BasePass.h"
 
-class BVWireframesPass : public BasePass
+class BVHPass : public BasePass
 {
-	_RX_DEF_RENDER_PASS(BVWireframesPass);
+	_RX_DEF_RENDER_PASS(BVHPass);
 public:
 	void DrawImpl() const override;
 

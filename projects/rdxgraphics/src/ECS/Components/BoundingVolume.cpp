@@ -254,6 +254,12 @@ void AABBBV::RecalculateBV()
 	SetPosition((max + min) * 0.5f);
 }
 
+void AABBBV::RecalculateBV(AABBBV const& other)
+{
+	SetPosition(other.GetPosition());
+	GetHalfExtents() = other.GetHalfExtents();
+}
+
 void AABBBV::RecalculateBV(AABBBV const& bvL, AABBBV const& bvR)
 {
 	glm::vec3 newMin{ std::numeric_limits<float>().infinity() };
@@ -271,10 +277,29 @@ void AABBBV::RecalculateBV(AABBBV const& bvL, AABBBV const& bvR)
 		newMin.x = glm::min(p.x, newMin.x);
 		newMin.y = glm::min(p.y, newMin.y);
 		newMin.z = glm::min(p.z, newMin.z);
+
+		newMax.x = glm::max(p.x, newMax.x);
+		newMax.y = glm::max(p.y, newMax.y);
+		newMax.z = glm::max(p.z, newMax.z);
 	}
 
 	GetHalfExtents() = (newMax - newMin) * 0.5f;
 	SetPosition((newMin + newMax) * 0.5f);
+}
+
+float AABBBV::GetSurfaceArea() const
+{
+	glm::vec3 extents = 2.f * GetHalfExtents();
+	return
+		2.f * extents.x * extents.y +
+		2.f * extents.x * extents.z +
+		2.f * extents.y * extents.z;
+}
+
+float AABBBV::GetVolume() const
+{
+	glm::vec3 extents = 2.f * GetHalfExtents();
+	return extents.x * extents.y * extents.z;
 }
 
 inline void OBBBV::UpdateXform()
@@ -300,36 +325,6 @@ inline void OBBBV::RecalculateBV()
 	glm::mat3 finalRotation{};
 	glm::vec3 finalHalfExtents{};
 	Intersection::PCA(pointsXformed, &finalCentroid, nullptr, &finalRotation, &finalHalfExtents);
-
-	SetPosition(finalCentroid);
-	GetHalfExtents() = finalHalfExtents;
-	m_EigenVectors = finalRotation;
-}
-
-void OBBBV::RecalculateBV(OBBBV const& bvL, OBBBV const& bvR)
-{
-	std::vector<glm::vec3> points{}; // 16 points
-	{
-		glm::vec3 minL = bvL.GetMinPoint();
-		glm::vec3 maxL = bvL.GetMaxPoint();
-		glm::vec3 minR = bvR.GetMinPoint();
-		glm::vec3 maxR = bvR.GetMaxPoint();
-		for (int x = -1; x <= 1; x+=2)
-		for (int y = -1; y <= 1; y+=2)
-		for (int z = -1; z <= 1; z+=2)
-		{
-			points.emplace_back(glm::vec3{ minL.x * x, minL.y * y, minL.z * z });
-			points.emplace_back(glm::vec3{ maxL.x * x, maxL.y * y, maxL.z * z });
-
-			points.emplace_back(glm::vec3{ minR.x * x, minR.y * y, minR.z * z });
-			points.emplace_back(glm::vec3{ maxR.x * x, maxR.y * y, maxR.z * z });
-		}
-	}
-
-	glm::vec3 finalCentroid{};
-	glm::mat3 finalRotation{};
-	glm::vec3 finalHalfExtents{};
-	Intersection::PCA(points, &finalCentroid, nullptr, &finalRotation, &finalHalfExtents);
 
 	SetPosition(finalCentroid);
 	GetHalfExtents() = finalHalfExtents;
@@ -448,13 +443,29 @@ void SphereBV::RecalculateBV()
 	SetPosition(finalCentroid);
 }
 
+void SphereBV::RecalculateBV(SphereBV const& other)
+{
+	SetPosition(other.GetPosition());
+	GetRadius() = other.GetRadius();
+}
+
 void SphereBV::RecalculateBV(SphereBV const& bvL, SphereBV const& bvR)
 {
 	glm::vec3 posL = bvL.GetPosition();
 	glm::vec3 posR = bvR.GetPosition();
-	glm::vec3 newCentroid = (posL + posR) * 0.5f;
-	float newRadius = bvL.GetRadius() + bvR.GetRadius() + glm::distance(posL, posR);
+	float newRadius = (bvL.GetRadius() + bvR.GetRadius() + glm::distance(posL, posR)) * 0.5f;
 
-	SetPosition(newCentroid);
+	SetPosition((posL + posR) * 0.5f);
 	GetRadius() = newRadius;
+}
+
+float SphereBV::GetSurfaceArea() const
+{
+	return 4 * glm::pi<float>() * glm::pow(GetRadius(), 2.f);
+}
+
+float SphereBV::GetVolume() const
+{
+	constexpr float four_over_three = 4.f / 3.f;
+	return four_over_three * glm::pi<float>() * glm::pow(GetRadius(), 3.f);
 }
