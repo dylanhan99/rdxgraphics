@@ -52,23 +52,28 @@ void BVHSystem::BuildBVH()
 	DestroyBVH(GetRootNode());
 	g.m_BVHHeight = -std::numeric_limits<int>().infinity();
 
-	EntityList entities{};
-	{
-		auto view = EntityManager::View<Xform, BoundingVolume const>(entt::exclude<FrustumBV>);
-		for (auto [handle, _, __] : view.each())
-			entities.emplace_back(Entity{ handle });
-	}
-
 	switch (GetCurrentTreeType())
 	{
 	case BVHType::TopDown:
 	{
+		EntityList entities{};
+		{
+			auto view = EntityManager::View<Xform, BoundingVolume const>(entt::exclude<FrustumBV>);
+			for (auto [handle, _, __] : view.each())
+				entities.emplace_back(Entity{ handle });
+		}
+
 		BVHTree_TopDown(GetRootNode(), entities.data(), (int)entities.size(), 0);
 		break;
 	}
 	case BVHType::BottomUp:
 	{
-		g.m_RootNode = BVHTree_BottomUp(entities.data(), (int)entities.size());
+		std::vector<BVHNode> nodeList{};
+		{
+
+		}
+
+		BVHTree_BottomUp(GetRootNode(), nodeList);
 		break;
 	}
 	default: break;
@@ -338,7 +343,51 @@ void BVHSystem::BVHTree_TopDown(std::unique_ptr<BVHNode>& pNode, Entity* pEntiti
 	}
 }
 
-std::unique_ptr<BVHNode> BVHSystem::BVHTree_BottomUp(Entity* pEntities, int numEnts)
+void BVHSystem::BVHTree_BottomUp(std::unique_ptr<BVHNode>& pNode, std::vector<BVHNode>& nodeList)
 {
-	return std::unique_ptr<BVHNode>();
+	if (nodeList.empty())
+	{
+		pNode.reset(nullptr);
+		return;
+	}
+
+	while (nodeList.size() != 1)
+	{
+		std::vector<BVHNode>::iterator itFirst = nodeList.end();
+		std::vector<BVHNode>::iterator itSecond = nodeList.end();
+
+		//FindNodesToMerge(nodeList, itFirst, itSecond);
+
+		BVHNode newNode{};
+		{ // Node data
+			newNode.Handle = EntityManager::CreateEntity();
+			newNode.Left = std::make_unique<BVHNode>(*itFirst);
+			newNode.Right = std::make_unique<BVHNode>(*itSecond);
+			newNode.Objects.insert(newNode.Objects.end(), itFirst->Objects.begin(), itFirst->Objects.end());
+			newNode.Objects.insert(newNode.Objects.end(), itSecond->Objects.begin(), itSecond->Objects.end());
+		}
+		{ // Node's BV data
+			// Merge the left and right bvs
+			BoundingVolume& boundingVolume = EntityManager::AddComponent<BoundingVolume>(newNode.Handle, GetGlobalBVType());
+#define _RX_X(Klass)																		   \
+			case BV::Klass:																	   \
+			{																				   \
+				Klass##BV& bvL = EntityManager::GetComponent<Klass##BV>(newNode.Left->Handle); \
+				Klass##BV& bvR = EntityManager::GetComponent<Klass##BV>(newNode.Right->Handle);\
+				EntityManager::GetComponent<Klass##BV>(newNode.Handle)						   \
+					.RecalculateBV(bvL, bvR);												   \
+				break;																		   \
+			}
+
+			switch (boundingVolume.GetBVType())
+			{
+				RX_DO_ALL_BVH_ENUM_M(_RX_X);
+			default: break;
+			}
+		}
+
+		nodeList.erase(itFirst);
+		nodeList.erase(itSecond);
+		nodeList.emplace_back(std::move(newNode));
+	}
 }

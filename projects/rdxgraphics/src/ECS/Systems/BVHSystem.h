@@ -4,14 +4,18 @@
 
 struct BVHNode
 {
-	// Becareful when using this, left and right are not copied cus lazy.
 	inline BVHNode() = default;
 	inline BVHNode(BVHNode const& other)
 	{
+		*this = other;
+	}
+	inline BVHNode& operator=(BVHNode const& other)
+	{
 		Handle = other.Handle;
-		Left = nullptr;
-		Right = nullptr;
+		Left = std::make_unique<BVHNode>(*other.Left);
+		Right = std::make_unique<BVHNode>(*other.Right);
 		Objects = other.Objects;
+		return *this;
 	}
 
 	struct TypeNode : public BaseComponent { char _{}; };
@@ -80,7 +84,7 @@ public:
 
 	// *** Tree building *** //
 	static void BVHTree_TopDown(std::unique_ptr<BVHNode>& pNode, Entity* pEntities, int numEnts, int height = 0);
-	static std::unique_ptr<BVHNode> BVHTree_BottomUp(Entity* pEntities, int numEnts);
+	static void BVHTree_BottomUp(std::unique_ptr<BVHNode>& pNode, std::vector<BVHNode>& nodeList);
 	// *** *** //
 
 private:
