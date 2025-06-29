@@ -56,9 +56,13 @@ public:
 	};
 
 private:
+	// Topdown stuff
 	using Entity = entt::entity;
-	using EntityList = std::vector<Entity>; // Used in topdown
-	using NodeList = std::vector<BVHNode>;  // Used in bottomup
+	using EntityList = std::vector<Entity>;
+
+	// Bottomup stuff
+	using NodeList = std::vector<BVHNode>;
+	using HeuristicCache = std::map<entt::entity, std::map<entt::entity, float>>;
 
 public:
 	static bool Init();
@@ -87,12 +91,13 @@ public:
 	static int Heuristic_KEvenSplits(Entity* pEntities, int numEnts);
 	static int Heuristic_SmallestSFA(Entity* pEntities, int numEnts);
 
-	static void FindNodesToMerge(NodeList& nodeList, NodeList::const_iterator& itFirst, NodeList::const_iterator& itSecond);
+	static void FindNodesToMerge(NodeList& nodeList, NodeList::const_iterator& itFirst, NodeList::const_iterator& itSecond, HeuristicCache const& cache);
+	static void UpdateHeuristicCache(BVHNode const& newNode, HeuristicCache& cache);
 	// *** *** //
 
 	// *** Tree building *** //
 	static void BVHTree_TopDown(std::unique_ptr<BVHNode>& pNode, Entity* pEntities, int numEnts, int height = 0);
-	static void BVHTree_BottomUp(std::unique_ptr<BVHNode>& pNode, NodeList& nodeList);
+	static void BVHTree_BottomUp(std::unique_ptr<BVHNode>& pNode, NodeList& nodeList, HeuristicCache& cache);
 	// *** *** //
 
 private:

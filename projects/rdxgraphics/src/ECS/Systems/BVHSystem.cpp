@@ -69,6 +69,7 @@ void BVHSystem::BuildBVH()
 	case BVHType::BottomUp:
 	{
 		std::vector<BVHNode> nodeList{};
+		HeuristicCache cache{};
 		{
 			auto view = EntityManager::View<Xform, BoundingVolume const>(entt::exclude<FrustumBV>);
 			for (auto [handle, _, __] : view.each())
@@ -95,10 +96,18 @@ void BVHSystem::BuildBVH()
 #undef _RX_X
 				EntityManager::RemoveComponent<BoundingVolume::DirtyBV>(nodeHandle);
 				nodeList.emplace_back(std::move(newNode));
+				cache[nodeHandle]; // Default init
 			}
 		}
 
-		BVHTree_BottomUp(GetRootNode(), nodeList);
+		{
+			for (BVHNode const& node : nodeList)
+			{
+				UpdateHeuristicCache(node, cache);
+			}
+		}
+
+		BVHTree_BottomUp(GetRootNode(), nodeList, cache);
 		break;
 	}
 	default: break;
@@ -248,16 +257,15 @@ int BVHSystem::Heuristic_SmallestSFA(Entity* pEntities, int numEnts)
 	return k;
 }
 
-void BVHSystem::FindNodesToMerge(NodeList& nodeList, NodeList::const_iterator& itFirst, NodeList::const_iterator& itSecond)
+void BVHSystem::FindNodesToMerge(NodeList& nodeList, NodeList::const_iterator& itFirst, NodeList::const_iterator& itSecond, HeuristicCache const& cache)
 {
-	itFirst = nodeList.begin();
-	itSecond = nodeList.begin();
-	std::advance(itSecond, 1);
-
-	return;
+	//itFirst = nodeList.begin();
+	//itSecond = nodeList.begin();
+	//std::advance(itSecond, 1);
+	//return;
 
 	// Cache of entts and the heuristic against other entts
-	std::map<entt::entity, std::map<entt::entity, float>> heuristicCache{};
+	auto& heuristicCache = cache;
 
 	// Find the nearest neighbour
 	float minHeuristic{ std::numeric_limits<float>().infinity() }; // Current pseudocode example, this is distance
@@ -265,8 +273,6 @@ void BVHSystem::FindNodesToMerge(NodeList& nodeList, NodeList::const_iterator& i
 	for (int i = 0; i < nodeList.size(); ++i)
 	{
 		BVHNode const& lhs = nodeList[i];
-		// For now, assume distances is already sorted. 
-		// The sort should be handled in cache init, or on insertion
 		auto const& lhsCostMap = heuristicCache.at(lhs.Handle);
 		for (int j = 0; j < nodeList.size(); ++j)
 		{
@@ -304,6 +310,27 @@ void BVHSystem::FindNodesToMerge(NodeList& nodeList, NodeList::const_iterator& i
 	// into nodeList to begin with
 	RX_ASSERT(itFirst != nodeList.end());
 	RX_ASSERT(itSecond != nodeList.end());
+}
+
+void BVHSystem::UpdateHeuristicCache(BVHNode const& newNode, HeuristicCache& cache)
+{
+	// Craeting the map if not already there
+	auto& mapL = cache[newNode.Handle];
+	// Updating all existing keys
+	for (auto& [key, mapR] : cache)
+	{
+		// Hardcoding with distance heuristic first
+		float cost = {};
+		AABBBV& bvL = EntityManager::GetComponent<AABBBV>(key);
+		AABBBV& bvR = EntityManager::GetComponent<AABBBV>(newNode.Handle);
+		cost = glm::distance2(
+			bvL.GetPosition(),
+			bvR.GetPosition()
+		);
+
+		mapL.emplace(key, cost);
+		mapR.emplace(newNode.Handle, cost);
+	}
 }
 
 void BVHSystem::BVHTree_TopDown(std::unique_ptr<BVHNode>& pNode, Entity* pEntities, int numEnts, int height)
@@ -423,7 +450,7 @@ void BVHSystem::BVHTree_TopDown(std::unique_ptr<BVHNode>& pNode, Entity* pEntiti
 	}
 }
 
-void BVHSystem::BVHTree_BottomUp(std::unique_ptr<BVHNode>& pNode, NodeList& nodeList)
+void BVHSystem::BVHTree_BottomUp(std::unique_ptr<BVHNode>& pNode, NodeList& nodeList, HeuristicCache& cache)
 {
 	if (nodeList.empty())
 	{
@@ -436,7 +463,7 @@ void BVHSystem::BVHTree_BottomUp(std::unique_ptr<BVHNode>& pNode, NodeList& node
 		NodeList::const_iterator itFirst = nodeList.end();
 		NodeList::const_iterator itSecond = nodeList.end();
 
-		FindNodesToMerge(nodeList, itFirst, itSecond);
+		FindNodesToMerge(nodeList, itFirst, itSecond, cache);
 
 		BVHNode newNode{};
 		{ // Node data
@@ -476,6 +503,7 @@ void BVHSystem::BVHTree_BottomUp(std::unique_ptr<BVHNode>& pNode, NodeList& node
 			nodeList.erase(itFirst);
 			nodeList.erase(itSecond);
 		}
+		UpdateHeuristicCache(newNode, cache);
 		nodeList.emplace_back(std::move(newNode));
 	}
 
