@@ -223,54 +223,56 @@ int BVHSystem::Heuristic_SmallestSFA(Entity* pEntities, int numEnts)
 	return k;
 }
 
-void BVHSystem::FindNodesToMerge(NodeList& nodeList, NodeList::const_iterator itFirst, NodeList::const_iterator itSecond)
+void BVHSystem::FindNodesToMerge(NodeList& nodeList, NodeList::const_iterator& itFirst, NodeList::const_iterator& itSecond)
 {
-	auto cacheSort =
-		[](std::pair<float, BVHNode> const& lhs, std::pair<float, BVHNode> const& rhs)
-		{
-			return lhs.first < rhs.first;
-		};
-
-	// It's the internal vector that's sorted
-	std::map<entt::entity, std::vector<std::pair<float, BVHNode>>> sortedCache{};
+	// Cache of entts and the heuristic against other entts
+	std::map<entt::entity, std::map<entt::entity, float>> heuristicCache{};
 
 	// Find the nearest neighbour
-	// Need to rethink what the sortedCache map is and how we intent to actually "find min"
 	float minHeuristic{ std::numeric_limits<float>().infinity() }; // Current pseudocode example, this is distance
-	std::pair<entt::entity, BVHNode> bestPair{};
-	//for (int i = 0; i < nodeList.size(); ++i)
-	//{
-	//	BVHNode const& lhs = nodeList[i];
-	//	// For now, assume distances is already sorted. 
-	//	// The sort should be handled in cache init, or on insertion
-	//	auto const& distances = sortedCache[lhs.Handle];
-	//	for (int j = 0; j < nodeList.size(); ++j)
-	//	{
-	//		if (i == j) continue;
-	//		BVHNode const& rhs = nodeList[j];
-	//		auto it = std::find_if(distances.begin(), distances.end(),
-	//			[h = rhs.Handle](std::pair<entt::entity, BVHNode> const& o)
-	//			{
-	//				return o.first == h;
-	//			});
-	//
-	//		// Initial cache setup and insertions should have passed
-	//		RX_ASSERT(it != distances.end());
-	//
-	//		// Now, we can finally perform the heuristic check to see if it is lowest or not
-	//		float const& currentHeuristic = it->first;
-	//		BVHNode const& rhsNode = it->second;
-	//		if (currentHeuristic > minHeuristic) // Skip if comparison not even met
-	//			continue;
-	//
-	//		if (currentHeuristic == minHeuristic) // It's equal, introduce your secondary heuristic
-	//			continue; // Skip for now
-	//
-	//		// Now, we definitely want to replace the min with the new found min
-	//		minHeuristic = currentHeuristic;
-	//		bestPair = std::make_pair(lhs.Handle, rhs);
-	//	}
-	//}
+	std::pair<entt::entity, entt::entity> bestPair{ entt::null, entt::null };
+	for (int i = 0; i < nodeList.size(); ++i)
+	{
+		BVHNode const& lhs = nodeList[i];
+		// For now, assume distances is already sorted. 
+		// The sort should be handled in cache init, or on insertion
+		auto const& lhsCostMap = heuristicCache.at(lhs.Handle);
+		for (int j = 0; j < nodeList.size(); ++j)
+		{
+			if (i == j) continue;
+			BVHNode const& rhs = nodeList[j];
+			float const& rhsCost = lhsCostMap.at(rhs.Handle);
+
+			// Now, we can finally perform the heuristic check to see if it is lowest or not
+
+			if (rhsCost > minHeuristic) // Skip if comparison not even met
+				continue;
+	
+			if (rhsCost == minHeuristic) // It's equal, introduce your secondary heuristic
+				continue; // Skip for now
+	
+			// Now, we definitely want to replace the min with the new found min
+			minHeuristic = rhsCost;
+			bestPair = std::make_pair(lhs.Handle, rhs.Handle);
+		}
+	}
+
+	// Returning the results
+	itFirst = std::find_if(nodeList.begin(), nodeList.end(),
+		[h = bestPair.first](BVHNode const& node)
+		{
+			return node.Handle == h;
+		});
+	itSecond = std::find_if(nodeList.begin(), nodeList.end(),
+		[h = bestPair.second](BVHNode const& node)
+		{
+			return node.Handle == h;
+		});
+
+	// If you hit either of these, it means your node is for some reason not even inserted
+	// into nodeList to begin with
+	RX_ASSERT(itFirst != nodeList.end());
+	RX_ASSERT(itSecond != nodeList.end());
 }
 
 void BVHSystem::BVHTree_TopDown(std::unique_ptr<BVHNode>& pNode, Entity* pEntities, int numEnts, int height)

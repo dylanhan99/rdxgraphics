@@ -87,7 +87,7 @@ public:
 	static int Heuristic_KEvenSplits(Entity* pEntities, int numEnts);
 	static int Heuristic_SmallestSFA(Entity* pEntities, int numEnts);
 
-	static void FindNodesToMerge(NodeList& nodeList, NodeList::const_iterator itFirst, NodeList::const_iterator itSecond);
+	static void FindNodesToMerge(NodeList& nodeList, NodeList::const_iterator& itFirst, NodeList::const_iterator& itSecond);
 	// *** *** //
 
 	// *** Tree building *** //
