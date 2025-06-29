@@ -13,8 +13,9 @@
 #include "GUI/GUI.h"
 #include "Utils/Input.h"
 
-#include "GSM/Scenes/Assignment1/Assignment1.h"
-#include "GSM/Scenes/Assignment2/Assignment2.h"
+//#include "GSM/Scenes/Assignment1/Assignment1.h"
+//#include "GSM/Scenes/Assignment2/Assignment2.h"
+#include "GSM/Scenes/Assignment3/Assignment3.h"
 
 void RDX::Run()
 {
@@ -29,8 +30,10 @@ void RDX::Run()
 	if (!initOK)
 		throw RX_EXCEPTION("System initialization failed");
 
-	SceneManager::RegisterScene<Assignment2>("Assignment 2");
+	SceneManager::RegisterScene<Assignment3>("Assignment 3");
 	SceneManager::RegisterScene<Sandbox>("Sandbox");
+
+	//SceneManager::RegisterScene<Assignment2>("Assignment 2");
 
 	//SceneManager::RegisterScene<SphereXSphereScene>("Sphere - Sphere");
 	//SceneManager::RegisterScene<AABBXSphereScene>("AABB - Sphere");
