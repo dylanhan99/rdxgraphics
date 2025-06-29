@@ -167,9 +167,6 @@ int BVHSystem::Partition(Entity* pEntities, int numEnts)
 	case SplitPointStrat::KEvenSplits:
 		k = Heuristic_KEvenSplits(pEntities, numEnts);
 		break;
-	case SplitPointStrat::SmallestSFA:
-		k = Heuristic_SmallestSFA(pEntities, numEnts);
-		break;
 	default: break;
 	}
 	return k;
@@ -224,6 +221,11 @@ int BVHSystem::Heuristic_SmallestSFA(Entity* pEntities, int numEnts)
 	}
 
 	return k;
+}
+
+void BVHSystem::FindNodesToMerge(NodeList& nodeList, NodeList::const_iterator itFirst, NodeList::const_iterator itSecond)
+{
+
 }
 
 void BVHSystem::BVHTree_TopDown(std::unique_ptr<BVHNode>& pNode, Entity* pEntities, int numEnts, int height)
@@ -343,7 +345,7 @@ void BVHSystem::BVHTree_TopDown(std::unique_ptr<BVHNode>& pNode, Entity* pEntiti
 	}
 }
 
-void BVHSystem::BVHTree_BottomUp(std::unique_ptr<BVHNode>& pNode, std::vector<BVHNode>& nodeList)
+void BVHSystem::BVHTree_BottomUp(std::unique_ptr<BVHNode>& pNode, NodeList& nodeList)
 {
 	if (nodeList.empty())
 	{
@@ -353,10 +355,10 @@ void BVHSystem::BVHTree_BottomUp(std::unique_ptr<BVHNode>& pNode, std::vector<BV
 
 	while (nodeList.size() != 1)
 	{
-		std::vector<BVHNode>::iterator itFirst = nodeList.end();
-		std::vector<BVHNode>::iterator itSecond = nodeList.end();
+		NodeList::const_iterator itFirst = nodeList.end();
+		NodeList::const_iterator itSecond = nodeList.end();
 
-		//FindNodesToMerge(nodeList, itFirst, itSecond);
+		FindNodesToMerge(nodeList, itFirst, itSecond);
 
 		BVHNode newNode{};
 		{ // Node data
@@ -374,8 +376,7 @@ void BVHSystem::BVHTree_BottomUp(std::unique_ptr<BVHNode>& pNode, std::vector<BV
 			{																				   \
 				Klass##BV& bvL = EntityManager::GetComponent<Klass##BV>(newNode.Left->Handle); \
 				Klass##BV& bvR = EntityManager::GetComponent<Klass##BV>(newNode.Right->Handle);\
-				EntityManager::GetComponent<Klass##BV>(newNode.Handle)						   \
-					.RecalculateBV(bvL, bvR);												   \
+				EntityManager::GetComponent<Klass##BV>(newNode.Handle).RecalculateBV(bvL, bvR);\
 				break;																		   \
 			}
 

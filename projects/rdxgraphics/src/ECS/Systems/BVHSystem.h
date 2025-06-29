@@ -47,13 +47,18 @@ public:
 	enum class SplitPointStrat {
 		MedianCenters,
 		MedianExtents,
-		KEvenSplits,
-		SmallestSFA
+		KEvenSplits
+	};
+	enum class MergeStrat {
+		NearestNeighbour,
+		MinVolume,
+		MinSurfaceArea
 	};
 
 private:
 	using Entity = entt::entity;
-	using EntityList = std::vector<Entity>;
+	using EntityList = std::vector<Entity>; // Used in topdown
+	using NodeList = std::vector<BVHNode>;  // Used in bottomup
 
 public:
 	static bool Init();
@@ -63,6 +68,7 @@ public:
 	inline static BVHType& GetCurrentTreeType() { return g.m_CurrentTreeType; }
 	inline static LeafCondition& GetCurrentLeafCondition() { return g.m_CurrentLeafCondition; }
 	inline static SplitPointStrat& GetCurrentSplitPointStrat() { return g.m_CurrentSplitPointStrat; }
+	inline static MergeStrat& GetCurrentMergeStrat() { return g.m_CurrentMergeStrat; }
 	inline static int& GetDrawLayers() { return g.m_DrawLayers; }
 	inline static int& GetBVHHeight() { return g.m_BVHHeight; }
 
@@ -80,11 +86,13 @@ public:
 	static int Heuristic_MedianExtents(Entity* pEntities, int numEnts, int axis, AABBBV const& totalBV);
 	static int Heuristic_KEvenSplits(Entity* pEntities, int numEnts);
 	static int Heuristic_SmallestSFA(Entity* pEntities, int numEnts);
+
+	static void FindNodesToMerge(NodeList& nodeList, NodeList::const_iterator itFirst, NodeList::const_iterator itSecond);
 	// *** *** //
 
 	// *** Tree building *** //
 	static void BVHTree_TopDown(std::unique_ptr<BVHNode>& pNode, Entity* pEntities, int numEnts, int height = 0);
-	static void BVHTree_BottomUp(std::unique_ptr<BVHNode>& pNode, std::vector<BVHNode>& nodeList);
+	static void BVHTree_BottomUp(std::unique_ptr<BVHNode>& pNode, NodeList& nodeList);
 	// *** *** //
 
 private:
@@ -94,6 +102,7 @@ private:
 	BVHType m_CurrentTreeType{ BVHType::TopDown };
 	LeafCondition m_CurrentLeafCondition{ LeafCondition::OneEntity };
 	SplitPointStrat m_CurrentSplitPointStrat{ SplitPointStrat::MedianCenters };
+	MergeStrat m_CurrentMergeStrat{ MergeStrat::NearestNeighbour };
 	std::unique_ptr<BVHNode> m_RootNode{};
 
 	int m_DrawLayers{ INT_MAX }; // Enable all layers by default
