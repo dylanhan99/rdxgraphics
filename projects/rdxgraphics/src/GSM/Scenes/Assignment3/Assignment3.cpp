@@ -10,7 +10,6 @@ void Assignment3::StartImpl()
 		EntityManager::AddComponent<Xform>(handle, glm::vec3{ 0.f, 0.f, -2.f }, glm::vec3{ 10.f }, glm::vec3{ -glm::quarter_pi<float>() });
 		EntityManager::AddComponent<Model>(handle, Rxuid{"bunny"});
 		EntityManager::AddComponent<Material>(handle, glm::vec3{ 0.f, 1.f, 0.f });
-		EntityManager::AddComponent<Collider>(handle, Primitive::Sphere);
 		EntityManager::AddComponent<BoundingVolume>(handle, BV::AABB);
 	}
 	{

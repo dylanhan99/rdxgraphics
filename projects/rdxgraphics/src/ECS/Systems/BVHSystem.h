@@ -12,8 +12,8 @@ struct BVHNode
 	inline BVHNode& operator=(BVHNode const& other)
 	{
 		Handle = other.Handle;
-		Left = std::make_unique<BVHNode>(*other.Left);
-		Right = std::make_unique<BVHNode>(*other.Right);
+		if (other.Left) Left = std::make_unique<BVHNode>(*other.Left);
+		if (other.Right) Right = std::make_unique<BVHNode>(*other.Right);
 		Objects = other.Objects;
 		return *this;
 	}
