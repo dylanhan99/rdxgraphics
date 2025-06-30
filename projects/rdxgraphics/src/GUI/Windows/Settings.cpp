@@ -43,8 +43,7 @@ void Settings::UpdateImpl(float dt)
 			}
 
 			{
-				ImGui::Separator();
-				ImGui::Text("BVH Layers");
+				ImGui::SeparatorText("BVH Layers");
 				for (int i = 0; i <= BVHSystem::GetBVHHeight(); ++i)
 				{
 					bool b = (BVHSystem::GetDrawLayers() >> i) & 0x1;

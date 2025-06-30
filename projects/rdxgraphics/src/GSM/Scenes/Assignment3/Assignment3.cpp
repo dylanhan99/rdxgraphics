@@ -7,7 +7,7 @@ void Assignment3::StartImpl()
 	{
 		auto handle = BaseScene::CreateDefaultEntity();
 		EntityManager::AddComponent<Metadata>(handle, "Bunny");
-		EntityManager::AddComponent<Xform>(handle, glm::vec3{ 0.f, 0.f, -2.f }, glm::vec3{ 10.f }, glm::vec3{ -glm::quarter_pi<float>() });
+		EntityManager::AddComponent<Xform>(handle, glm::vec3{ 3.f, 0.f, -2.f }, glm::vec3{ 10.f }, glm::vec3{ -glm::quarter_pi<float>() });
 		EntityManager::AddComponent<Model>(handle, Rxuid{"bunny"});
 		EntityManager::AddComponent<Material>(handle, glm::vec3{ 0.f, 1.f, 0.f });
 		EntityManager::AddComponent<BoundingVolume>(handle, BV::AABB);
@@ -15,7 +15,7 @@ void Assignment3::StartImpl()
 	{
 		auto handle = BaseScene::CreateDefaultEntity();
 		EntityManager::AddComponent<Metadata>(handle, "Cup");
-		EntityManager::AddComponent<Xform>(handle, glm::vec3{ -10.f, 0.f, -2.f }, glm::vec3{ 10.f }, glm::vec3{ glm::quarter_pi<float>() });
+		EntityManager::AddComponent<Xform>(handle, glm::vec3{ 2.f, 0.f, -2.f }, glm::vec3{ 10.f }, glm::vec3{ glm::quarter_pi<float>() });
 		EntityManager::AddComponent<Model>(handle, Rxuid{"cup"});
 		EntityManager::AddComponent<Material>(handle, glm::vec3{ 0.f, 1.f, 0.f });
 		EntityManager::AddComponent<BoundingVolume>(handle, BV::AABB);
@@ -23,7 +23,7 @@ void Assignment3::StartImpl()
 	{
 		auto handle = BaseScene::CreateDefaultEntity();
 		EntityManager::AddComponent<Metadata>(handle, "Starwars");
-		EntityManager::AddComponent<Xform>(handle, glm::vec3{ -10.f, 0.f, -2.f }, glm::vec3{ 0.01f }, glm::vec3{ 0.22f, 0.f, 0.1f });
+		EntityManager::AddComponent<Xform>(handle, glm::vec3{ -5.f, 0.f, -2.f }, glm::vec3{ 0.01f }, glm::vec3{ 0.22f, 0.f, 0.1f });
 		EntityManager::AddComponent<Model>(handle, Rxuid{"starwars1"});
 		EntityManager::AddComponent<Material>(handle, glm::vec3{ 1.f, 0.9f, 0.f });
 		EntityManager::AddComponent<BoundingVolume>(handle, BV::AABB);
@@ -31,7 +31,7 @@ void Assignment3::StartImpl()
 	{
 		auto handle = BaseScene::CreateDefaultEntity();
 		EntityManager::AddComponent<Metadata>(handle, "Lucy Princeton");
-		EntityManager::AddComponent<Xform>(handle, glm::vec3{ 4.f, -1.f, 2.f }, glm::vec3{ 0.001f }, glm::vec3{ glm::quarter_pi<float>() });
+		EntityManager::AddComponent<Xform>(handle, glm::vec3{ 5.f, -2.f, 2.f }, glm::vec3{ 0.001f }, glm::vec3{ glm::quarter_pi<float>() });
 		EntityManager::AddComponent<Model>(handle, Rxuid{"lucy_princeton"});
 		EntityManager::AddComponent<Material>(handle, glm::vec3{ 1.f, 1.f, 1.f });
 		EntityManager::AddComponent<BoundingVolume>(handle, BV::AABB);

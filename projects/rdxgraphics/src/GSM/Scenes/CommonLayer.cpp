@@ -45,7 +45,7 @@ void CommonLayer::StartImpl()
 		EntityManager::AddComponent<Camera>(handle,
 			Camera::Mode::Orthorgonal,
 			glm::vec2{ 16.f, 9.f }, 90.f)
-			.GetOrthoSize() = 40.f;
+			.GetOrthoSize() = 15.f;
 	}
 
 	m_ActiveCamera = m_MainCamera;
