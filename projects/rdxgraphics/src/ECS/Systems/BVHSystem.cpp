@@ -253,6 +253,7 @@ int BVHSystem::Heuristic_SmallestSFA(Entity* pEntities, int numEnts)
 		RX_DO_ALL_BVH_ENUM_M(_RX_X);
 	default: RX_ASSERT(false); break;
 	}
+#undef _RX_X
 
 	return k;
 }
@@ -517,16 +518,16 @@ void BVHSystem::BVHTree_BottomUp(std::unique_ptr<BVHNode>& pNode, NodeList& node
 	pNode = std::make_unique<BVHNode>(std::move(nodeList[0]));
 	if (pNode) // Determine height
 	{
-		std::function<float(std::unique_ptr<BVHNode> const&, int)> DetermineHeight{};
+		std::function<int(std::unique_ptr<BVHNode> const&, int)> DetermineHeight{};
 		DetermineHeight = 
-			[&DetermineHeight](std::unique_ptr<BVHNode> const& ppNode, int height)->float
+			[&DetermineHeight](std::unique_ptr<BVHNode> const& ppNode, int height)->int
 			{
 				if (ppNode->IsLeaf())
 					return height;
 
 				height += 1;
-				float left = DetermineHeight(ppNode->Left, height);
-				float right = DetermineHeight(ppNode->Right, height);
+				int left = DetermineHeight(ppNode->Left, height);
+				int right = DetermineHeight(ppNode->Right, height);
 				return glm::max(left, right);
 			};
 

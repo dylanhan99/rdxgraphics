@@ -367,7 +367,7 @@ void SphereBV::RecalculateBV()
 
 			// Set up sphere to just encompass these two points
 			finalCentroid = (startingPoints[min] + startingPoints[max]) * 0.5f;
-			finalRadius = glm::distance(startingPoints[max], startingPoints[min]) * 0.5;
+			finalRadius = glm::distance(startingPoints[max], startingPoints[min]) * 0.5f;
 		}
 
 		Intersection::RitterGrowth(pointsXformed, finalCentroid, finalRadius);

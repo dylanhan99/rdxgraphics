@@ -63,8 +63,9 @@ void RDX::Run()
 		if (!SceneManager::ResolveScenes())
 			GLFWWindow::SetWindowShouldClose();
 		GLFWWindow::Update(std::move(
-			[&](float dt)
-			{
+			[&](double deltatime)
+			{ 
+				float dt = (float)deltatime;
 				if (!GLFWWindow::IsIconified())
 				{
 					if (Input::IsKeyTriggered(RX_KEY_ESCAPE))

@@ -19,6 +19,7 @@ static glm::vec4 GetBVColor(BVState state)
 		return OutColor;
 	case BVState::On:
 		return OnColor;
+	default: return glm::vec4{ 1.f };
 	}
 }
 

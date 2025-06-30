@@ -9,12 +9,12 @@ void Intersection::MostSeparatedPointsOnAABB(std::vector<glm::vec3> const& pt, s
 	int minx = 0, maxx = 0, miny = 0, maxy = 0, minz = 0, maxz = 0;
 	for (size_t i = 1; i < pt.size(); ++i) 
 	{
-		if (pt[i].x < pt[minx].x) minx = i;
-		if (pt[i].x > pt[maxx].x) maxx = i;
-		if (pt[i].y < pt[miny].y) miny = i;
-		if (pt[i].y > pt[maxy].y) maxy = i;
-		if (pt[i].z < pt[minz].z) minz = i;
-		if (pt[i].z > pt[maxz].z) maxz = i;
+		if (pt[i].x < pt[minx].x) minx = (int)i;
+		if (pt[i].x > pt[maxx].x) maxx = (int)i;
+		if (pt[i].y < pt[miny].y) miny = (int)i;
+		if (pt[i].y > pt[maxy].y) maxy = (int)i;
+		if (pt[i].z < pt[minz].z) minz = (int)i;
+		if (pt[i].z > pt[maxz].z) maxz = (int)i;
 	}
 
 	// Compute the squared distances for the three pairs of points
@@ -117,13 +117,13 @@ void Intersection::PCA(std::vector<glm::vec3> const& points, glm::vec3* oCentroi
 			if (proj < minproj)
 			{
 				minproj = proj;
-				imin = i;
+				imin = (int)i;
 			}
 			// Keep track of most distant point along direction vector
 			if (proj > maxproj)
 			{
 				maxproj = proj;
-				imax = i;
+				imax = (int)i;
 			}
 		}
 	}
