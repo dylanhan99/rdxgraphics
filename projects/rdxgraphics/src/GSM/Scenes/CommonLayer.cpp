@@ -23,7 +23,7 @@ void CommonLayer::StartImpl()
 			glm::vec3{ -3.f, 3.f, 3.f },
 			glm::vec3{ 0.2f },
 			glm::vec3{ -0.7f, -0.7f, 0.f });
-		EntityManager::AddComponent<Model>(handle, Shape::Cube);
+		//EntityManager::AddComponent<Model>(handle, Shape::Cube);
 		EntityManager::AddComponent<Material>(handle, glm::vec3{ 1.f,1.f,0.f });
 		EntityManager::AddComponent<Camera>(handle,
 			Camera::Mode::Perspective,
@@ -37,7 +37,7 @@ void CommonLayer::StartImpl()
 			glm::vec3{ 0.f, 5.f, 0.f },
 			glm::vec3{ 0.2f },
 			glm::vec3{ -glm::half_pi<float>() + glm::epsilon<float>(), 0.f, 0.f });
-		EntityManager::AddComponent<Model>(handle, Shape::Cube);
+		//EntityManager::AddComponent<Model>(handle, Shape::Cube);
 		EntityManager::AddComponent<Material>(handle, glm::vec3{ 1.f,1.f,0.f });
 		//EntityManager::AddComponent<Camera>(handle,
 		//	Camera::Mode::Perspective,
