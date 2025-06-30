@@ -93,6 +93,8 @@ public:
 
 	static void FindNodesToMerge(NodeList& nodeList, NodeList::const_iterator& itFirst, NodeList::const_iterator& itSecond, HeuristicCache const& cache);
 	static void UpdateHeuristicCache(BVHNode const& newNode, HeuristicCache& cache);
+	template <typename T>
+	static float CalculateHeuristicCost(T const& bvL, T const& bvR);
 	// *** *** //
 
 	// *** Tree building *** //
@@ -141,4 +143,37 @@ static float BVHSystem::HeuristicCost(T const& bvL, int const numL, T const& bvR
 	float const normR = bvR.GetSurfaceArea() * invAll;
 
 	return numL * normL + numR * normR;
+}
+
+template <typename T>
+static float BVHSystem::CalculateHeuristicCost(T const& bvL, T const& bvR)
+{
+	float cost{};
+	switch (GetCurrentMergeStrat())
+	{
+	case MergeStrat::NearestNeighbour:
+	{ 
+		cost = glm::distance2(
+			bvL.GetPosition(),
+			bvR.GetPosition()
+		);
+		break; 
+	}
+	case MergeStrat::MinVolume:
+	{ 
+		T temp{};
+		temp.RecalculateBV(bvL, bvR);
+		cost = temp.GetVolume();
+		break; 
+	}
+	case MergeStrat::MinSurfaceArea:
+	{ 
+		T temp{};
+		temp.RecalculateBV(bvL, bvR);
+		cost = temp.GetSurfaceArea();
+		break;
+	}
+	default: break;
+	}
+	return cost;
 }

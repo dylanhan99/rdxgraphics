@@ -58,5 +58,5 @@ void Assignment3::StartImpl()
 
 void Assignment3::UpdateImpl(float dt)
 {
-	//BVHSystem::BuildBVH();
+	BVHSystem::BuildBVH();
 }

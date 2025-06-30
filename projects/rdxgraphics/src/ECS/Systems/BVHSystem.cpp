@@ -319,14 +319,21 @@ void BVHSystem::UpdateHeuristicCache(BVHNode const& newNode, HeuristicCache& cac
 	// Updating all existing keys
 	for (auto& [key, mapR] : cache)
 	{
-		// Hardcoding with distance heuristic first
-		float cost = {};
-		AABBBV& bvL = EntityManager::GetComponent<AABBBV>(key);
-		AABBBV& bvR = EntityManager::GetComponent<AABBBV>(newNode.Handle);
-		cost = glm::distance2(
-			bvL.GetPosition(),
-			bvR.GetPosition()
-		);
+		float cost{};
+#define _RX_X(Klass)																\
+		case BV::Klass:																\
+		{																			\
+			Klass##BV& bvL = EntityManager::GetComponent<Klass##BV>(key);			\
+			Klass##BV& bvR = EntityManager::GetComponent<Klass##BV>(newNode.Handle);\
+			cost = CalculateHeuristicCost(bvL, bvR);								\
+			break;																	\
+		}
+		switch (GetGlobalBVType())
+		{
+			RX_DO_ALL_BVH_ENUM_M(_RX_X);
+		default: break;
+		}
+#undef _RX_X
 
 		mapL.emplace(key, cost);
 		mapR.emplace(newNode.Handle, cost);
