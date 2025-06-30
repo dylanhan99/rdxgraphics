@@ -257,15 +257,15 @@ bool Viewport::Guizmos(ImVec2 const& imagePos, ImVec2 const& imageSize)
 
 		if (ImGuizmo::IsUsing())
 		{
-			glm::vec3 translate{}, scale{};
-			glm::quat rotation{};
-			glm::vec3 skew{};
-			glm::vec4 perspective{};
-			glm::decompose(trData, scale, rotation, translate, skew, perspective);
+			glm::vec3 translation{}, rotation{}, scale{};
+			ImGuizmo::DecomposeMatrixToComponents(
+				glm::value_ptr(trData), 
+				glm::value_ptr(translation), glm::value_ptr(rotation), glm::value_ptr(scale));
+			rotation = glm::radians(rotation);
 
-			xform.SetTranslate(translate);
+			xform.SetTranslate(translation);
+			xform.SetEulerOrientation(rotation);
 			xform.SetScale(scale);
-			xform.SetEulerOrientation(glm::eulerAngles(rotation));
 		}
 	}
 

@@ -68,7 +68,7 @@ private:
 	glm::vec3 m_Front{}, m_Right{};
 	float m_AspectRatio{};
 	float m_FOV{};
-	float m_MovementSpeed{ 1.f };
+	float m_MovementSpeed{ 10.f };
 	float m_PitchSpeed{ 1.f };
 	float m_YawSpeed{ 1.f };
 	float m_ZoomSpeed{ 0.1f }; // Scrolling scale factor. Meant for finer fwd/bwd movement

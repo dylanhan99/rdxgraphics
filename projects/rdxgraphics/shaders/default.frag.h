@@ -77,4 +77,5 @@ void main()
 		oFragColor = fs_in.DiffuseColor;
 	}
 }
+
 )"

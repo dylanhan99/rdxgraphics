@@ -345,10 +345,9 @@ void Inspector::UpdateCompBoundingVolume(std::string const& strHandle, BoundingV
 	switch (comp.GetBVType())
 	{
 		RX_DO_ALL_BV_ENUM;
-	default:
-		break;
+	default: break;
 	}
-#undef _RX_X;
+#undef _RX_X
 }
 
 void Inspector::UpdateCompFrustumBV(std::string const& strHandle, FrustumBV& comp)

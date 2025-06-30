@@ -143,6 +143,14 @@ void Camera::Inputs_Arcball(float dt, entt::entity target)
 
 	glm::vec3& camPos = myXform.GetTranslate();
 
+	if (Input::IsMouseScrolled())
+	{
+		if (m_CameraMode == Mode::Perspective)
+			camPos += ((float)Input::GetMouseScrollOffset() * m_ZoomSpeed) * m_Front;
+		else
+			m_OrthoSize += (float)Input::GetMouseScrollNormalized() * m_ZoomSpeed;
+	}
+
 	glm::vec2 cursorPos = (glm::vec2)GLFWWindow::GetCursorPos();
 	glm::vec2 windowDims = (glm::vec2)GLFWWindow::GetWindowDims();
 	float pitch = windowDims.y ? m_PitchSpeed * ((windowDims.y * 0.5f - cursorPos.y) / windowDims.y) : 0.f;

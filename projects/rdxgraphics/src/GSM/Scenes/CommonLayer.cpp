@@ -13,7 +13,7 @@ void CommonLayer::StartImpl()
 		EntityManager::AddComponent<Xform>(handle, glm::vec3{ 0.f, 5.f, 0.f }, glm::vec3{ 0.3f }, glm::vec3{glm::quarter_pi<float>()});
 		EntityManager::AddComponent<Model>(handle, Shape::Cube);
 		EntityManager::AddComponent<DirectionalLight>(handle);
-		EntityManager::AddComponent<BoundingVolume>(handle, BV::AABB);
+		//EntityManager::AddComponent<BoundingVolume>(handle, BV::AABB);
 	}
 
 	{
@@ -23,7 +23,7 @@ void CommonLayer::StartImpl()
 			glm::vec3{ -3.f, 3.f, 3.f },
 			glm::vec3{ 0.2f },
 			glm::vec3{ -0.7f, -0.7f, 0.f });
-		EntityManager::AddComponent<Model>(handle, Shape::Cube);
+		//EntityManager::AddComponent<Model>(handle, Shape::Cube);
 		EntityManager::AddComponent<Material>(handle, glm::vec3{ 1.f,1.f,0.f });
 		EntityManager::AddComponent<Camera>(handle,
 			Camera::Mode::Perspective,
@@ -37,7 +37,7 @@ void CommonLayer::StartImpl()
 			glm::vec3{ 0.f, 5.f, 0.f },
 			glm::vec3{ 0.2f },
 			glm::vec3{ -glm::half_pi<float>() + glm::epsilon<float>(), 0.f, 0.f });
-		EntityManager::AddComponent<Model>(handle, Shape::Cube);
+		//EntityManager::AddComponent<Model>(handle, Shape::Cube);
 		EntityManager::AddComponent<Material>(handle, glm::vec3{ 1.f,1.f,0.f });
 		//EntityManager::AddComponent<Camera>(handle,
 		//	Camera::Mode::Perspective,
@@ -45,7 +45,7 @@ void CommonLayer::StartImpl()
 		EntityManager::AddComponent<Camera>(handle,
 			Camera::Mode::Orthorgonal,
 			glm::vec2{ 16.f, 9.f }, 90.f)
-			.GetOrthoSize() = 40.f;
+			.GetOrthoSize() = 15.f;
 	}
 
 	m_ActiveCamera = m_MainCamera;
@@ -105,5 +105,5 @@ void CommonLayer::UpdateImpl(float dt)
 		light.GetDirection() = glm::normalize(-xform.GetTranslate()); // Look at origin
 	}
 
-	EntityManager::AddComponent<BoundingVolume::DirtyXform>(m_LightHandle);
+	//EntityManager::AddComponent<BoundingVolume::DirtyXform>(m_LightHandle);
 }

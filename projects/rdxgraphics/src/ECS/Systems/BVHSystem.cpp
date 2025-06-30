@@ -52,23 +52,62 @@ void BVHSystem::BuildBVH()
 	DestroyBVH(GetRootNode());
 	g.m_BVHHeight = -std::numeric_limits<int>().infinity();
 
-	EntityList entities{};
-	{
-		auto view = EntityManager::View<Xform, BoundingVolume const>(entt::exclude<FrustumBV>);
-		for (auto [handle, _, __] : view.each())
-			entities.emplace_back(Entity{ handle });
-	}
-
 	switch (GetCurrentTreeType())
 	{
 	case BVHType::TopDown:
 	{
+		EntityList entities{};
+		{
+			auto view = EntityManager::View<Xform, BoundingVolume const>(entt::exclude<FrustumBV>);
+			for (auto [handle, _, __] : view.each())
+				entities.emplace_back(Entity{ handle });
+		}
+
 		BVHTree_TopDown(GetRootNode(), entities.data(), (int)entities.size(), 0);
 		break;
 	}
 	case BVHType::BottomUp:
 	{
-		g.m_RootNode = BVHTree_BottomUp(entities.data(), (int)entities.size());
+		std::vector<BVHNode> nodeList{};
+		HeuristicCache cache{};
+		{
+			auto view = EntityManager::View<Xform, BoundingVolume const>(entt::exclude<FrustumBV>);
+			for (auto [handle, _, __] : view.each())
+			{
+				BVHNode newNode{};
+				entt::entity const nodeHandle = newNode.Handle = EntityManager::CreateEntity<Xform>();
+				newNode.Objects.push_back(handle);
+				newNode.SetIsLeaf();
+				EntityManager::AddComponent<BoundingVolume>(nodeHandle, GetGlobalBVType());
+#define _RX_X(Klass)																		\
+				case BV::Klass:																\
+				{																			\
+					Klass##BV& originalBV = EntityManager::GetComponent<Klass##BV>(handle);	\
+					Klass##BV& bv = EntityManager::GetComponent<Klass##BV>(nodeHandle);		\
+					bv.RecalculateBV(originalBV);											\
+					break;																	\
+				}
+
+				switch (GetGlobalBVType())
+				{
+					RX_DO_ALL_BVH_ENUM_M(_RX_X);
+				default: break;
+				}
+#undef _RX_X
+				EntityManager::RemoveComponent<BoundingVolume::DirtyBV>(nodeHandle);
+				nodeList.emplace_back(std::move(newNode));
+				cache[nodeHandle]; // Default init
+			}
+		}
+
+		{
+			for (BVHNode const& node : nodeList)
+			{
+				UpdateHeuristicCache(node, cache);
+			}
+		}
+
+		BVHTree_BottomUp(GetRootNode(), nodeList, cache);
 		break;
 	}
 	default: break;
@@ -162,9 +201,6 @@ int BVHSystem::Partition(Entity* pEntities, int numEnts)
 	case SplitPointStrat::KEvenSplits:
 		k = Heuristic_KEvenSplits(pEntities, numEnts);
 		break;
-	case SplitPointStrat::SmallestSFA:
-		k = Heuristic_SmallestSFA(pEntities, numEnts);
-		break;
 	default: break;
 	}
 	return k;
@@ -217,8 +253,92 @@ int BVHSystem::Heuristic_SmallestSFA(Entity* pEntities, int numEnts)
 		RX_DO_ALL_BVH_ENUM_M(_RX_X);
 	default: RX_ASSERT(false); break;
 	}
+#undef _RX_X
 
 	return k;
+}
+
+void BVHSystem::FindNodesToMerge(NodeList& nodeList, NodeList::const_iterator& itFirst, NodeList::const_iterator& itSecond, HeuristicCache const& cache)
+{
+	//itFirst = nodeList.begin();
+	//itSecond = nodeList.begin();
+	//std::advance(itSecond, 1);
+	//return;
+
+	// Cache of entts and the heuristic against other entts
+	auto& heuristicCache = cache;
+
+	// Find the nearest neighbour
+	float minHeuristic{ std::numeric_limits<float>().infinity() }; // Current pseudocode example, this is distance
+	std::pair<entt::entity, entt::entity> bestPair{ entt::null, entt::null };
+	for (int i = 0; i < nodeList.size(); ++i)
+	{
+		BVHNode const& lhs = nodeList[i];
+		auto const& lhsCostMap = heuristicCache.at(lhs.Handle);
+		for (int j = 0; j < nodeList.size(); ++j)
+		{
+			if (i == j) continue;
+			BVHNode const& rhs = nodeList[j];
+			float const& rhsCost = lhsCostMap.at(rhs.Handle);
+
+			// Now, we can finally perform the heuristic check to see if it is lowest or not
+
+			if (rhsCost > minHeuristic) // Skip if comparison not even met
+				continue;
+	
+			if (rhsCost == minHeuristic) // It's equal, introduce your secondary heuristic
+				continue; // Skip for now
+	
+			// Now, we definitely want to replace the min with the new found min
+			minHeuristic = rhsCost;
+			bestPair = std::make_pair(lhs.Handle, rhs.Handle);
+		}
+	}
+
+	// Returning the results
+	itFirst = std::find_if(nodeList.begin(), nodeList.end(),
+		[h = bestPair.first](BVHNode const& node)
+		{
+			return node.Handle == h;
+		});
+	itSecond = std::find_if(nodeList.begin(), nodeList.end(),
+		[h = bestPair.second](BVHNode const& node)
+		{
+			return node.Handle == h;
+		});
+
+	// If you hit either of these, it means your node is for some reason not even inserted
+	// into nodeList to begin with
+	RX_ASSERT(itFirst != nodeList.end());
+	RX_ASSERT(itSecond != nodeList.end());
+}
+
+void BVHSystem::UpdateHeuristicCache(BVHNode const& newNode, HeuristicCache& cache)
+{
+	// Craeting the map if not already there
+	auto& mapL = cache[newNode.Handle];
+	// Updating all existing keys
+	for (auto& [key, mapR] : cache)
+	{
+		float cost{};
+#define _RX_X(Klass)																\
+		case BV::Klass:																\
+		{																			\
+			Klass##BV& bvL = EntityManager::GetComponent<Klass##BV>(key);			\
+			Klass##BV& bvR = EntityManager::GetComponent<Klass##BV>(newNode.Handle);\
+			cost = CalculateHeuristicCost(bvL, bvR);								\
+			break;																	\
+		}
+		switch (GetGlobalBVType())
+		{
+			RX_DO_ALL_BVH_ENUM_M(_RX_X);
+		default: break;
+		}
+#undef _RX_X
+
+		mapL.emplace(key, cost);
+		mapR.emplace(newNode.Handle, cost);
+	}
 }
 
 void BVHSystem::BVHTree_TopDown(std::unique_ptr<BVHNode>& pNode, Entity* pEntities, int numEnts, int height)
@@ -338,7 +458,80 @@ void BVHSystem::BVHTree_TopDown(std::unique_ptr<BVHNode>& pNode, Entity* pEntiti
 	}
 }
 
-std::unique_ptr<BVHNode> BVHSystem::BVHTree_BottomUp(Entity* pEntities, int numEnts)
+void BVHSystem::BVHTree_BottomUp(std::unique_ptr<BVHNode>& pNode, NodeList& nodeList, HeuristicCache& cache)
 {
-	return std::unique_ptr<BVHNode>();
+	if (nodeList.empty())
+	{
+		pNode.reset(nullptr);
+		return;
+	}
+
+	while (nodeList.size() != 1)
+	{
+		NodeList::const_iterator itFirst = nodeList.end();
+		NodeList::const_iterator itSecond = nodeList.end();
+
+		FindNodesToMerge(nodeList, itFirst, itSecond, cache);
+
+		BVHNode newNode{};
+		{ // Node data
+			newNode.Handle = EntityManager::CreateEntity<Xform>();
+			newNode.Left = std::make_unique<BVHNode>(*itFirst);
+			newNode.Right = std::make_unique<BVHNode>(*itSecond);
+			newNode.Objects.insert(newNode.Objects.end(), itFirst->Objects.begin(), itFirst->Objects.end());
+			newNode.Objects.insert(newNode.Objects.end(), itSecond->Objects.begin(), itSecond->Objects.end());
+			newNode.SetIsNode();
+		}
+		{ // Node's BV data
+			// Merge the left and right bvs
+			BoundingVolume& boundingVolume = EntityManager::AddComponent<BoundingVolume>(newNode.Handle, GetGlobalBVType());
+#define _RX_X(Klass)																		   \
+			case BV::Klass:																	   \
+			{																				   \
+				Klass##BV& bvL = EntityManager::GetComponent<Klass##BV>(newNode.Left->Handle); \
+				Klass##BV& bvR = EntityManager::GetComponent<Klass##BV>(newNode.Right->Handle);\
+				EntityManager::GetComponent<Klass##BV>(newNode.Handle).RecalculateBV(bvL, bvR);\
+				break;																		   \
+			}
+
+			switch (boundingVolume.GetBVType())
+			{
+				RX_DO_ALL_BVH_ENUM_M(_RX_X);
+			default: break;
+			}
+		}
+
+		if (itFirst < itSecond)
+		{
+			nodeList.erase(itSecond);
+			nodeList.erase(itFirst);
+		}
+		else
+		{
+			nodeList.erase(itFirst);
+			nodeList.erase(itSecond);
+		}
+		UpdateHeuristicCache(newNode, cache);
+		nodeList.emplace_back(std::move(newNode));
+	}
+
+	pNode = std::make_unique<BVHNode>(std::move(nodeList[0]));
+	if (pNode) // Determine height
+	{
+		std::function<int(std::unique_ptr<BVHNode> const&, int)> DetermineHeight{};
+		DetermineHeight = 
+			[&DetermineHeight](std::unique_ptr<BVHNode> const& ppNode, int height)->int
+			{
+				if (ppNode->IsLeaf())
+					return height;
+
+				height += 1;
+				int left = DetermineHeight(ppNode->Left, height);
+				int right = DetermineHeight(ppNode->Right, height);
+				return glm::max(left, right);
+			};
+
+		int height = DetermineHeight(pNode, 0);
+		g.m_BVHHeight = height;
+	}
 }

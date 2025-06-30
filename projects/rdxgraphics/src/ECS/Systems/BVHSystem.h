@@ -4,14 +4,18 @@
 
 struct BVHNode
 {
-	// Becareful when using this, left and right are not copied cus lazy.
 	inline BVHNode() = default;
 	inline BVHNode(BVHNode const& other)
 	{
+		*this = other;
+	}
+	inline BVHNode& operator=(BVHNode const& other)
+	{
 		Handle = other.Handle;
-		Left = nullptr;
-		Right = nullptr;
+		if (other.Left) Left = std::make_unique<BVHNode>(*other.Left);
+		if (other.Right) Right = std::make_unique<BVHNode>(*other.Right);
 		Objects = other.Objects;
+		return *this;
 	}
 
 	struct TypeNode : public BaseComponent { char _{}; };
@@ -43,13 +47,22 @@ public:
 	enum class SplitPointStrat {
 		MedianCenters,
 		MedianExtents,
-		KEvenSplits,
-		SmallestSFA
+		KEvenSplits
+	};
+	enum class MergeStrat {
+		NearestNeighbour,
+		MinVolume,
+		MinSurfaceArea
 	};
 
 private:
+	// Topdown stuff
 	using Entity = entt::entity;
 	using EntityList = std::vector<Entity>;
+
+	// Bottomup stuff
+	using NodeList = std::vector<BVHNode>;
+	using HeuristicCache = std::map<entt::entity, std::map<entt::entity, float>>;
 
 public:
 	static bool Init();
@@ -59,6 +72,7 @@ public:
 	inline static BVHType& GetCurrentTreeType() { return g.m_CurrentTreeType; }
 	inline static LeafCondition& GetCurrentLeafCondition() { return g.m_CurrentLeafCondition; }
 	inline static SplitPointStrat& GetCurrentSplitPointStrat() { return g.m_CurrentSplitPointStrat; }
+	inline static MergeStrat& GetCurrentMergeStrat() { return g.m_CurrentMergeStrat; }
 	inline static int& GetDrawLayers() { return g.m_DrawLayers; }
 	inline static int& GetBVHHeight() { return g.m_BVHHeight; }
 
@@ -76,11 +90,16 @@ public:
 	static int Heuristic_MedianExtents(Entity* pEntities, int numEnts, int axis, AABBBV const& totalBV);
 	static int Heuristic_KEvenSplits(Entity* pEntities, int numEnts);
 	static int Heuristic_SmallestSFA(Entity* pEntities, int numEnts);
+
+	static void FindNodesToMerge(NodeList& nodeList, NodeList::const_iterator& itFirst, NodeList::const_iterator& itSecond, HeuristicCache const& cache);
+	static void UpdateHeuristicCache(BVHNode const& newNode, HeuristicCache& cache);
+	template <typename T>
+	static float CalculateHeuristicCost(T const& bvL, T const& bvR);
 	// *** *** //
 
 	// *** Tree building *** //
 	static void BVHTree_TopDown(std::unique_ptr<BVHNode>& pNode, Entity* pEntities, int numEnts, int height = 0);
-	static std::unique_ptr<BVHNode> BVHTree_BottomUp(Entity* pEntities, int numEnts);
+	static void BVHTree_BottomUp(std::unique_ptr<BVHNode>& pNode, NodeList& nodeList, HeuristicCache& cache);
 	// *** *** //
 
 private:
@@ -90,6 +109,7 @@ private:
 	BVHType m_CurrentTreeType{ BVHType::TopDown };
 	LeafCondition m_CurrentLeafCondition{ LeafCondition::OneEntity };
 	SplitPointStrat m_CurrentSplitPointStrat{ SplitPointStrat::MedianCenters };
+	MergeStrat m_CurrentMergeStrat{ MergeStrat::NearestNeighbour };
 	std::unique_ptr<BVHNode> m_RootNode{};
 
 	int m_DrawLayers{ INT_MAX }; // Enable all layers by default
@@ -123,4 +143,37 @@ static float BVHSystem::HeuristicCost(T const& bvL, int const numL, T const& bvR
 	float const normR = bvR.GetSurfaceArea() * invAll;
 
 	return numL * normL + numR * normR;
+}
+
+template <typename T>
+static float BVHSystem::CalculateHeuristicCost(T const& bvL, T const& bvR)
+{
+	float cost{};
+	switch (GetCurrentMergeStrat())
+	{
+	case MergeStrat::NearestNeighbour:
+	{ 
+		cost = glm::distance2(
+			bvL.GetPosition(),
+			bvR.GetPosition()
+		);
+		break; 
+	}
+	case MergeStrat::MinVolume:
+	{ 
+		T temp{};
+		temp.RecalculateBV(bvL, bvR);
+		cost = temp.GetVolume();
+		break; 
+	}
+	case MergeStrat::MinSurfaceArea:
+	{ 
+		T temp{};
+		temp.RecalculateBV(bvL, bvR);
+		cost = temp.GetSurfaceArea();
+		break;
+	}
+	default: break;
+	}
+	return cost;
 }

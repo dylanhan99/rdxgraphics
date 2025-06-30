@@ -9,12 +9,12 @@ void Intersection::MostSeparatedPointsOnAABB(std::vector<glm::vec3> const& pt, s
 	int minx = 0, maxx = 0, miny = 0, maxy = 0, minz = 0, maxz = 0;
 	for (size_t i = 1; i < pt.size(); ++i) 
 	{
-		if (pt[i].x < pt[minx].x) minx = i;
-		if (pt[i].x > pt[maxx].x) maxx = i;
-		if (pt[i].y < pt[miny].y) miny = i;
-		if (pt[i].y > pt[maxy].y) maxy = i;
-		if (pt[i].z < pt[minz].z) minz = i;
-		if (pt[i].z > pt[maxz].z) maxz = i;
+		if (pt[i].x < pt[minx].x) minx = (int)i;
+		if (pt[i].x > pt[maxx].x) maxx = (int)i;
+		if (pt[i].y < pt[miny].y) miny = (int)i;
+		if (pt[i].y > pt[maxy].y) maxy = (int)i;
+		if (pt[i].z < pt[minz].z) minz = (int)i;
+		if (pt[i].z > pt[maxz].z) maxz = (int)i;
 	}
 
 	// Compute the squared distances for the three pairs of points
@@ -41,15 +41,45 @@ void Intersection::SphereOfSphereAndPt(glm::vec3 const& point, glm::vec3& sphere
 	glm::vec3 d = point - spherePos;
 	float dist2 = glm::dot(d, d);
 
-	if (dist2 > glm::dot(radius, radius))
-	{
-		float dist = glm::sqrt(dist2);
-		float newRadius = (radius + dist) * 0.5f;
-		float k = (newRadius - radius) / dist;
+	if (dist2 <= glm::dot(radius, radius))
+		return;
+	
+	float dist = glm::sqrt(dist2);
+	float newRadius = (radius + dist) * 0.5f;
+	float k = (newRadius - radius) / dist;
 
-		radius = newRadius;
-		spherePos += glm::normalize(d) * k;
+	radius = newRadius;
+	spherePos += glm::normalize(d) * k;
+}
+
+void Intersection::SphereOfSphereAndSphere(
+	glm::vec3 const& s0, float const& r0, 
+	glm::vec3 const& s1, float const& r1, 
+	glm::vec3& oS, float& oR)
+{
+	glm::vec3 d = s1 - s0;
+	float dist2 = glm::dot(d, d);
+	float dist = glm::sqrt(dist2);
+
+	if (r0 >= dist + r1)
+	{
+		oS = s0;
+		oR = r0;
+		return;
 	}
+
+	if (r1 >= dist + r0)
+	{
+		oS = s1;
+		oR = r1;
+		return;
+	}
+
+	float newRadius = (r0 + r1 + dist) * 0.5f;
+	float k = (newRadius - r0) / dist;
+
+	oS = s0 + d * k;
+	oR = newRadius;
 }
 
 void Intersection::RitterGrowth(void const* points, size_t const length, glm::vec3& spherePos, float& radius)
@@ -117,13 +147,13 @@ void Intersection::PCA(std::vector<glm::vec3> const& points, glm::vec3* oCentroi
 			if (proj < minproj)
 			{
 				minproj = proj;
-				imin = i;
+				imin = (int)i;
 			}
 			// Keep track of most distant point along direction vector
 			if (proj > maxproj)
 			{
 				maxproj = proj;
-				imax = i;
+				imax = (int)i;
 			}
 		}
 	}

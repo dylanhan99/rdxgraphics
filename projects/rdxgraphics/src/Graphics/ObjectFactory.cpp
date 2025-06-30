@@ -96,7 +96,7 @@ ObjectParams_VertexBasic ObjectFactory::LoadModelBuffer(std::string const& buffe
 		{
 			glm::mat4 nodeTransform = parentXform * glm::transpose(glm::make_mat4(&pNode->mTransformation.a1));
 
-			for (int i = 0; i < pNode->mNumMeshes; ++i) 
+			for (unsigned int i = 0; i < pNode->mNumMeshes; ++i) 
 			{
 				uint32_t meshID = pNode->mMeshes[i];
 				aiMesh* pMesh = pScene->mMeshes[meshID];
@@ -121,7 +121,7 @@ ObjectParams_VertexBasic ObjectFactory::LoadModelBuffer(std::string const& buffe
 				{
 					aiFace& face = pMesh->mFaces[k];
 					for (unsigned int l = 0; l < face.mNumIndices; ++l) 
-						indices.push_back(face.mIndices[l] + vertexOffset);
+						indices.push_back(face.mIndices[l] + (unsigned int)vertexOffset);
 				}
 			}
 
