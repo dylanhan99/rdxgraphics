@@ -4,6 +4,7 @@ struct Intersection
 {
 	static void MostSeparatedPointsOnAABB(std::vector<glm::vec3> const& pt, size_t& oMinI, size_t& oMaxI);
 	static void SphereOfSphereAndPt(glm::vec3 const& point, glm::vec3& spherePos, float& radius);
+	static void SphereOfSphereAndSphere(glm::vec3 const& s0, float const& r0, glm::vec3 const& s1, float const& r1, glm::vec3& oS, float& oR);
 	static void RitterGrowth(void const* points, size_t const length, glm::vec3& spherePos, float& radius);
 	static void RitterGrowth(std::vector<glm::vec3> const& points, glm::vec3& spherePos, float& radius);
 

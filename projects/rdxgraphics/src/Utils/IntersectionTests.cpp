@@ -41,15 +41,45 @@ void Intersection::SphereOfSphereAndPt(glm::vec3 const& point, glm::vec3& sphere
 	glm::vec3 d = point - spherePos;
 	float dist2 = glm::dot(d, d);
 
-	if (dist2 > glm::dot(radius, radius))
-	{
-		float dist = glm::sqrt(dist2);
-		float newRadius = (radius + dist) * 0.5f;
-		float k = (newRadius - radius) / dist;
+	if (dist2 <= glm::dot(radius, radius))
+		return;
+	
+	float dist = glm::sqrt(dist2);
+	float newRadius = (radius + dist) * 0.5f;
+	float k = (newRadius - radius) / dist;
 
-		radius = newRadius;
-		spherePos += glm::normalize(d) * k;
+	radius = newRadius;
+	spherePos += glm::normalize(d) * k;
+}
+
+void Intersection::SphereOfSphereAndSphere(
+	glm::vec3 const& s0, float const& r0, 
+	glm::vec3 const& s1, float const& r1, 
+	glm::vec3& oS, float& oR)
+{
+	glm::vec3 d = s1 - s0;
+	float dist2 = glm::dot(d, d);
+	float dist = glm::sqrt(dist2);
+
+	if (r0 >= dist + r1)
+	{
+		oS = s0;
+		oR = r0;
+		return;
 	}
+
+	if (r1 >= dist + r0)
+	{
+		oS = s1;
+		oR = r1;
+		return;
+	}
+
+	float newRadius = (r0 + r1 + dist) * 0.5f;
+	float k = (newRadius - r0) / dist;
+
+	oS = s0 + d * k;
+	oR = newRadius;
 }
 
 void Intersection::RitterGrowth(void const* points, size_t const length, glm::vec3& spherePos, float& radius)

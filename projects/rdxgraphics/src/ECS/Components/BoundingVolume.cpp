@@ -451,11 +451,14 @@ void SphereBV::RecalculateBV(SphereBV const& other)
 
 void SphereBV::RecalculateBV(SphereBV const& bvL, SphereBV const& bvR)
 {
-	glm::vec3 posL = bvL.GetPosition();
-	glm::vec3 posR = bvR.GetPosition();
-	float newRadius = (bvL.GetRadius() + bvR.GetRadius() + glm::distance(posL, posR)) * 0.5f;
+	glm::vec3 newPos{};
+	float newRadius{};
+	Intersection::SphereOfSphereAndSphere(
+		bvL.GetPosition(), bvL.GetRadius(),
+		bvR.GetPosition(), bvR.GetRadius(),
+		newPos, newRadius);
 
-	SetPosition((posL + posR) * 0.5f);
+	SetPosition(newPos);
 	GetRadius() = newRadius;
 }
 
