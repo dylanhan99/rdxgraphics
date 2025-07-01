@@ -85,10 +85,10 @@ public:
 	template <typename T>
 	static float HeuristicCost(T const& bvL, int const numL, T const& bvR, int const numR, T const& bvTotal);
 	static int FindDominantAxis(Entity* entities, int numEnts, AABBBV* pBV = nullptr);
-	static int Partition(Entity* pEntities, int numEnts);
+	static int Partition(Entity* pEntities, int numEnts, float const splitPoint);
 	static int Heuristic_MedianCenters(Entity* pEntities, int numEnts);
 	static int Heuristic_MedianExtents(Entity* pEntities, int numEnts, int axis, AABBBV const& totalBV);
-	static int Heuristic_KEvenSplits(Entity* pEntities, int numEnts);
+	static int Heuristic_KEvenSplits(Entity* pEntities, int numEnts, int axis, float splitPoint);
 	static int Heuristic_SmallestSFA(Entity* pEntities, int numEnts);
 
 	static void FindNodesToMerge(NodeList& nodeList, NodeList::const_iterator& itFirst, NodeList::const_iterator& itSecond, HeuristicCache const& cache);
@@ -98,11 +98,12 @@ public:
 	// *** *** //
 
 	// *** Tree building *** //
-	static void BVHTree_TopDown(std::unique_ptr<BVHNode>& pNode, Entity* pEntities, int numEnts, int height = 0);
+	static void BVHTree_TopDown(std::unique_ptr<BVHNode>& pNode, Entity* pEntities, int numEnts, int height = 0, float kEvenStartPoint = 0.f, float kEvenWidth = 0.f);
 	static void BVHTree_BottomUp(std::unique_ptr<BVHNode>& pNode, NodeList& nodeList, HeuristicCache& cache);
 	// *** *** //
 
 private:
+	inline static int GetTopdownAxis() { return g.m_TopdownAxis; }
 
 private:
 	BV m_GlobalBVType{ BV::AABB };
@@ -111,6 +112,8 @@ private:
 	SplitPointStrat m_CurrentSplitPointStrat{ SplitPointStrat::MedianCenters };
 	MergeStrat m_CurrentMergeStrat{ MergeStrat::NearestNeighbour };
 	std::unique_ptr<BVHNode> m_RootNode{};
+
+	int m_TopdownAxis{}; // Dumb hack to make things a little less messy. Only meant for K-Even Splits
 
 	int m_DrawLayers{ INT_MAX }; // Enable all layers by default
 	int m_BVHHeight{ 0 }; // Just a cache of the current BVH's height for rendering and stuff

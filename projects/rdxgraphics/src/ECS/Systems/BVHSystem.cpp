@@ -63,7 +63,19 @@ void BVHSystem::BuildBVH()
 				entities.emplace_back(Entity{ handle });
 		}
 
-		BVHTree_TopDown(GetRootNode(), entities.data(), (int)entities.size(), 0);
+		float kEvenStartPoint{}, kEvenWidth{};
+		if (SplitPointStrat::KEvenSplits == GetCurrentSplitPointStrat())
+		{
+			AABBBV totalBV{};
+			int axis = FindDominantAxis(entities.data(), entities.size(), &totalBV);
+			g.m_TopdownAxis = axis;
+
+			kEvenStartPoint = totalBV.GetMinPoint()[axis];
+			kEvenWidth = glm::abs(totalBV.GetMaxPoint()[axis] - kEvenStartPoint);
+		}
+
+		BVHTree_TopDown(GetRootNode(), entities.data(), (int)entities.size(), 0,
+			kEvenStartPoint, kEvenWidth);
 		break;
 	}
 	case BVHType::BottomUp:
@@ -148,7 +160,7 @@ int BVHSystem::FindDominantAxis(Entity* entities, int numEnts, AABBBV* pBV)
 			max.z = glm::max(max.z, pos.z);
 		}
 
-		aabbExtents = (min - max);
+		aabbExtents = glm::abs(min - max);
 		if (pBV)
 		{
 			pBV->GetHalfExtents() = aabbExtents * 0.5f;
@@ -163,13 +175,16 @@ int BVHSystem::FindDominantAxis(Entity* entities, int numEnts, AABBBV* pBV)
 	return 2; // Z dom
 }
 
-int BVHSystem::Partition(Entity* pEntities, int numEnts)
+int BVHSystem::Partition(Entity* pEntities, int numEnts, float const splitPoint)
 {
 	if (!pEntities || numEnts <= 0)
 		return 0;
 
 	AABBBV totalBV{}; // This simply caches the info of encompassing BV, be it Sphere or AABB
-	int axis = FindDominantAxis(pEntities, numEnts, &totalBV);
+	int axis = SplitPointStrat::KEvenSplits == GetCurrentSplitPointStrat() ?
+		GetTopdownAxis() : 
+		FindDominantAxis(pEntities, numEnts, &totalBV);
+
 	auto span = std::span(pEntities, pEntities + numEnts);
 #define _RX_X(Klass)												     \
 	case BV::Klass:													     \
@@ -199,7 +214,7 @@ int BVHSystem::Partition(Entity* pEntities, int numEnts)
 		k = Heuristic_MedianExtents(pEntities, numEnts, axis, totalBV);
 		break;
 	case SplitPointStrat::KEvenSplits:
-		k = Heuristic_KEvenSplits(pEntities, numEnts);
+		k = Heuristic_KEvenSplits(pEntities, numEnts, axis, splitPoint);
 		break;
 	default: break;
 	}
@@ -224,9 +239,27 @@ int BVHSystem::Heuristic_MedianExtents(Entity* pEntities, int numEnts, int axis,
 	return Heuristic_MedianCenters(pEntities, numEnts);
 }
 
-int BVHSystem::Heuristic_KEvenSplits(Entity* pEntities, int numEnts)
+int BVHSystem::Heuristic_KEvenSplits(Entity* pEntities, int numEnts, int axis, float splitPoint)
 {
-	return 1;
+	int k = 0;
+	float min = std::numeric_limits<float>().infinity();
+	float max = -std::numeric_limits<float>().infinity();
+
+	for (; k < numEnts; ++k)
+	{
+		Xform const& xform = EntityManager::GetComponent<Xform const>(pEntities[k]);
+		float const& val = xform.GetTranslate()[axis];
+		min = glm::min(min, val);
+		max = glm::max(max, val);
+		if (val > splitPoint)
+			break;
+	}
+
+	bool isDegenerateSplit = glm::abs(max - min) < glm::epsilon<float>();
+	if (isDegenerateSplit)
+		k = Heuristic_MedianCenters(pEntities, numEnts);
+
+	return k;
 }
 
 int BVHSystem::Heuristic_SmallestSFA(Entity* pEntities, int numEnts)
@@ -341,7 +374,7 @@ void BVHSystem::UpdateHeuristicCache(BVHNode const& newNode, HeuristicCache& cac
 	}
 }
 
-void BVHSystem::BVHTree_TopDown(std::unique_ptr<BVHNode>& pNode, Entity* pEntities, int numEnts, int height)
+void BVHSystem::BVHTree_TopDown(std::unique_ptr<BVHNode>& pNode, Entity* pEntities, int numEnts, int height, float kEvenStartPoint, float kEvenWidth)
 {
 	if (numEnts <= 0 || !pEntities)
 	{
@@ -422,13 +455,54 @@ void BVHSystem::BVHTree_TopDown(std::unique_ptr<BVHNode>& pNode, Entity* pEntiti
 		// Set to NODE
 		pNode->SetIsNode();
 
-		int k = Partition(pEntities, numEnts);
+		float kEvenSplitPoint = kEvenStartPoint + kEvenWidth * 0.5f;
+		int k = Partition(pEntities, numEnts, kEvenSplitPoint);
 		Entity* pEntitiesL = pEntities;
 		Entity* pEntitiesR = pEntities + k;
 
+		if (SplitPointStrat::KEvenSplits == GetCurrentSplitPointStrat())
+		{ // K-even splits needs special attention to properly manage split point and width
+			// case 1: K == 0 which means ALL are on the RIGHT of split point
+			// case 2: K == numEnts which means ALL are on the LEFT of split point
+			bool case1{ false }, case2{ false };
+			float newStartPoint = kEvenStartPoint;
+			float newWidth = kEvenWidth;
+			while (true)
+			{
+				newWidth *= 0.5f;
+				case1 = k <= 0;
+				case2 = k >= numEnts;
+				if (!case1 && !case2)
+					break;
+
+
+				float newSplitPoint{};
+				if (case1)
+				{
+					// Shift the start point to the right
+					newStartPoint += newWidth;
+				}
+				else if (case2)
+				{
+					// Start point remains
+					//newStartPoint;
+				}
+				newSplitPoint = newStartPoint + newWidth * 0.5f;
+				k = Partition(pEntitiesL, numEnts, newSplitPoint);
+			}
+
+			// standard case, a proper split, handle as we do normally
+			pEntitiesL = pEntities;
+			pEntitiesR = pEntities + k;
+
+			// Set the next start point and width
+			kEvenStartPoint = newStartPoint;
+			kEvenWidth = newWidth;
+		}
+
 		++height;
-		BVHTree_TopDown(pNode->Left, pEntitiesL, k, height);
-		BVHTree_TopDown(pNode->Right, pEntitiesR, numEnts - k, height);
+		BVHTree_TopDown(pNode->Left, pEntitiesL, k, height, kEvenStartPoint, kEvenWidth);
+		BVHTree_TopDown(pNode->Right, pEntitiesR, numEnts - k, height, kEvenStartPoint + kEvenWidth, kEvenWidth);
 
 		// Now we can merge the BVs
 		// hardcode assuming AABB for now
