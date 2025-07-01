@@ -33,7 +33,7 @@ void Assignment3::StartImpl()
 		EntityManager::AddComponent<Metadata>(handle, "Lucy Princeton");
 		EntityManager::AddComponent<Xform>(handle, glm::vec3{ 5.f, -2.f, 2.f }, glm::vec3{ 0.001f }, glm::vec3{ glm::quarter_pi<float>() });
 		EntityManager::AddComponent<Model>(handle, Rxuid{"lucy_princeton"});
-		EntityManager::AddComponent<Material>(handle, glm::vec3{ 1.f, 1.f, 1.f });
+		EntityManager::AddComponent<Material>(handle, glm::vec3{ 0.f, 1.f, 0.f });
 		EntityManager::AddComponent<BoundingVolume>(handle, BV::AABB);
 	}
 	{
@@ -46,10 +46,26 @@ void Assignment3::StartImpl()
 	}
 	{
 		auto handle = BaseScene::CreateDefaultEntity();
-		EntityManager::AddComponent<Metadata>(handle, "Spinny Cube");
-		EntityManager::AddComponent<Xform>(handle, glm::vec3{ 0.f, 0.f, 0.f }, glm::vec3{ 1.f });
-		EntityManager::AddComponent<Model>(handle, Shape::Cube);
+		EntityManager::AddComponent<Metadata>(handle, "Head");
+		EntityManager::AddComponent<Xform>(handle, glm::vec3{ 3.f, -3.f, 0.f }, glm::vec3{ 1.f }, glm::vec3{0.5f});
+		EntityManager::AddComponent<Model>(handle, Rxuid{"head"});
 		EntityManager::AddComponent<Material>(handle, glm::vec3{ 1.f, 1.f, 1.f });
+		EntityManager::AddComponent<BoundingVolume>(handle, BV::AABB);
+	}
+	{
+		auto handle = BaseScene::CreateDefaultEntity();
+		EntityManager::AddComponent<Metadata>(handle, "Ogre");
+		EntityManager::AddComponent<Xform>(handle, glm::vec3{ 0.f, 4.f, 3.f }, glm::vec3{ 1.f });
+		EntityManager::AddComponent<Model>(handle, Rxuid{ "ogre" });
+		EntityManager::AddComponent<Material>(handle, glm::vec3{ 1.f, 1.f, 0.f });
+		EntityManager::AddComponent<BoundingVolume>(handle, BV::AABB);
+	}
+	{
+		auto handle = BaseScene::CreateDefaultEntity();
+		EntityManager::AddComponent<Metadata>(handle, "4Sphere");
+		EntityManager::AddComponent<Xform>(handle, glm::vec3{ -6.f, -5.f, 0.f }, glm::vec3{ 0.020 });
+		EntityManager::AddComponent<Model>(handle, Rxuid{ "4Sphere" });
+		EntityManager::AddComponent<Material>(handle, glm::vec3{ 0.f, 0.5f, 1.f });
 		EntityManager::AddComponent<BoundingVolume>(handle, BV::AABB);
 	}
 

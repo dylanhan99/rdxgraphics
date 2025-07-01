@@ -97,5 +97,6 @@ enum class BV
 	F_O_O(head, ##__VA_ARGS__)			\
 	F_O_O(lucy_princeton, ##__VA_ARGS__)\
 	F_O_O(rhino, ##__VA_ARGS__)			\
-	F_O_O(starwars1, ##__VA_ARGS__)
+	F_O_O(starwars1, ##__VA_ARGS__)		\
+	F_O_O(4Sphere, ##__VA_ARGS__)
 #define RX_DO_ALL_OBJ RX_DO_ALL_OBJ_M(_RX_X)
