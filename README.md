@@ -146,6 +146,7 @@ Settings:</br>
 - Task 2: BVHSystem.cpp (BVH building), BVHPass.cpp (Render pass handling BVH drawing, colors stated there)
 
 ## Other Notes
-- Average 3 hours daily on this assignment
+- Average 2 hours daily on this assignment
 - The USE_CSD3151_AUTOMATION for assignment_vs/fs shader buffers are located at the top of RenderSystem.cpp
 - Do not touch BV in the inspector, only change via Settings window. There is no null validation within BVH system for this and can crash.
+- Program crashes in release mode, if objectpicking is attempted with OBB. In debug, no such issue. Unable to determine issue right now.
