@@ -16,6 +16,7 @@
 //#include "GSM/Scenes/Assignment1/Assignment1.h"
 //#include "GSM/Scenes/Assignment2/Assignment2.h"
 #include "GSM/Scenes/Assignment3/Assignment3.h"
+#include "GSM/Scenes/Assignment4/Assignment4.h"
 
 void RDX::Run()
 {
@@ -30,6 +31,7 @@ void RDX::Run()
 	if (!initOK)
 		throw RX_EXCEPTION("System initialization failed");
 
+	SceneManager::RegisterScene<Assignment4>("Assignment 4");
 	SceneManager::RegisterScene<Assignment3>("Assignment 3");
 	SceneManager::RegisterScene<Sandbox>("Sandbox");
 

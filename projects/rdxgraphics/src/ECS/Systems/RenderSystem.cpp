@@ -230,12 +230,16 @@ void RenderSystem::CreateShapes()
 	RX_DO_ALL_OBJ;
 #undef _RX_X
 #else
-#define _RX_X(obj)														\
-	CreateShape(Rxuid{#obj}, #obj,										\
-	ObjectFactory::CreateObjekt<VertexBasic, ObjectParams_VertexBasic>(	\
-		ObjectFactory::LoadModelFile(RX_MODEL_PREFIX#obj".obj")));
+#define _RX_XX(name, path)													\
+	CreateShape(Rxuid{ path }, name,										\
+		ObjectFactory::CreateObjekt<VertexBasic, ObjectParams_VertexBasic>(	\
+			ObjectFactory::LoadModelFile(RX_MODEL_PREFIX##path".obj")));
+#define _RX_X(obj) _RX_XX(#obj, #obj)
 
 	RX_DO_ALL_OBJ;
+	RX_DO_ALL_UNC_M(_RX_XX);
+
+#undef _RX_XX
 #undef _RX_X
 #endif
 }

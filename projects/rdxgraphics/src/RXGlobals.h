@@ -100,3 +100,10 @@ enum class BV
 	F_O_O(starwars1, ##__VA_ARGS__)		\
 	F_O_O(4Sphere, ##__VA_ARGS__)
 #define RX_DO_ALL_OBJ RX_DO_ALL_OBJ_M(_RX_X)
+
+#define RX_DO_ALL_UNC_M(F_O_O, ...)				   \
+	F_O_O("pp4_a_g0", "UNC/ppsection4/part_a/g0"); \
+	F_O_O("pp4_a_g1", "UNC/ppsection4/part_a/g1"); \
+	F_O_O("pp4_a_g2", "UNC/ppsection4/part_a/g2"); \
+	F_O_O("pp4_b_g0", "UNC/ppsection4/part_b/g0"); \
+	F_O_O("pp4_b_g1", "UNC/ppsection4/part_b/g1");
