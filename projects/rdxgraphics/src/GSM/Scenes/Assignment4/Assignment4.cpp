@@ -2,12 +2,12 @@
 
 void Assignment4::StartImpl()
 {
-#define _RX_X(name, _)															   \
+#define _RX_X(name, path)														   \
 	{																			   \
 		auto handle = BaseScene::CreateDefaultEntity();							   \
 		EntityManager::AddComponent<Metadata>(handle, name);					   \
 		EntityManager::AddComponent<Xform>(handle, glm::vec3{ 0.f, 0.f, 0.f });	   \
-		EntityManager::AddComponent<Model>(handle, Rxuid{ name });				   \
+		EntityManager::AddComponent<Model>(handle, Rxuid{ path });				   \
 		EntityManager::AddComponent<Material>(handle, glm::vec3{ 0.f, 1.f, 0.f }); \
 		EntityManager::AddComponent<BoundingVolume>(handle, BV::AABB);			   \
 	}
