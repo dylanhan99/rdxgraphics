@@ -6,7 +6,7 @@ void Assignment4::StartImpl()
 	{																			   \
 		auto handle = BaseScene::CreateDefaultEntity();							   \
 		EntityManager::AddComponent<Metadata>(handle, name);					   \
-		EntityManager::AddComponent<Xform>(handle, glm::vec3{ 0.f, 0.f, 0.f });	   \
+		EntityManager::AddComponent<Xform>(handle, glm::vec3{ 0.f, 0.f, 0.f }, glm::vec3{0.0005f});	   \
 		EntityManager::AddComponent<Model>(handle, Rxuid{ path });				   \
 		EntityManager::AddComponent<Material>(handle, glm::vec3{ 0.f, 1.f, 0.f }); \
 		EntityManager::AddComponent<BoundingVolume>(handle, BV::AABB);			   \
