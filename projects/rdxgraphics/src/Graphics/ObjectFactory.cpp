@@ -403,7 +403,7 @@ ObjectParams_VertexBasic ObjectFactory::SetupCube()
 	}
 
 	return ObjectParams_VertexBasic{
-		GL_TRIANGLES,
+		GL_LINES,
 		indices,
 		positions,
 		texCoords,
@@ -478,7 +478,7 @@ ObjectParams_VertexBasic ObjectFactory::SetupSphere(int stacks, int sectors)
 	}
 
 	return ObjectParams_VertexBasic{
-		GL_TRIANGLES,
+		GL_LINES,
 		indices,
 		positions,
 		texCoords,
