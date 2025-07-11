@@ -37,7 +37,9 @@ class BVHSystem : public BaseSingleton<BVHSystem>
 public:
 	enum class BVHType {
 		TopDown,
-		BottomUp
+		BottomUp,
+		OctTree,
+		KDTree
 	};
 	enum class LeafCondition {
 		OneEntity,
@@ -67,14 +69,18 @@ private:
 public:
 	static bool Init();
 	static void EnforceUniformBVs();
+
 	inline static std::unique_ptr<BVHNode>& GetRootNode() { return g.m_RootNode; }
 	inline static BV& GetGlobalBVType() { return g.m_GlobalBVType; }
 	inline static BVHType& GetCurrentTreeType() { return g.m_CurrentTreeType; }
-	inline static LeafCondition& GetCurrentLeafCondition() { return g.m_CurrentLeafCondition; }
-	inline static SplitPointStrat& GetCurrentSplitPointStrat() { return g.m_CurrentSplitPointStrat; }
-	inline static MergeStrat& GetCurrentMergeStrat() { return g.m_CurrentMergeStrat; }
 	inline static int& GetDrawLayers() { return g.m_DrawLayers; }
 	inline static int& GetBVHHeight() { return g.m_BVHHeight; }
+
+	// Topdown stuff
+	inline static LeafCondition& GetCurrentLeafCondition() { return g.m_CurrentLeafCondition; }
+	inline static SplitPointStrat& GetCurrentSplitPointStrat() { return g.m_CurrentSplitPointStrat; }
+	// Bottomup stuff
+	inline static MergeStrat& GetCurrentMergeStrat() { return g.m_CurrentMergeStrat; }
 
 	// *** Helper functions *** //
 	static void BuildBVH();
@@ -107,16 +113,17 @@ private:
 
 private:
 	BV m_GlobalBVType{ BV::AABB };
-	BVHType m_CurrentTreeType{ BVHType::TopDown };
-	LeafCondition m_CurrentLeafCondition{ LeafCondition::OneEntity };
-	SplitPointStrat m_CurrentSplitPointStrat{ SplitPointStrat::MedianCenters };
-	MergeStrat m_CurrentMergeStrat{ MergeStrat::NearestNeighbour };
-	std::unique_ptr<BVHNode> m_RootNode{};
-
-	int m_TopdownAxis{}; // Dumb hack to make things a little less messy. Only meant for K-Even Splits
-
+	BVHType m_CurrentTreeType{ BVHType::OctTree };
 	int m_DrawLayers{ INT_MAX }; // Enable all layers by default
 	int m_BVHHeight{ 0 }; // Just a cache of the current BVH's height for rendering and stuff
+	std::unique_ptr<BVHNode> m_RootNode{};
+
+	// TopDown stuff
+	LeafCondition m_CurrentLeafCondition{ LeafCondition::OneEntity };
+	SplitPointStrat m_CurrentSplitPointStrat{ SplitPointStrat::MedianCenters };
+	int m_TopdownAxis{}; // Dumb hack to make things a little less messy. Only meant for K-Even Splits
+	// BottomUp stuff
+	MergeStrat m_CurrentMergeStrat{ MergeStrat::NearestNeighbour };
 };
 
 template <typename T>

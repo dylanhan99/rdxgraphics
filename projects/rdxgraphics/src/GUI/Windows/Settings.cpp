@@ -17,12 +17,12 @@ void Settings::UpdateImpl(float dt)
 		{
 			{
 				if (ImGui::Button("Recalculate BVH"))
-				{
 					BVHSystem::BuildBVH();
-				}
+
 				ImGui::SameLine();
 				ImGui::Text("|");
 				ImGui::SameLine();
+
 				if (ImGui::Button("Recalculate ALL BVs"))
 				{
 					for (auto [handle, boundingVolume] : EntityManager::View<BoundingVolume>().each())
@@ -36,7 +36,9 @@ void Settings::UpdateImpl(float dt)
 				BVHSystem::BVHType prev = BVHSystem::GetCurrentTreeType();
 				bool isRadiod = false;
 				isRadiod |= ImGui::RadioButton("TopDown", pBV, static_cast<int>(BVHSystem::BVHType::TopDown)); ImGui::SameLine();
-				isRadiod |= ImGui::RadioButton("BottomUp", pBV, static_cast<int>(BVHSystem::BVHType::BottomUp));
+				isRadiod |= ImGui::RadioButton("BottomUp", pBV, static_cast<int>(BVHSystem::BVHType::BottomUp)); ImGui::SameLine();
+				isRadiod |= ImGui::RadioButton("OctTree", pBV, static_cast<int>(BVHSystem::BVHType::OctTree)); ImGui::SameLine();
+				isRadiod |= ImGui::RadioButton("KDTree", pBV, static_cast<int>(BVHSystem::BVHType::KDTree));
 
 				if (isRadiod && ((BVHSystem::BVHType)*pBV != prev))
 					BVHSystem::BuildBVH();
