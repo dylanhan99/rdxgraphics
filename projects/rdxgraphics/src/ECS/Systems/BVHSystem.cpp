@@ -698,7 +698,7 @@ void BVHSystem::BVHTree_OctTree(std::unique_ptr<BVHNode_Mult>& pNode, std::vecto
 	}
 
 	// Termination condition. Set this to a leaf.
-	if (height >= 3)
+	if (entities.size() <= 10 || height >= 6)
 	{
 		pNode->SetIsLeaf();
 		return;
@@ -710,11 +710,12 @@ void BVHSystem::BVHTree_OctTree(std::unique_ptr<BVHNode_Mult>& pNode, std::vecto
 	// Handling each octant
 	for (int i = 0; i < 8; ++i)
 	{
-		glm::vec3 newNodePos = nodePos + glm::vec3{
-			(i & 1) ? newHalfE.x : -newHalfE.x,
-			(i & 2) ? newHalfE.y : -newHalfE.y,
-			(i & 4) ? newHalfE.z : -newHalfE.z
+		glm::vec3 dirNeg{
+			(i & 1) ? 1.f : -1.f,
+			(i & 2) ? 1.f : -1.f,
+			(i & 4) ? 1.f : -1.f
 		};
+		glm::vec3 newNodePos = nodePos + (dirNeg * newHalfE);
 
 		AABBBV temp{};
 		temp.SetPosition(newNodePos);
@@ -724,11 +725,40 @@ void BVHSystem::BVHTree_OctTree(std::unique_ptr<BVHNode_Mult>& pNode, std::vecto
 		// Just use association to all for now. Easiest.
 		for (Entity const& ent : entities)
 		{
-			AABBBV& objBV = EntityManager::GetComponent<AABBBV>(ent);
-			bool isCollide = Intersection::AABBAABBTest(temp.GetMinPoint(), temp.GetMaxPoint(), objBV.GetMinPoint(), objBV.GetMaxPoint());
-			if (isCollide)
+			switch (GetCurrentStraddleCondition())
 			{
-				associatedEnts.push_back(ent);
+				case StraddleCondition::ObjectCenter:
+				{
+					AABBBV& objBV = EntityManager::GetComponent<AABBBV>(ent);
+					// Check if directional vector from 
+					//  parent node center to current node center is same alignment as [i]
+					glm::vec3 v = objBV.GetPosition() - nodePos;
+					bool isDir =
+						(v.x * dirNeg.x) >= 0.f &&
+						(v.y * dirNeg.y) >= 0.f &&
+						(v.z * dirNeg.z) >= 0.f;
+
+					if (isDir)
+						associatedEnts.push_back(ent);
+					break;
+				}
+				case StraddleCondition::AllOverlapping:
+				{
+					AABBBV& objBV = EntityManager::GetComponent<AABBBV>(ent);
+					bool isCollide = Intersection::AABBAABBTest(temp.GetMinPoint(), temp.GetMaxPoint(), objBV.GetMinPoint(), objBV.GetMaxPoint());
+					if (isCollide)
+						associatedEnts.push_back(ent);
+					break;
+				}
+				case StraddleCondition::CurrentLevel:
+				{
+					break;
+				}
+				case StraddleCondition::SplitObject:
+				{
+					break;
+				}
+				default: break;
 			}
 		}
 

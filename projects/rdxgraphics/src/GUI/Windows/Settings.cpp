@@ -93,60 +93,96 @@ void Settings::UpdateImpl(float dt)
 			ImGui::TreePop();
 		}
 
-		if (BVHSystem::GetCurrentTreeType() == BVHSystem::BVHType::TopDown)
+
+		switch (BVHSystem::GetCurrentTreeType())
 		{
-			if (ImGui::TreeNodeEx("TopDown Settings", bvhTreeNodeFlags))
+			case BVHSystem::BVHType::TopDown:
 			{
+				if (ImGui::TreeNodeEx("TopDown Settings", bvhTreeNodeFlags))
 				{
-					int* pBV = reinterpret_cast<int*>(&BVHSystem::GetCurrentLeafCondition());
-					ImGui::SeparatorText("Leaf Termination Condition");
-					BVHSystem::LeafCondition prev = BVHSystem::GetCurrentLeafCondition();
-					bool isRadiod = false;
-					isRadiod |= ImGui::RadioButton("OneEntity", pBV, static_cast<int>(BVHSystem::LeafCondition::OneEntity)); ImGui::SameLine();
-					isRadiod |= ImGui::RadioButton("TwoEntitiesMax", pBV, static_cast<int>(BVHSystem::LeafCondition::TwoEntitiesMax)); ImGui::SameLine();
-					isRadiod |= ImGui::RadioButton("TreeHeightTwo", pBV, static_cast<int>(BVHSystem::LeafCondition::TreeHeightTwo));
+					{
+						int* pBV = reinterpret_cast<int*>(&BVHSystem::GetCurrentLeafCondition());
+						ImGui::SeparatorText("Leaf Termination Condition");
+						BVHSystem::LeafCondition prev = BVHSystem::GetCurrentLeafCondition();
+						bool isRadiod = false;
+						isRadiod |= ImGui::RadioButton("OneEntity", pBV, static_cast<int>(BVHSystem::LeafCondition::OneEntity)); ImGui::SameLine();
+						isRadiod |= ImGui::RadioButton("TwoEntitiesMax", pBV, static_cast<int>(BVHSystem::LeafCondition::TwoEntitiesMax)); ImGui::SameLine();
+						isRadiod |= ImGui::RadioButton("TreeHeightTwo", pBV, static_cast<int>(BVHSystem::LeafCondition::TreeHeightTwo));
 
-					if (isRadiod && ((BVHSystem::LeafCondition)*pBV != prev))
-						BVHSystem::BuildBVH();
+						if (isRadiod && ((BVHSystem::LeafCondition)*pBV != prev))
+							BVHSystem::BuildBVH();
+					}
+
+					{
+						int* pBV = reinterpret_cast<int*>(&BVHSystem::GetCurrentSplitPointStrat());
+						ImGui::SeparatorText("Split Point Strategy");
+						BVHSystem::SplitPointStrat prev = BVHSystem::GetCurrentSplitPointStrat();
+						bool isRadiod = false;
+						isRadiod |= ImGui::RadioButton("MedianCenters", pBV, static_cast<int>(BVHSystem::SplitPointStrat::MedianCenters)); ImGui::SameLine();
+						isRadiod |= ImGui::RadioButton("MedianExtents", pBV, static_cast<int>(BVHSystem::SplitPointStrat::MedianExtents)); ImGui::SameLine();
+						isRadiod |= ImGui::RadioButton("KEvenSplits", pBV, static_cast<int>(BVHSystem::SplitPointStrat::KEvenSplits));
+
+						if (isRadiod && ((BVHSystem::SplitPointStrat)*pBV != prev))
+							BVHSystem::BuildBVH();
+					}
+
+					ImGui::TreePop();
 				}
-
-				{
-					int* pBV = reinterpret_cast<int*>(&BVHSystem::GetCurrentSplitPointStrat());
-					ImGui::SeparatorText("Split Point Strategy");
-					BVHSystem::SplitPointStrat prev = BVHSystem::GetCurrentSplitPointStrat();
-					bool isRadiod = false;
-					isRadiod |= ImGui::RadioButton("MedianCenters", pBV, static_cast<int>(BVHSystem::SplitPointStrat::MedianCenters)); ImGui::SameLine();
-					isRadiod |= ImGui::RadioButton("MedianExtents", pBV, static_cast<int>(BVHSystem::SplitPointStrat::MedianExtents)); ImGui::SameLine();
-					isRadiod |= ImGui::RadioButton("KEvenSplits", pBV, static_cast<int>(BVHSystem::SplitPointStrat::KEvenSplits));
-
-					if (isRadiod && ((BVHSystem::SplitPointStrat)*pBV != prev))
-						BVHSystem::BuildBVH();
-				}
-
-				ImGui::TreePop();
+				break;
 			}
-		}
-		else if (BVHSystem::GetCurrentTreeType() == BVHSystem::BVHType::BottomUp)
-		{
-			if (ImGui::TreeNodeEx("BottomUp Settings", bvhTreeNodeFlags))
+			case BVHSystem::BVHType::BottomUp:
 			{
+				if (ImGui::TreeNodeEx("BottomUp Settings", bvhTreeNodeFlags))
 				{
-					int* pBV = reinterpret_cast<int*>(&BVHSystem::GetCurrentMergeStrat());
-					ImGui::SeparatorText("Node Merging Strategy");
-					BVHSystem::MergeStrat prev = BVHSystem::GetCurrentMergeStrat();
-					bool isRadiod = false;
-					isRadiod |= ImGui::RadioButton("NearestNeighbour", pBV, static_cast<int>(BVHSystem::MergeStrat::NearestNeighbour)); ImGui::SameLine();
-					isRadiod |= ImGui::RadioButton("MinVolume", pBV, static_cast<int>(BVHSystem::MergeStrat::MinVolume)); ImGui::SameLine();
-					isRadiod |= ImGui::RadioButton("MinSurfaceArea", pBV, static_cast<int>(BVHSystem::MergeStrat::MinSurfaceArea));
+					{
+						int* pBV = reinterpret_cast<int*>(&BVHSystem::GetCurrentMergeStrat());
+						ImGui::SeparatorText("Node Merging Strategy");
+						BVHSystem::MergeStrat prev = BVHSystem::GetCurrentMergeStrat();
+						bool isRadiod = false;
+						isRadiod |= ImGui::RadioButton("NearestNeighbour", pBV, static_cast<int>(BVHSystem::MergeStrat::NearestNeighbour)); ImGui::SameLine();
+						isRadiod |= ImGui::RadioButton("MinVolume", pBV, static_cast<int>(BVHSystem::MergeStrat::MinVolume)); ImGui::SameLine();
+						isRadiod |= ImGui::RadioButton("MinSurfaceArea", pBV, static_cast<int>(BVHSystem::MergeStrat::MinSurfaceArea));
 
-					if (isRadiod && ((BVHSystem::MergeStrat)*pBV != prev))
-						BVHSystem::BuildBVH();
+						if (isRadiod && ((BVHSystem::MergeStrat)*pBV != prev))
+							BVHSystem::BuildBVH();
+					}
+
+					ImGui::TreePop();
 				}
-
-				ImGui::TreePop();
+				break;
 			}
-		}
+			case BVHSystem::BVHType::OctTree:
+			{
+				if (ImGui::TreeNodeEx("OctTree Settings", bvhTreeNodeFlags))
+				{
+					{
+						int* pCurrent = reinterpret_cast<int*>(&BVHSystem::GetCurrentStraddleCondition());
+						ImGui::SeparatorText("Object Node Straddle Condition");
+						BVHSystem::StraddleCondition prev = BVHSystem::GetCurrentStraddleCondition();
+						bool isRadiod = false;
+						isRadiod |= ImGui::RadioButton("ObjectCenter", pCurrent, static_cast<int>(BVHSystem::StraddleCondition::ObjectCenter)); ImGui::SameLine();
+						isRadiod |= ImGui::RadioButton("AllOverlapping", pCurrent, static_cast<int>(BVHSystem::StraddleCondition::AllOverlapping)); ImGui::SameLine();
+						isRadiod |= ImGui::RadioButton("CurrentLevel", pCurrent, static_cast<int>(BVHSystem::StraddleCondition::CurrentLevel)); ImGui::SameLine();
+						isRadiod |= ImGui::RadioButton("SplitObject", pCurrent, static_cast<int>(BVHSystem::StraddleCondition::SplitObject));
 
+						if (isRadiod && ((BVHSystem::StraddleCondition)*pCurrent != prev))
+							BVHSystem::BuildBVH();
+					}
+
+					ImGui::TreePop();
+				}
+				break;
+			}
+			case BVHSystem::BVHType::KDTree:
+			{
+				if (ImGui::TreeNodeEx("KDTree Settings", bvhTreeNodeFlags))
+				{
+					ImGui::TreePop();
+				}
+				break;
+			}
+			default: break;
+		}
 		ImGui::TreePop();
 	}
 

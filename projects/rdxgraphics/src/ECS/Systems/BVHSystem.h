@@ -84,6 +84,12 @@ public:
 		MinVolume,
 		MinSurfaceArea
 	};
+	enum class StraddleCondition {
+		ObjectCenter,
+		AllOverlapping,
+		CurrentLevel,
+		SplitObject
+	};
 
 private:
 	// Topdown stuff
@@ -114,6 +120,7 @@ public:
 	// Bottomup stuff
 	inline static MergeStrat& GetCurrentMergeStrat() { return g.m_CurrentMergeStrat; }
 	// OctTree stuff
+	inline static StraddleCondition& GetCurrentStraddleCondition() { return g.m_CurrentStraddleCondition; }
 
 	// *** Helper functions *** //
 	static void BuildBVH();
@@ -160,6 +167,8 @@ private:
 	int m_TopdownAxis{}; // Dumb hack to make things a little less messy. Only meant for K-Even Splits
 	// BottomUp stuff
 	MergeStrat m_CurrentMergeStrat{ MergeStrat::NearestNeighbour };
+	// OctTree stuff
+	StraddleCondition m_CurrentStraddleCondition{ StraddleCondition::AllOverlapping };
 };
 
 template <typename T>
