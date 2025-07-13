@@ -61,13 +61,61 @@ static void DrawBVH(std::unique_ptr<BVHNode>& pNode, int layer)
 	}
 }
 
+static void DrawBVH(std::unique_ptr<BVHNode_Mult>& pNode, int layer)
+{
+	if (!pNode)
+		return;
+
+	if (BVHSystem::GetDrawLayers() & (0x1 << layer))
+	{
+		switch (BVHSystem::GetGlobalBVType())
+		{
+		case BV::AABB:
+		{
+			if (EntityManager::HasComponent<AABBBV>(pNode->Handle))
+			{
+				AABBBV& bv = EntityManager::GetComponent<AABBBV>(pNode->Handle);
+				auto& obj = RenderSystem::GetObjekt(Shape::Cube);
+				obj.Submit<VertexBasic::Xform>(bv.GetXform());
+				obj.Submit<VertexBasic::Color>(GetLayerColor(layer));
+			}
+			break;
+		}
+		case BV::Sphere:
+		{
+			if (EntityManager::HasComponent<SphereBV>(pNode->Handle))
+			{
+				SphereBV& bv = EntityManager::GetComponent<SphereBV>(pNode->Handle);
+				auto& obj = RenderSystem::GetObjekt(Shape::Sphere);
+				obj.Submit<VertexBasic::Xform>(bv.GetXform());
+				obj.Submit<VertexBasic::Color>(GetLayerColor(layer));
+			}
+			break;
+		}
+		default:
+			break;
+		}
+	}
+
+	if (!pNode->IsLeaf())
+	{
+		// Recurse
+		++layer;
+		for (auto& pChild : pNode->Children)
+			DrawBVH(pChild, layer);
+	}
+}
+
 void BVHPass::DrawImpl() const
 {
 	auto& pRoot = BVHSystem::GetRootNode();
-	if (!pRoot)
+	auto& pRoot_Mult = BVHSystem::GetRootNode_Mult();
+
+	if (!pRoot && !pRoot_Mult)
 		return;
 
 	DrawBVH(pRoot, 0);
+	DrawBVH(pRoot_Mult, 0);
 
 	RenderSystem::GetInstance().m_Shader.Bind();
 	RenderSystem::GetInstance().m_Shader.SetUniform1i("uIsWireframe", 1);

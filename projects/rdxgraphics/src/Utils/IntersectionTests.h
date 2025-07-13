@@ -10,6 +10,8 @@ struct Intersection
 
 	static void PCA(std::vector<glm::vec3> const& points, glm::vec3* oCentroid = nullptr, float* oRadius = nullptr, glm::mat3* oRotation = nullptr, glm::vec3* oHalfExtents = nullptr);
 
+	static bool AABBAABBTest(glm::vec3 const& lPos, glm::vec3 const& lHalfE, glm::vec3 const& rPos, glm::vec3 const& rHalfE);
+
 	// -1 >> Outside
 	//  0 >> Intersect
 	static int PointSphereTest(glm::vec3 pointPos, glm::vec3 spherePos, float radius);

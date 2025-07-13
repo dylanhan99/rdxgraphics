@@ -26,6 +26,29 @@ bool BVHNode::IsLeaf() const
 	return EntityManager::HasComponent<TypeLeaf>(Handle);
 }
 
+void BVHNode_Mult::SetIsNode() const
+{
+	if (!EntityManager::HasEntity(Handle))
+		return;
+
+	EntityManager::AddComponent<TypeNode>(Handle);
+	EntityManager::RemoveComponent<TypeLeaf>(Handle);
+}
+
+void BVHNode_Mult::SetIsLeaf() const
+{
+	if (!EntityManager::HasEntity(Handle))
+		return;
+
+	EntityManager::RemoveComponent<TypeNode>(Handle);
+	EntityManager::AddComponent<TypeLeaf>(Handle);
+}
+
+bool BVHNode_Mult::IsLeaf() const
+{
+	return EntityManager::HasComponent<TypeLeaf>(Handle);
+}
+
 bool BVHSystem::Init()
 {
 	//EnforceUniformBVs();
@@ -50,6 +73,7 @@ void BVHSystem::EnforceUniformBVs()
 void BVHSystem::BuildBVH()
 {
 	DestroyBVH(GetRootNode());
+	DestroyBVH(GetRootNode_Mult());
 	g.m_BVHHeight = -std::numeric_limits<int>().infinity();
 
 	switch (GetCurrentTreeType())
@@ -122,18 +146,47 @@ void BVHSystem::BuildBVH()
 		BVHTree_BottomUp(GetRootNode(), nodeList, cache);
 		break;
 	}
+	case BVHType::OctTree:
+	{
+		EntityList entities{};
+		{
+			auto view = EntityManager::View<Xform, BoundingVolume const>(entt::exclude<FrustumBV>);
+			for (auto [handle, _, __] : view.each())
+				entities.emplace_back(Entity{ handle });
+		}
+
+		AABBBV totalBV = ComputeBV<AABBBV>(entities.data(), entities.size());
+		BVHTree_OctTree(GetRootNode_Mult(), entities, totalBV.GetPosition(), totalBV.GetHalfExtents());
+		break;
+	}
+	case BVHType::KDTree:
+	{
+		break;
+	}
 	default: break;
 	}
 }
 
 void BVHSystem::DestroyBVH(std::unique_ptr<BVHNode>& pNode)
 {
-	if (!pNode)
+	if (!pNode || !EntityManager::HasEntity(pNode->Handle))
 		return;
 
 	EntityManager::Destroy(pNode->Handle);
 	DestroyBVH(pNode->Left);
 	DestroyBVH(pNode->Right);
+	pNode->Objects.clear();
+	pNode.reset(nullptr);
+}
+
+void BVHSystem::DestroyBVH(std::unique_ptr<BVHNode_Mult>& pNode)
+{
+	if (!pNode || !EntityManager::HasEntity(pNode->Handle))
+		return;
+
+	EntityManager::Destroy(pNode->Handle);
+	for (auto& pChild : pNode->Children)
+		DestroyBVH(pChild);
 	pNode->Objects.clear();
 	pNode.reset(nullptr);
 }
@@ -573,6 +626,7 @@ void BVHSystem::BVHTree_BottomUp(std::unique_ptr<BVHNode>& pNode, NodeList& node
 				RX_DO_ALL_BVH_ENUM_M(_RX_X);
 			default: break;
 			}
+#undef _RX_X
 		}
 
 		if (itFirst < itSecond)
@@ -607,5 +661,79 @@ void BVHSystem::BVHTree_BottomUp(std::unique_ptr<BVHNode>& pNode, NodeList& node
 
 		int height = DetermineHeight(pNode, 0);
 		g.m_BVHHeight = height;
+	}
+}
+
+void BVHSystem::BVHTree_OctTree(std::unique_ptr<BVHNode_Mult>& pNode, std::vector<Entity> const& entities, glm::vec3 const& nodePos, glm::vec3 const& nodeHalfE, int height)
+{
+	pNode = std::make_unique<BVHNode_Mult>();
+	if (entities.empty())
+		return;
+
+	{ // Node data
+		pNode->Handle = EntityManager::CreateEntity<Xform>();
+		pNode->Objects = entities;
+		pNode->SetIsNode();	
+	}
+	{ // Node's BV data
+		BoundingVolume& boundingVolume = EntityManager::AddComponent<BoundingVolume>(pNode->Handle, GetGlobalBVType());
+		switch (boundingVolume.GetBVType())
+		{
+		case BV::AABB:
+		{
+			AABBBV& bv = EntityManager::GetComponent<AABBBV>(pNode->Handle);
+			bv.SetPosition(nodePos);
+			bv.GetHalfExtents() = nodeHalfE;
+			break;
+		}
+		case BV::Sphere:
+		{
+			SphereBV& bv = EntityManager::GetComponent<SphereBV>(pNode->Handle);
+			bv.SetPosition(nodePos);
+			bv.GetRadius() = glm::compMax(nodeHalfE);
+			break;
+		}
+		default: break;
+		}
+	}
+
+	// Termination condition. Set this to a leaf.
+	if (height >= 3)
+	{
+		pNode->SetIsLeaf();
+		return;
+	}
+
+	glm::vec3 newHalfE = nodeHalfE * 0.5f;
+	pNode->Children.resize(8);
+	height += 1;
+	// Handling each octant
+	for (int i = 0; i < 8; ++i)
+	{
+		glm::vec3 newNodePos{
+			(i & 1) ? newHalfE.x : -newHalfE.x,
+			(i & 2) ? newHalfE.y : -newHalfE.y,
+			(i & 4) ? newHalfE.z : -newHalfE.z
+		};
+
+		AABBBV temp{};
+		temp.SetPosition(newNodePos);
+		temp.GetHalfExtents() = newHalfE;
+
+		std::vector<Entity> associatedEnts{};
+		// Just use association to all for now. Easiest.
+		for (Entity const& ent : entities)
+		{
+			AABBBV& objBV = EntityManager::GetComponent<AABBBV>(ent);
+			bool isCollide = Intersection::AABBAABBTest(temp.GetMinPoint(), temp.GetMaxPoint(), objBV.GetMinPoint(), objBV.GetMaxPoint());
+			if (isCollide)
+			{
+				associatedEnts.push_back(ent);
+			}
+		}
+
+		// Recurse into this new octant node
+		auto& pOctantNode = pNode->Children[i];
+		BVHTree_OctTree(pOctantNode, associatedEnts, newNodePos, newHalfE, height);
 	}
 }

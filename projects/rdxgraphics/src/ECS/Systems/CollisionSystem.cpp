@@ -226,16 +226,7 @@ bool CollisionSystem::CheckCollision(AABBPrimitive const& lhs, PlanePrimitive co
 
 bool CollisionSystem::CheckCollision(AABBPrimitive const& lhs, AABBPrimitive const& rhs)
 {
-	glm::vec3 minL{ lhs.GetMinPoint() }, maxL{ lhs.GetMaxPoint() };
-	glm::vec3 minR{ rhs.GetMinPoint() }, maxR{ rhs.GetMaxPoint() };
-
-	return
-		minL.x <= maxR.x &&
-		maxL.x >= minR.x &&
-		minL.y <= maxR.y &&
-		maxL.y >= minR.y &&
-		minL.z <= maxR.z &&
-		maxL.z >= minR.z;
+	return Intersection::AABBAABBTest(lhs.GetMinPoint(), lhs.GetMaxPoint(), rhs.GetMinPoint(), rhs.GetMaxPoint());
 }
 
 bool CollisionSystem::CheckCollision(AABBPrimitive const& lhs, SpherePrimitive const& rhs)

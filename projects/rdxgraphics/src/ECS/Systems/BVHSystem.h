@@ -31,6 +31,34 @@ struct BVHNode
 	bool IsLeaf() const;
 };
 
+struct BVHNode_Mult
+{
+	inline BVHNode_Mult() = default;
+	inline BVHNode_Mult(BVHNode_Mult const& other)
+	{
+		*this = other;
+	}
+	inline BVHNode_Mult& operator=(BVHNode_Mult const& other)
+	{
+		Handle = other.Handle;
+		for (size_t i = 0; i < other.Children.size(); ++i)
+			Children.emplace_back(std::move(std::make_unique<BVHNode_Mult>(*other.Children[i])));
+		Objects = other.Objects;
+		return *this;
+	}
+
+	struct TypeNode : public BaseComponent { char _{}; };
+	struct TypeLeaf : public BaseComponent { char _{}; };
+
+	entt::entity Handle{ entt::null }; // Handle to this node's bounding bolume
+	std::vector<std::unique_ptr<BVHNode_Mult>> Children{};
+	std::vector<entt::entity> Objects{};
+
+	void SetIsNode() const;
+	void SetIsLeaf() const;
+	bool IsLeaf() const;
+};
+
 class BVHSystem : public BaseSingleton<BVHSystem>
 {
 	RX_SINGLETON_DECLARATION(BVHSystem);
@@ -66,11 +94,15 @@ private:
 	using NodeList = std::vector<BVHNode>;
 	using HeuristicCache = std::map<entt::entity, std::map<entt::entity, float>>;
 
+	// OctTree stuff
+
+
 public:
 	static bool Init();
 	static void EnforceUniformBVs();
 
 	inline static std::unique_ptr<BVHNode>& GetRootNode() { return g.m_RootNode; }
+	inline static std::unique_ptr<BVHNode_Mult>& GetRootNode_Mult() { return g.m_RootNode_Mult; }
 	inline static BV& GetGlobalBVType() { return g.m_GlobalBVType; }
 	inline static BVHType& GetCurrentTreeType() { return g.m_CurrentTreeType; }
 	inline static int& GetDrawLayers() { return g.m_DrawLayers; }
@@ -81,10 +113,12 @@ public:
 	inline static SplitPointStrat& GetCurrentSplitPointStrat() { return g.m_CurrentSplitPointStrat; }
 	// Bottomup stuff
 	inline static MergeStrat& GetCurrentMergeStrat() { return g.m_CurrentMergeStrat; }
+	// OctTree stuff
 
 	// *** Helper functions *** //
 	static void BuildBVH();
 	static void DestroyBVH(std::unique_ptr<BVHNode>& pNode);
+	static void DestroyBVH(std::unique_ptr<BVHNode_Mult>& pNode);
 
 	template <typename T>
 	static T ComputeBV(Entity*, int);
@@ -106,6 +140,7 @@ public:
 	// *** Tree building *** //
 	static void BVHTree_TopDown(std::unique_ptr<BVHNode>& pNode, Entity* pEntities, int numEnts, int height = 0, float kEvenStartPoint = 0.f, float kEvenWidth = 0.f);
 	static void BVHTree_BottomUp(std::unique_ptr<BVHNode>& pNode, NodeList& nodeList, HeuristicCache& cache);
+	static void BVHTree_OctTree(std::unique_ptr<BVHNode_Mult>& pNode, std::vector<Entity> const& entities, glm::vec3 const& nodePos, glm::vec3 const& nodeHalfE, int height = 0);
 	// *** *** //
 
 private:
@@ -117,6 +152,7 @@ private:
 	int m_DrawLayers{ INT_MAX }; // Enable all layers by default
 	int m_BVHHeight{ 0 }; // Just a cache of the current BVH's height for rendering and stuff
 	std::unique_ptr<BVHNode> m_RootNode{};
+	std::unique_ptr<BVHNode_Mult> m_RootNode_Mult{};
 
 	// TopDown stuff
 	LeafCondition m_CurrentLeafCondition{ LeafCondition::OneEntity };

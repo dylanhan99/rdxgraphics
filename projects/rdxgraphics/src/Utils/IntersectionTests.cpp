@@ -186,6 +186,17 @@ void Intersection::PCA(std::vector<glm::vec3> const& points, glm::vec3* oCentroi
 	//Intersection::RitterGrowth(pointMatrix.data(), pointMatrix.rows(), oCentroid, oRadius);
 }
 
+bool Intersection::AABBAABBTest(glm::vec3 const& minL, glm::vec3 const& maxL, glm::vec3 const& minR, glm::vec3 const& maxR)
+{
+	return
+		minL.x <= maxR.x &&
+		maxL.x >= minR.x &&
+		minL.y <= maxR.y &&
+		maxL.y >= minR.y &&
+		minL.z <= maxR.z &&
+		maxL.z >= minR.z;
+}
+
 int Intersection::PointSphereTest(glm::vec3 pointPos, glm::vec3 spherePos, float radius)
 {
 	float d2 = glm::distance2(pointPos, spherePos);
