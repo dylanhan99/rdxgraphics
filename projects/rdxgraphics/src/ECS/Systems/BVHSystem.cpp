@@ -710,7 +710,7 @@ void BVHSystem::BVHTree_OctTree(std::unique_ptr<BVHNode_Mult>& pNode, std::vecto
 	// Handling each octant
 	for (int i = 0; i < 8; ++i)
 	{
-		glm::vec3 newNodePos{
+		glm::vec3 newNodePos = nodePos + glm::vec3{
 			(i & 1) ? newHalfE.x : -newHalfE.x,
 			(i & 2) ? newHalfE.y : -newHalfE.y,
 			(i & 4) ? newHalfE.z : -newHalfE.z
@@ -736,4 +736,8 @@ void BVHSystem::BVHTree_OctTree(std::unique_ptr<BVHNode_Mult>& pNode, std::vecto
 		auto& pOctantNode = pNode->Children[i];
 		BVHTree_OctTree(pOctantNode, associatedEnts, newNodePos, newHalfE, height);
 	}
+
+	// updating height
+	if (height > g.m_BVHHeight)
+		g.m_BVHHeight = height;
 }

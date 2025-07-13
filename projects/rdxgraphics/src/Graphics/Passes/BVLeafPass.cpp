@@ -51,7 +51,7 @@ void BVLeafPass::DrawImpl() const
 		}
 	}
 	{
-		auto bvView = EntityManager::View<AABBBV>(entt::exclude<BVHNode::TypeNode, BVHNode::TypeLeaf>);
+		auto bvView = EntityManager::View<AABBBV>(entt::exclude<BVHNode::TypeNode, BVHNode::TypeLeaf, BVHNode_Mult::TypeNode, BVHNode_Mult::TypeLeaf>);
 		for (auto [handle, bv] : bvView.each())
 		{
 			auto& obj = RenderSystem::GetObjekt(Shape::Cube);
@@ -60,7 +60,7 @@ void BVLeafPass::DrawImpl() const
 		}
 	}
 	{
-		auto bvView = EntityManager::View<OBBBV>(entt::exclude<BVHNode::TypeNode, BVHNode::TypeLeaf>);
+		auto bvView = EntityManager::View<OBBBV>(entt::exclude<BVHNode::TypeNode, BVHNode::TypeLeaf, BVHNode_Mult::TypeNode, BVHNode_Mult::TypeLeaf>);
 		for (auto [handle, bv] : bvView.each())
 		{
 			auto& obj = RenderSystem::GetObjekt(Shape::Cube);
@@ -69,7 +69,7 @@ void BVLeafPass::DrawImpl() const
 		}
 	}
 	{
-		auto bvView = EntityManager::View<SphereBV>(entt::exclude<BVHNode::TypeNode, BVHNode::TypeLeaf>);
+		auto bvView = EntityManager::View<SphereBV>(entt::exclude<BVHNode::TypeNode, BVHNode::TypeLeaf, BVHNode_Mult::TypeNode, BVHNode_Mult::TypeLeaf>);
 		for (auto [handle, bv] : bvView.each())
 		{
 			auto& obj = RenderSystem::GetObjekt(Shape::Sphere);
