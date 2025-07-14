@@ -156,14 +156,55 @@ void Settings::UpdateImpl(float dt)
 				if (ImGui::TreeNodeEx("OctTree Settings", bvhTreeNodeFlags))
 				{
 					{
+						int& v = BVHSystem::GetObjsPerNode();
+
+						float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
+
+						ImGui::Text("Objs Per Node");
+						ImGui::SameLine(0.0f, spacing);
+
+						ImGui::PushItemFlag(ImGuiItemFlags_ButtonRepeat, true);
+						if (ImGui::ArrowButton("##objpernode_left", ImGuiDir_Left)) { if (v <= 1) v = 1; else --v; BVHSystem::BuildBVH(); }
+						ImGui::PopItemFlag();
+
+						ImGui::SameLine(0.0f, spacing);
+						ImGui::Text("%d", v);
+						ImGui::SameLine(0.0f, spacing);
+
+						ImGui::PushItemFlag(ImGuiItemFlags_ButtonRepeat, true);
+						if (ImGui::ArrowButton("##objpernode_right", ImGuiDir_Right)) { ++v; BVHSystem::BuildBVH(); }
+						ImGui::PopItemFlag();
+					}
+					{
+						int& v = BVHSystem::GetMaxHeight();
+
+						float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
+
+						ImGui::Text("Max Tree Height");
+						ImGui::SameLine(0.0f, spacing);
+
+						ImGui::PushItemFlag(ImGuiItemFlags_ButtonRepeat, true);
+						if (ImGui::ArrowButton("##treeheight_left", ImGuiDir_Left)) { if (v <= 0) v = 0; else --v; BVHSystem::BuildBVH(); }
+						ImGui::PopItemFlag();
+
+						ImGui::SameLine(0.0f, spacing);
+						ImGui::Text("%d", v);
+						ImGui::SameLine(0.0f, spacing);
+
+						ImGui::PushItemFlag(ImGuiItemFlags_ButtonRepeat, true);
+						if (ImGui::ArrowButton("##treeheight_right", ImGuiDir_Right)) { ++v; BVHSystem::BuildBVH(); }
+						ImGui::PopItemFlag();
+					}
+
+					{
 						int* pCurrent = reinterpret_cast<int*>(&BVHSystem::GetCurrentStraddleCondition());
 						ImGui::SeparatorText("Object Node Straddle Condition");
 						BVHSystem::StraddleCondition prev = BVHSystem::GetCurrentStraddleCondition();
 						bool isRadiod = false;
-						isRadiod |= ImGui::RadioButton("ObjectCenter", pCurrent, static_cast<int>(BVHSystem::StraddleCondition::ObjectCenter)); ImGui::SameLine();
+						//isRadiod |= ImGui::RadioButton("ObjectCenter", pCurrent, static_cast<int>(BVHSystem::StraddleCondition::ObjectCenter)); ImGui::SameLine();
 						isRadiod |= ImGui::RadioButton("AllOverlapping", pCurrent, static_cast<int>(BVHSystem::StraddleCondition::AllOverlapping)); ImGui::SameLine();
-						isRadiod |= ImGui::RadioButton("CurrentLevel", pCurrent, static_cast<int>(BVHSystem::StraddleCondition::CurrentLevel)); ImGui::SameLine();
-						isRadiod |= ImGui::RadioButton("SplitObject", pCurrent, static_cast<int>(BVHSystem::StraddleCondition::SplitObject));
+						isRadiod |= ImGui::RadioButton("CurrentLevel", pCurrent, static_cast<int>(BVHSystem::StraddleCondition::CurrentLevel)); //ImGui::SameLine();
+						//isRadiod |= ImGui::RadioButton("SplitObject", pCurrent, static_cast<int>(BVHSystem::StraddleCondition::SplitObject));
 
 						if (isRadiod && ((BVHSystem::StraddleCondition)*pCurrent != prev))
 							BVHSystem::BuildBVH();
@@ -177,6 +218,47 @@ void Settings::UpdateImpl(float dt)
 			{
 				if (ImGui::TreeNodeEx("KDTree Settings", bvhTreeNodeFlags))
 				{
+					{
+						int& v = BVHSystem::GetObjsPerNode();
+
+						float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
+
+						ImGui::Text("Objs Per Node");
+						ImGui::SameLine(0.0f, spacing);
+
+						ImGui::PushItemFlag(ImGuiItemFlags_ButtonRepeat, true);
+						if (ImGui::ArrowButton("##objpernode_left", ImGuiDir_Left)) { if (v <= 1) v = 1; else --v; BVHSystem::BuildBVH(); }
+						ImGui::PopItemFlag();
+
+						ImGui::SameLine(0.0f, spacing);
+						ImGui::Text("%d", v);
+						ImGui::SameLine(0.0f, spacing);
+
+						ImGui::PushItemFlag(ImGuiItemFlags_ButtonRepeat, true);
+						if (ImGui::ArrowButton("##objpernode_right", ImGuiDir_Right)) { ++v; BVHSystem::BuildBVH(); }
+						ImGui::PopItemFlag();
+					}
+					{
+						int& v = BVHSystem::GetMaxHeight();
+
+						float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
+
+						ImGui::Text("Max Tree Height");
+						ImGui::SameLine(0.0f, spacing);
+
+						ImGui::PushItemFlag(ImGuiItemFlags_ButtonRepeat, true);
+						if (ImGui::ArrowButton("##treeheight_left", ImGuiDir_Left)) { if (v <= 0) v = 0; else --v; BVHSystem::BuildBVH(); }
+						ImGui::PopItemFlag();
+
+						ImGui::SameLine(0.0f, spacing);
+						ImGui::Text("%d", v);
+						ImGui::SameLine(0.0f, spacing);
+
+						ImGui::PushItemFlag(ImGuiItemFlags_ButtonRepeat, true);
+						if (ImGui::ArrowButton("##treeheight_right", ImGuiDir_Right)) { ++v; BVHSystem::BuildBVH(); }
+						ImGui::PopItemFlag();
+					}
+
 					ImGui::TreePop();
 				}
 				break;

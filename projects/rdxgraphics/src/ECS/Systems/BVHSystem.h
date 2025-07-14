@@ -113,6 +113,8 @@ public:
 	inline static BVHType& GetCurrentTreeType() { return g.m_CurrentTreeType; }
 	inline static int& GetDrawLayers() { return g.m_DrawLayers; }
 	inline static int& GetBVHHeight() { return g.m_BVHHeight; }
+	inline static int& GetObjsPerNode() { return g.m_ObjsPerNode; }
+	inline static int& GetMaxHeight() { return g.m_MaxHeight; }
 
 	// Topdown stuff
 	inline static LeafCondition& GetCurrentLeafCondition() { return g.m_CurrentLeafCondition; }
@@ -167,6 +169,10 @@ private:
 	int m_TopdownAxis{}; // Dumb hack to make things a little less messy. Only meant for K-Even Splits
 	// BottomUp stuff
 	MergeStrat m_CurrentMergeStrat{ MergeStrat::NearestNeighbour };
+
+	// Oct and KD stuff
+	int m_ObjsPerNode{ 10 };
+	int m_MaxHeight{ 6 };
 	// OctTree stuff
 	StraddleCondition m_CurrentStraddleCondition{ StraddleCondition::AllOverlapping };
 };

@@ -698,7 +698,7 @@ void BVHSystem::BVHTree_OctTree(std::unique_ptr<BVHNode_Mult>& pNode, std::vecto
 	}
 
 	// Termination condition. Set this to a leaf.
-	if (entities.size() <= 10 || height >= 6)
+	if (entities.size() <= GetObjsPerNode() || height >= GetMaxHeight())
 	{
 		pNode->SetIsLeaf();
 		return;
