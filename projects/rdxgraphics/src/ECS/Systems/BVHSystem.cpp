@@ -161,6 +161,20 @@ void BVHSystem::BuildBVH()
 	}
 	case BVHType::KDTree:
 	{
+		std::vector<std::pair<Entity, glm::vec3>> points{};
+		EntityList entities{};
+		{
+			auto view = EntityManager::View<Xform, BoundingVolume const>(entt::exclude<FrustumBV>);
+			for (auto [handle, xform, __] : view.each())
+			{
+				entities.emplace_back(Entity{ handle });
+				// heuristic here
+				points.emplace_back(std::make_pair(handle, xform.GetTranslate()));
+			}
+		}
+
+		AABBBV totalBV = ComputeBV<AABBBV>(entities.data(), entities.size());
+		BVHTree_KDTree(GetRootNode(), points, 0, totalBV.GetPosition(), totalBV.GetHalfExtents());
 		break;
 	}
 	default: break;
@@ -766,6 +780,98 @@ void BVHSystem::BVHTree_OctTree(std::unique_ptr<BVHNode_Mult>& pNode, std::vecto
 		auto& pOctantNode = pNode->Children[i];
 		BVHTree_OctTree(pOctantNode, associatedEnts, newNodePos, newHalfE, height);
 	}
+
+	// updating height
+	if (height > g.m_BVHHeight)
+		g.m_BVHHeight = height;
+}
+
+void BVHSystem::BVHTree_KDTree(std::unique_ptr<BVHNode>& pNode, std::vector<std::pair<Entity, glm::vec3>> const& points, int const axis, glm::vec3 const& nodePos, glm::vec3 const& nodeHalfE, int height)
+{
+	pNode = std::make_unique<BVHNode>();
+	if (points.empty())
+		return;
+
+	{ // Node data
+		EntityList entities{}; entities.resize(points.size());
+		for (size_t i = 0; i < points.size(); ++i)
+			entities[i] = points[i].first;
+
+		pNode->Handle = EntityManager::CreateEntity<Xform>();
+		pNode->Objects = entities;
+		pNode->Left.reset();
+		pNode->Right.reset();
+		pNode->SetIsNode();
+	}
+	{ // Node's BV data
+		BoundingVolume& boundingVolume = EntityManager::AddComponent<BoundingVolume>(pNode->Handle, GetGlobalBVType());
+		switch (boundingVolume.GetBVType())
+		{
+		case BV::AABB:
+		{
+			AABBBV& bv = EntityManager::GetComponent<AABBBV>(pNode->Handle);
+			bv.SetPosition(nodePos);
+			bv.GetHalfExtents() = nodeHalfE;
+			break;
+		}
+		case BV::Sphere:
+		{
+			SphereBV& bv = EntityManager::GetComponent<SphereBV>(pNode->Handle);
+			bv.SetPosition(nodePos);
+			bv.GetRadius() = glm::compMax(nodeHalfE);
+			break;
+		}
+		default: break;
+		}
+	}
+
+	// Termination condition. Set this to a leaf.
+	if (points.size() <= GetObjsPerNode() )//|| height >= GetMaxHeight())
+	{
+		pNode->SetIsLeaf();
+		return;
+	}
+
+	int medianIndex = points.size() / 2;
+	EntityList straddlers{};// = FindObjsOnPlane(points, axis, medianIndex);
+	std::vector<std::pair<Entity, glm::vec3>> leftPoints{ points.begin(), points.begin() + medianIndex };
+	std::vector<std::pair<Entity, glm::vec3>> rightPoints{ points.begin() + medianIndex, points.end() };
+	std::remove_if(leftPoints.begin(), leftPoints.end(),
+		[&straddlers](std::pair<Entity, glm::vec3>& point)
+		{
+			auto it = std::find(straddlers.begin(), straddlers.end(), point.first);
+			return it != straddlers.end();
+		});
+	std::remove_if(rightPoints.begin(), rightPoints.end(),
+		[&straddlers](std::pair<Entity, glm::vec3>& point)
+		{
+			auto it = std::find(straddlers.begin(), straddlers.end(), point.first);
+			return it != straddlers.end();
+		});
+
+	int newAxis = (axis + 1) % 3;
+	height += 1;
+	glm::vec3 leftNodePos{}, leftHalfE{}, rightNodePos{}, rightHalfE{};
+	// assuming it's all center pos heuristic for now
+	{
+		glm::vec3 nodeMin = nodePos - nodeHalfE;
+		leftHalfE = nodeHalfE;
+		leftHalfE[axis] = (points[medianIndex].second[axis] - nodeMin[axis]) * 0.5f;
+		leftNodePos = nodeMin + leftHalfE;
+		//leftNodePos = nodePos;
+		//leftNodePos[axis] = points[medianIndex].second[axis] - nodeMin[axis];
+		//leftHalfE = nodeHalfE;
+		//leftHalfE[axis] = leftNodePos[axis] - nodeMin[axis];
+
+		glm::vec3 leftMax = leftNodePos + leftHalfE;
+		rightHalfE = nodeHalfE;
+		rightHalfE[axis] = nodeHalfE[axis] - leftHalfE[axis];
+		rightNodePos = leftNodePos;
+		rightNodePos[axis] += leftHalfE[axis] + rightHalfE[axis];
+	}
+
+	BVHTree_KDTree(pNode->Left, leftPoints, newAxis, leftNodePos, leftHalfE, height);
+	BVHTree_KDTree(pNode->Right, rightPoints, newAxis, rightNodePos, rightHalfE, height);
 
 	// updating height
 	if (height > g.m_BVHHeight)

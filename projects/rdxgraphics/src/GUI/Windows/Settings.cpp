@@ -192,7 +192,7 @@ void Settings::UpdateImpl(float dt)
 						ImGui::SameLine(0.0f, spacing);
 
 						ImGui::PushItemFlag(ImGuiItemFlags_ButtonRepeat, true);
-						if (ImGui::ArrowButton("##treeheight_right", ImGuiDir_Right)) { ++v; BVHSystem::BuildBVH(); }
+						if (ImGui::ArrowButton("##objpernode_right", ImGuiDir_Right)) { if (v >= 8) v = 8; else ++v; BVHSystem::BuildBVH(); }
 						ImGui::PopItemFlag();
 					}
 
@@ -255,7 +255,7 @@ void Settings::UpdateImpl(float dt)
 						ImGui::SameLine(0.0f, spacing);
 
 						ImGui::PushItemFlag(ImGuiItemFlags_ButtonRepeat, true);
-						if (ImGui::ArrowButton("##treeheight_right", ImGuiDir_Right)) { ++v; BVHSystem::BuildBVH(); }
+						if (ImGui::ArrowButton("##objpernode_right", ImGuiDir_Right)) { if (v >= 8) v = 8; else ++v; BVHSystem::BuildBVH(); }
 						ImGui::PopItemFlag();
 					}
 

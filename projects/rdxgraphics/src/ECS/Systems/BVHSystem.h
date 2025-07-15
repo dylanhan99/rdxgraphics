@@ -150,6 +150,7 @@ public:
 	static void BVHTree_TopDown(std::unique_ptr<BVHNode>& pNode, Entity* pEntities, int numEnts, int height = 0, float kEvenStartPoint = 0.f, float kEvenWidth = 0.f);
 	static void BVHTree_BottomUp(std::unique_ptr<BVHNode>& pNode, NodeList& nodeList, HeuristicCache& cache);
 	static void BVHTree_OctTree(std::unique_ptr<BVHNode_Mult>& pNode, std::vector<Entity> const& entities, glm::vec3 const& nodePos, glm::vec3 const& nodeHalfE, int height = 0);
+	static void BVHTree_KDTree(std::unique_ptr<BVHNode>& pNode, std::vector<std::pair<Entity, glm::vec3>> const& points, int const axis, glm::vec3 const& nodePos, glm::vec3 const& nodeHalfE, int height = 0);
 	// *** *** //
 
 private:
@@ -157,7 +158,7 @@ private:
 
 private:
 	BV m_GlobalBVType{ BV::AABB };
-	BVHType m_CurrentTreeType{ BVHType::OctTree };
+	BVHType m_CurrentTreeType{ BVHType::KDTree };
 	int m_DrawLayers{ INT_MAX }; // Enable all layers by default
 	int m_BVHHeight{ 0 }; // Just a cache of the current BVH's height for rendering and stuff
 	std::unique_ptr<BVHNode> m_RootNode{};
