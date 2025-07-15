@@ -165,11 +165,26 @@ void BVHSystem::BuildBVH()
 		EntityList entities{};
 		{
 			auto view = EntityManager::View<Xform, BoundingVolume const>(entt::exclude<FrustumBV>);
-			for (auto [handle, xform, __] : view.each())
+			for (auto [handle, _, __] : view.each())
 			{
 				entities.emplace_back(Entity{ handle });
-				// heuristic here
-				points.emplace_back(std::make_pair(handle, xform.GetTranslate()));
+
+				AABBBV& bv = EntityManager::GetComponent<AABBBV>(handle);
+				switch (GetCurrentSplitPointStrat())
+				{
+				case SplitPointStrat::MedianExtents:
+				{
+					points.emplace_back(std::make_pair(handle, bv.GetMinPoint()));
+					points.emplace_back(std::make_pair(handle, bv.GetMaxPoint()));
+					break;
+				}
+				case SplitPointStrat::MedianCenters:
+				default:
+				{
+					points.emplace_back(std::make_pair(handle, bv.GetPosition()));
+					break;
+				}
+				}
 			}
 		}
 
@@ -786,11 +801,17 @@ void BVHSystem::BVHTree_OctTree(std::unique_ptr<BVHNode_Mult>& pNode, std::vecto
 		g.m_BVHHeight = height;
 }
 
-void BVHSystem::BVHTree_KDTree(std::unique_ptr<BVHNode>& pNode, std::vector<std::pair<Entity, glm::vec3>> const& points, int const axis, glm::vec3 const& nodePos, glm::vec3 const& nodeHalfE, int height)
+void BVHSystem::BVHTree_KDTree(std::unique_ptr<BVHNode>& pNode, std::vector<std::pair<Entity, glm::vec3>>& points, int const axis, glm::vec3 const& nodePos, glm::vec3 const& nodeHalfE, int height)
 {
 	pNode = std::make_unique<BVHNode>();
 	if (points.empty())
 		return;
+
+	std::sort(points.begin(), points.end(),
+		[&axis](std::pair<Entity, glm::vec3> const& lhs, std::pair<Entity, glm::vec3> const& rhs)
+		{
+			return lhs.second[axis] < rhs.second[axis];
+		});
 
 	{ // Node data
 		EntityList entities{}; entities.resize(points.size());
@@ -832,8 +853,50 @@ void BVHSystem::BVHTree_KDTree(std::unique_ptr<BVHNode>& pNode, std::vector<std:
 		return;
 	}
 
+	static auto FindObjsOnPlane =
+		[](std::vector<std::pair<Entity, glm::vec3>> const& points, int const axis, int const medianIndex, SplitPointStrat const strat)
+		{
+			EntityList ls{};
+			float const& medianVal = points[medianIndex].second[axis];
+
+			switch (strat)
+			{
+			case SplitPointStrat::MedianExtents:
+			{
+				// Stop before size-1 because we query i+1 without error handling
+				for (size_t i = 0; i < (points.size() - 1); i += 2)
+				{
+					// min[axis] is points[i][axis], max[axis] is points[i+1][axis]
+					float const& min = points[i].second[axis];
+					float const& max = points[i+1].second[axis];
+
+					if (min <= medianVal && medianVal <= max)
+						ls.push_back(points[i].first);
+				}
+				break;
+			}
+			case SplitPointStrat::MedianCenters:
+			default:
+			{
+				for (size_t i = 0; i < points.size(); ++i)
+				{
+					auto const& handle = points[i].first;
+					AABBBV& bv = EntityManager::GetComponent<AABBBV>(handle);
+					float const& min = bv.GetMinPoint()[axis];
+					float const& max = bv.GetMaxPoint()[axis];
+
+					// Get min and max [axis]
+					if (min <= medianVal && medianVal <= max)
+						ls.push_back(handle);
+				}
+				break;
+			}
+			}
+			return ls;
+		};
+
 	int medianIndex = points.size() / 2;
-	EntityList straddlers{};// = FindObjsOnPlane(points, axis, medianIndex);
+	EntityList straddlers = FindObjsOnPlane(points, axis, medianIndex, GetCurrentSplitPointStrat());
 	std::vector<std::pair<Entity, glm::vec3>> leftPoints{ points.begin(), points.begin() + medianIndex };
 	std::vector<std::pair<Entity, glm::vec3>> rightPoints{ points.begin() + medianIndex, points.end() };
 	std::remove_if(leftPoints.begin(), leftPoints.end(),
@@ -852,18 +915,12 @@ void BVHSystem::BVHTree_KDTree(std::unique_ptr<BVHNode>& pNode, std::vector<std:
 	int newAxis = (axis + 1) % 3;
 	height += 1;
 	glm::vec3 leftNodePos{}, leftHalfE{}, rightNodePos{}, rightHalfE{};
-	// assuming it's all center pos heuristic for now
 	{
 		glm::vec3 nodeMin = nodePos - nodeHalfE;
 		leftHalfE = nodeHalfE;
 		leftHalfE[axis] = (points[medianIndex].second[axis] - nodeMin[axis]) * 0.5f;
 		leftNodePos = nodeMin + leftHalfE;
-		//leftNodePos = nodePos;
-		//leftNodePos[axis] = points[medianIndex].second[axis] - nodeMin[axis];
-		//leftHalfE = nodeHalfE;
-		//leftHalfE[axis] = leftNodePos[axis] - nodeMin[axis];
 
-		glm::vec3 leftMax = leftNodePos + leftHalfE;
 		rightHalfE = nodeHalfE;
 		rightHalfE[axis] = nodeHalfE[axis] - leftHalfE[axis];
 		rightNodePos = leftNodePos;

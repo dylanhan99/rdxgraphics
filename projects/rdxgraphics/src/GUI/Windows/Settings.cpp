@@ -192,7 +192,7 @@ void Settings::UpdateImpl(float dt)
 						ImGui::SameLine(0.0f, spacing);
 
 						ImGui::PushItemFlag(ImGuiItemFlags_ButtonRepeat, true);
-						if (ImGui::ArrowButton("##objpernode_right", ImGuiDir_Right)) { if (v >= 8) v = 8; else ++v; BVHSystem::BuildBVH(); }
+						if (ImGui::ArrowButton("##treeheight_right", ImGuiDir_Right)) { if (v >= 8) v = 8; else ++v; BVHSystem::BuildBVH(); }
 						ImGui::PopItemFlag();
 					}
 
@@ -255,8 +255,21 @@ void Settings::UpdateImpl(float dt)
 						ImGui::SameLine(0.0f, spacing);
 
 						ImGui::PushItemFlag(ImGuiItemFlags_ButtonRepeat, true);
-						if (ImGui::ArrowButton("##objpernode_right", ImGuiDir_Right)) { if (v >= 8) v = 8; else ++v; BVHSystem::BuildBVH(); }
+						if (ImGui::ArrowButton("##treeheight_right", ImGuiDir_Right)) { if (v >= 8) v = 8; else ++v; BVHSystem::BuildBVH(); }
 						ImGui::PopItemFlag();
+					}
+
+					{
+						int* pBV = reinterpret_cast<int*>(&BVHSystem::GetCurrentSplitPointStrat());
+						ImGui::SeparatorText("Split Point Strategy");
+						BVHSystem::SplitPointStrat prev = BVHSystem::GetCurrentSplitPointStrat();
+						bool isRadiod = false;
+						isRadiod |= ImGui::RadioButton("MedianCenters", pBV, static_cast<int>(BVHSystem::SplitPointStrat::MedianCenters)); ImGui::SameLine();
+						isRadiod |= ImGui::RadioButton("MedianExtents", pBV, static_cast<int>(BVHSystem::SplitPointStrat::MedianExtents)); //ImGui::SameLine();
+						//isRadiod |= ImGui::RadioButton("KEvenSplits", pBV, static_cast<int>(BVHSystem::SplitPointStrat::KEvenSplits));
+
+						if (isRadiod && ((BVHSystem::SplitPointStrat)*pBV != prev))
+							BVHSystem::BuildBVH();
 					}
 
 					ImGui::TreePop();
