@@ -21,7 +21,7 @@ const std::filesystem::path g_WorkingDir{
 };
 
 #if USE_CSD3151_AUTOMATION == 1
-#define RX_PRJ_NAME "dylan.h-project-2"
+#define RX_PRJ_NAME "dylan.h-project-4"
 #else
 #define RX_PRJ_NAME "rdxgraphics"
 #endif

@@ -51,11 +51,11 @@ bool RenderSystem::Init()
 	g.m_Shader.Init(std::vector<std::pair<ShaderType, std::string>>{
 		{ ShaderType::Vertex,	std::string{ assignment_vs } },
 		{ ShaderType::Fragment, std::string{ assignment_fs } }
-		});
+	});
 	g.m_FBOShader.Init(std::vector<std::pair<ShaderType, std::string>>{
 		{ ShaderType::Vertex,	std::string{ fbo_vs } },
 		{ ShaderType::Fragment, std::string{ fbo_fs } }
-		});
+	});
 #else
 	g.m_Shader.Init({
 		{ ShaderType::Vertex,	fs::path{ RX_SHADER_PREFIX"default.vert" } },
@@ -184,21 +184,21 @@ Object<VertexBasic>& RenderSystem::GetObjekt(Primitive bv)
 {
 	switch (bv)
 	{
-		case Primitive::Point:
-			return GetObjekt(Shape::Point);
-		case Primitive::Ray:
-			return GetObjekt(Shape::Line);
-		case Primitive::Triangle:
-			return GetObjekt(Shape::Triangle);
-		case Primitive::Plane:
-			return GetObjekt(Shape::Plane);
-		case Primitive::AABB:
-			return GetObjekt(Shape::Cube);
-		case Primitive::Sphere:
-			return GetObjekt(Shape::Sphere);
-		default:
-			RX_ASSERT(false);
-			return GetObjekt(Shape::Cube);
+	case Primitive::Point:
+		return GetObjekt(Shape::Point);
+	case Primitive::Ray:
+		return GetObjekt(Shape::Line);
+	case Primitive::Triangle:
+		return GetObjekt(Shape::Triangle);
+	case Primitive::Plane:
+		return GetObjekt(Shape::Plane);
+	case Primitive::AABB:
+		return GetObjekt(Shape::Cube);
+	case Primitive::Sphere:
+		return GetObjekt(Shape::Sphere);
+	default:
+		RX_ASSERT(false);
+		return GetObjekt(Shape::Cube);
 	}
 }
 
@@ -207,7 +207,7 @@ void RenderSystem::CreateShapes()
 	g.m_FBOObject = std::move(ObjectFactory::CreateObjekt<VertexFBO, ObjectParams_VertexFBO>(ObjectFactory::CreateScreenQuad()));
 
 	auto CreateShape =
-		[&](Rxuid id, std::string name , Object<VertexBasic>&& obj)
+		[&](Rxuid id, std::string name, Object<VertexBasic>&& obj)
 		{
 			obj.SetName(name);
 			g.m_Objects[id] = std::move(obj);																					\
@@ -221,15 +221,6 @@ void RenderSystem::CreateShapes()
 	RX_DO_ALL_SHAPE_ENUM;
 #undef _RX_X
 
-#if USE_CSD3151_AUTOMATION == 1
-#define _RX_X(obj)														\
-	CreateShape(Rxuid{#obj}, #obj,										\
-	ObjectFactory::CreateObjekt<VertexBasic, ObjectParams_VertexBasic>(	\
-		ObjectFactory::LoadModelFile(RX_MODEL_PREFIX#obj##".obj")));
-
-	RX_DO_ALL_OBJ;
-#undef _RX_X
-#else
 #define _RX_XX(name, path)													\
 	CreateShape(Rxuid{ path }, name,										\
 		ObjectFactory::CreateObjekt<VertexBasic, ObjectParams_VertexBasic>(	\
@@ -241,5 +232,4 @@ void RenderSystem::CreateShapes()
 
 #undef _RX_XX
 #undef _RX_X
-#endif
 }
