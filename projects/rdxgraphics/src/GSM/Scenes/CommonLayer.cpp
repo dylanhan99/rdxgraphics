@@ -20,9 +20,9 @@ void CommonLayer::StartImpl()
 		entt::entity handle = m_MainCamera = BaseScene::CreateDefaultEntity<NoDelete>();
 		EntityManager::AddComponent<Metadata>(handle, "FPS Cam");
 		EntityManager::AddComponent<Xform>(handle,
-			glm::vec3{ -3.f, 3.f, 3.f },
+			glm::vec3{ -30.f, 30.f, 60.f },
 			glm::vec3{ 0.2f },
-			glm::vec3{ -0.7f, -0.7f, 0.f });
+			glm::vec3{ -0.2f, -0.869f, 0.f });
 		//EntityManager::AddComponent<Model>(handle, Shape::Cube);
 		EntityManager::AddComponent<Material>(handle, glm::vec3{ 1.f,1.f,0.f });
 		EntityManager::AddComponent<Camera>(handle,

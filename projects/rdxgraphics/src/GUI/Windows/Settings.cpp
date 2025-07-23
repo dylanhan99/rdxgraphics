@@ -61,34 +61,34 @@ void Settings::UpdateImpl(float dt)
 				}
 			}
 
-			{
-				int* pBV = reinterpret_cast<int*>(&BVHSystem::GetGlobalBVType());
-				ImGui::SeparatorText("CurrentBV Option");
-				BV prev = BVHSystem::GetGlobalBVType();
-				bool isRadiod = false;
-				isRadiod |= ImGui::RadioButton("AABB", pBV, static_cast<int>(BV::AABB)); ImGui::SameLine();
-				isRadiod |= ImGui::RadioButton("OBB", pBV, static_cast<int>(BV::OBB)); ImGui::SameLine();
-				isRadiod |= ImGui::RadioButton("Sphere", pBV, static_cast<int>(BV::Sphere));
-
-				if (isRadiod && ((BV)*pBV != prev))
-					BVHSystem::EnforceUniformBVs();
-			}
-
-			{
-				int* algorithm = reinterpret_cast<int*>(&SphereBV::Algorithm);
-				ImGui::SeparatorText("SphereBV Options");
-				bool isRadiod = false;
-				isRadiod |= ImGui::RadioButton("Ritter", algorithm, static_cast<int>(SphereBV::Algo::Ritter)); ImGui::SameLine();
-				isRadiod |= ImGui::RadioButton("Larsson", algorithm, static_cast<int>(SphereBV::Algo::Larsson)); ImGui::SameLine();
-				isRadiod |= ImGui::RadioButton("PCA", algorithm, static_cast<int>(SphereBV::Algo::PCA));
-
-				if (isRadiod && BVHSystem::GetGlobalBVType() == BV::Sphere) // Set ALL spheres to be dirty, to be updated with new algorithm
-				{
-					auto view = EntityManager::View<const BoundingVolume, SphereBV>();
-					for (auto [handle, boundingVolume, bv] : view.each())
-						bv.SetDirtyBV();
-				}
-			}
+			//{
+			//	int* pBV = reinterpret_cast<int*>(&BVHSystem::GetGlobalBVType());
+			//	ImGui::SeparatorText("CurrentBV Option");
+			//	BV prev = BVHSystem::GetGlobalBVType();
+			//	bool isRadiod = false;
+			//	isRadiod |= ImGui::RadioButton("AABB", pBV, static_cast<int>(BV::AABB)); ImGui::SameLine();
+			//	isRadiod |= ImGui::RadioButton("OBB", pBV, static_cast<int>(BV::OBB)); ImGui::SameLine();
+			//	isRadiod |= ImGui::RadioButton("Sphere", pBV, static_cast<int>(BV::Sphere));
+			//
+			//	if (isRadiod && ((BV)*pBV != prev))
+			//		BVHSystem::EnforceUniformBVs();
+			//}
+			//
+			//{
+			//	int* algorithm = reinterpret_cast<int*>(&SphereBV::Algorithm);
+			//	ImGui::SeparatorText("SphereBV Options");
+			//	bool isRadiod = false;
+			//	isRadiod |= ImGui::RadioButton("Ritter", algorithm, static_cast<int>(SphereBV::Algo::Ritter)); ImGui::SameLine();
+			//	isRadiod |= ImGui::RadioButton("Larsson", algorithm, static_cast<int>(SphereBV::Algo::Larsson)); ImGui::SameLine();
+			//	isRadiod |= ImGui::RadioButton("PCA", algorithm, static_cast<int>(SphereBV::Algo::PCA));
+			//
+			//	if (isRadiod && BVHSystem::GetGlobalBVType() == BV::Sphere) // Set ALL spheres to be dirty, to be updated with new algorithm
+			//	{
+			//		auto view = EntityManager::View<const BoundingVolume, SphereBV>();
+			//		for (auto [handle, boundingVolume, bv] : view.each())
+			//			bv.SetDirtyBV();
+			//	}
+			//}
 
 			ImGui::TreePop();
 		}

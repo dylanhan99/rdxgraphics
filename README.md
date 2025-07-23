@@ -92,7 +92,8 @@ Collision (ECS/Systems/CollisionSystem.\*):</br>
 
 BVH (ECS/Systems/BVHSystem.\*):</br>
 - The bulk of the rubrics is here
-- The main algorithm for TopDown and BottomUp are BVHSystem::BVHTree_TopDown and BVHSystem::BVHTree_BottomUp.
+- (Assignment 3) The main algorithm for TopDown and BottomUp are BVHSystem::BVHTree_TopDown and BVHSystem::BVHTree_BottomUp.
+- (Assignment 4) The main algorithm for OctTree and KDTree are BVHSystem::BVHTree_OctTree and BVHSystem::BVHTree_KDTree.
 - All supporting functions such as tree building strategies can be found used within the BVH tree building functions.
 
 GSM/GUI (GSM/, GUI/):</br>
@@ -135,18 +136,21 @@ Viewport:</br>
 - Likely need to fullscreen the app to be able to see the PiP on the top right.
 
 Settings:</br>
-- Random settings such as changing scenes, toggling different passes, and FPS
+- Random settings such as changing scenes, toggling different passes, and FPS.
+- (Assignment 4) The controls for changing BVH type etc, are in this window.
 
 ## Tasks
 - Task 1: Scene Setup					> Complete
-- Task 2: BVH Building and Display      > Complete
+- Task 2: Adaptive Octree Creation      > Complete
+- Task 3: KD-Tree Creation              > Complete
 
 ### Task Code Locations
-- Task 1: Assignment3.cpp (Scene setup), ObjectFactory.cpp (Assimp loading), Camera.cpp (Camera)
-- Task 2: BVHSystem.cpp (BVH building), BVHPass.cpp (Render pass handling BVH drawing, colors stated there)
+- Task 1: Assignment4.cpp (Scene setup), ObjectFactory.cpp (Assimp loading)
+- Task 2: BVHSystem.cpp (OctTree building), BVHPass.cpp (Render pass handling BVH drawing, colors stated there)
+- Task 3: BVHSystem.cpp (KDTree building), BVHPass.cpp (Render pass handling BVH drawing, colors stated there)
 
 ## Other Notes
 - Average 2 hours daily on this assignment
 - The USE_CSD3151_AUTOMATION for assignment_vs/fs shader buffers are located at the top of RenderSystem.cpp
 - Do not touch BV in the inspector, only change via Settings window. There is no null validation within BVH system for this and can crash.
-- Program crashes in release mode, if objectpicking is attempted with OBB. In debug, no such issue. Unable to determine issue right now.
+- Object picking is not possible for Assignment 4.

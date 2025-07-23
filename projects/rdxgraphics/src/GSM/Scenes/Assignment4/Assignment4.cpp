@@ -20,5 +20,7 @@ void Assignment4::StartImpl()
 
 void Assignment4::UpdateImpl(float dt)
 {
-	//BVHSystem::BuildBVH();
+#ifndef _DEBUG
+	BVHSystem::BuildBVH();
+#endif
 }
