@@ -1,4 +1,4 @@
-# CS350/CSD3150 | Project 2: Bounding Volumes and View Frustum Culling
+# CS350/CSD3150 | Project 4: Spatial Partitioning
 By: 2201020 | dylan.h | Han Wei, Dylan</br>
 Engine: rdxgraphics
 
