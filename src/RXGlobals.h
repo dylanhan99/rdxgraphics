@@ -20,13 +20,10 @@ const std::filesystem::path g_WorkingDir{
 #endif
 };
 
-#if USE_CSD3151_AUTOMATION == 1
-#define RX_PRJ_NAME "dylan.h-project-4"
-#else
 #define RX_PRJ_NAME "rdxgraphics"
-#endif
-#define RX_SHADER_PREFIX "../projects/" RX_PRJ_NAME "/shaders/"
-#define RX_MODEL_PREFIX "../models/"
+#define RX_ASSETS_FOLDER "assets"
+#define RX_SHADER_PREFIX RX_ASSETS_FOLDER "/shaders/"
+#define RX_MODEL_PREFIX RX_ASSETS_FOLDER "/models/"
 
 const uint64_t RX_INVALID_ID{ 0 };
 const glm::vec3 g_WorldUp{ 0.f,1.f,0.f };
