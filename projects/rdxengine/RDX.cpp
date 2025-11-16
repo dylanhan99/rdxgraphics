@@ -8,8 +8,9 @@ RDX::RDX()
 {
 	m_Window = std::make_unique<GLFWWindow>();
 	m_Input = std::make_unique<Input>();
+	m_Logging = std::make_unique<AsyncLogger>();
 
-	m_ServiceLayer = std::make_unique<ServiceLayer>(m_Window.get(), m_Input.get());
+	m_ServiceLayer = std::make_unique<ServiceLayer>(m_Window.get(), m_Input.get(), m_Logging.get());
 	m_ServiceLayer->RegisterServiceLayer(m_ServiceLayer.get());
 }
 
@@ -29,6 +30,15 @@ int RDX::Run()
 
 			if (ServiceLayer::InputService()->IsKeyTriggered(KeyCode::Escape))
 				ServiceLayer::WindowService()->SetShouldClose();
+
+			if (ServiceLayer::InputService()->IsKeyTriggered(KeyCode::A))
+			{
+				for (int i = 0; i < 5; ++i)
+				{
+					LogMessage msg{}; msg.message = std::to_string(i);
+					ServiceLayer::LoggingService()->Log(msg);
+				}
+			}
 		}
 	}
 	else
@@ -51,6 +61,7 @@ bool RDX::Init()
 	bool success = true;
 	success &= m_Window->Init();
 	//success &= m_Input->Init();
+	success &= m_Logging->Init();
 
 	return success;
 }
@@ -58,6 +69,7 @@ bool RDX::Init()
 bool RDX::Terminate()
 {
 	bool success = true;
+	success &= m_Logging->Terminate();
 	//success &= m_Input->Terminate();
 	success &= m_Window->Terminate();
 
