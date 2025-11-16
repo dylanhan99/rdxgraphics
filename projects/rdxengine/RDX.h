@@ -22,6 +22,7 @@ namespace rdx
 		std::unique_ptr<BaseWindow> m_Window{};
 		std::unique_ptr<Input> m_Input{};
 		std::unique_ptr<BaseLogger> m_Logging{};
+		std::unique_ptr<InstantEventBus> m_InstantEventBus{};
 	};
 }
 

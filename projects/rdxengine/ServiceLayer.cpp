@@ -2,8 +2,8 @@
 
 using namespace rdx;
 
-ServiceLayer::ServiceLayer(BaseWindow* pWindow, Input* pInput, BaseLogger* pLogger)
-	: m_WindowService(pWindow), m_InputService(pInput), m_LoggingService(pLogger)
+ServiceLayer::ServiceLayer(BaseWindow* pWindow, Input* pInput, BaseLogger* pLogger, InstantEventBus* pInstantEventBus)
+	: m_WindowService(pWindow), m_InputService(pInput), m_LoggingService(pLogger), m_InstantEventService(pInstantEventBus)
 {}
 
 void ServiceLayer::RegisterServiceLayer(ServiceLayer* pLayer)
@@ -24,4 +24,9 @@ Input* const ServiceLayer::InputService()
 BaseLogger* const ServiceLayer::LoggingService()
 {
 	return s_ServiceLayer->m_LoggingService;
+}
+
+InstantEventBus* const ServiceLayer::InstantEventService()
+{
+	return s_ServiceLayer->m_InstantEventService;
 }
