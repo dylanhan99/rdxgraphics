@@ -20,16 +20,17 @@ bool AsyncLogger::Terminate()
 	return true;
 }
 
-void rdx::AsyncLogger::Log(LogMessage const& msg)
+void AsyncLogger::EnqueueEntry(LogEntry const& entry)
 {
 	{
 		std::lock_guard lock{ m_Mutex };
-		m_Queue.push(msg);
+		m_Queue.push(entry);
 	}
+
 	m_CV.notify_one();
 }
 
-bool rdx::AsyncLogger::ShouldStop() const
+bool AsyncLogger::ShouldStop() const
 {
 	return m_ShouldStop;
 }
@@ -51,7 +52,7 @@ void AsyncLogger::WorkerLoop()
 		if (ShouldStop() && m_Queue.empty())
 			break;
 
-		LogMessage msg = m_Queue.front();
+		LogEntry msg = m_Queue.front();
 		m_Queue.pop();
 		lock.unlock(); // Explicitly release lock
 
@@ -60,7 +61,7 @@ void AsyncLogger::WorkerLoop()
 	}
 }
 
-void rdx::AsyncLogger::WriteLog(LogMessage const& msg)
+void rdx::AsyncLogger::WriteLog(LogEntry const& entry)
 {
-	std::cout << msg.message << std::endl;
+	std::cout << entry.FnFormatter() << std::endl;
 }

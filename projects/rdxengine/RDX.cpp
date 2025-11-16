@@ -33,10 +33,9 @@ int RDX::Run()
 
 			if (ServiceLayer::InputService()->IsKeyTriggered(KeyCode::A))
 			{
-				for (int i = 0; i < 5; ++i)
+				for (int i = 0; i < 1000; ++i)
 				{
-					LogMessage msg{}; msg.message = std::to_string(i);
-					ServiceLayer::LoggingService()->Log(msg);
+					RX_TRACE("Test {}", i);
 				}
 			}
 		}
