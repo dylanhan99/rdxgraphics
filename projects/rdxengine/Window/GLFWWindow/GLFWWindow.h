@@ -12,11 +12,12 @@ namespace rdx
 
 		bool Init() override;
 		bool Terminate() override;
-		void PollEvents() override;
 
 		bool IsWindowShouldClose() override;
+		void SetShouldClose() override;
 
 	private:
+		void PollEventsImpl() override;
 		KeyCode TranslateKey(const int key);
 		void RegisterCallbacks();
 

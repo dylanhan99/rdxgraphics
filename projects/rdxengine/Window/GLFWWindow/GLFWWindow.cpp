@@ -72,14 +72,19 @@ bool GLFWWindow::Terminate()
 	return true;
 }
 
-void GLFWWindow::PollEvents()
-{
-	glfwPollEvents();
-}
-
 bool GLFWWindow::IsWindowShouldClose()
 {
 	return glfwWindowShouldClose(m_pWindow);
+}
+
+void GLFWWindow::SetShouldClose()
+{
+	glfwSetWindowShouldClose(m_pWindow, true);
+}
+
+void GLFWWindow::PollEventsImpl()
+{
+	glfwPollEvents();
 }
 
 KeyCode GLFWWindow::TranslateKey(const int key)

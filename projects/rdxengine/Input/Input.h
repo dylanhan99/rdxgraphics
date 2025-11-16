@@ -7,10 +7,15 @@ namespace rdx
 	class Input
 	{
 	public:
+		void SwapKeys();
+
 		void OnKeyPress(KeyCode const);
 		void OnKeyRelease(KeyCode const);
 
-		bool IsKeyPress(KeyCode const);
+		bool IsKeyTriggered(KeyCode const);
+		bool IsKeyReleased(KeyCode const);
+		bool IsKeyDown(KeyCode const);
+		bool IsKeyUp(KeyCode const);
 
 	private:
 		std::array<bool, (size_t)KeyCode::MAX> m_KeyStatesPrev{};

@@ -6,6 +6,12 @@ using namespace rdx;
 BaseWindow::BaseWindow() {}
 BaseWindow::~BaseWindow() {}
 
+void BaseWindow::PollEvents()
+{
+	ServiceLayer::InputService()->SwapKeys();
+	PollEventsImpl();
+}
+
 void BaseWindow::OnKeyPress(KeyCode const key)
 {
 	ServiceLayer::InputService()->OnKeyPress(key);

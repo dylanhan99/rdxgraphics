@@ -13,9 +13,13 @@ namespace rdx
 
 		virtual bool Init() = 0;
 		virtual bool Terminate() = 0;
-		virtual void PollEvents() = 0;
+		void PollEvents();
 
 		virtual bool IsWindowShouldClose() = 0;
+		virtual void SetShouldClose() = 0;
+
+	private:
+		virtual void PollEventsImpl() = 0;
 
 	protected:
 		void OnKeyPress(KeyCode const);
