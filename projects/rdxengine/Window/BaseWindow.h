@@ -18,8 +18,8 @@ namespace rdx
 		virtual bool IsWindowShouldClose() = 0;
 
 	protected:
-		void OnKeyPress(const KeyCode);
-		void OnKeyRelease(const KeyCode);
+		void OnKeyPress(KeyCode const);
+		void OnKeyRelease(KeyCode const);
 	};
 }
 

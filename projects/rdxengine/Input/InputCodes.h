@@ -30,6 +30,8 @@ namespace rdx
 		KeyPad_1, KeyPad_2, KeyPad_3, KeyPad_4, KeyPad_5, KeyPad_6, KeyPad_7, KeyPad_8, KeyPad_9, KeyPad_0,
 		KeyPad_Decimal, KeyPad_Divide, KeyPad_Multiply, KeyPad_Subtract, KeyPad_Add,
 		KeyPad_Enter, KeyPad_Equal,
+
+		MAX
 	};
 	enum class MouseCode
 	{

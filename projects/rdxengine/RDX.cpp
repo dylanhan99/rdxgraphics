@@ -1,15 +1,18 @@
 #include "RDX.h"
 #include "Window/GLFWWindow/GLFWWindow.h"
+#include "ServiceLayer.h"
 
 using namespace rdx;
 
 RDX::RDX()
 {
 	m_window = new GLFWWindow{};
+	ServiceLayer::Get()->Init();
 }
 
 RDX::~RDX()
 {
+	ServiceLayer::Get()->Terminate();
 	delete m_window;
 }
 
@@ -22,6 +25,8 @@ int RDX::Run()
 		while (!m_window->IsWindowShouldClose())
 		{
 			m_window->PollEvents();
+
+			std::cout << ServiceLayer::InputService()->IsKeyPress(KeyCode::A) << std::endl;
 		}
 	}
 	else
