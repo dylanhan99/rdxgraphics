@@ -8,6 +8,7 @@ namespace rdx
 {
 	class GLFWWindow : public BaseWindow
 	{
+	public:
 		inline ~GLFWWindow() {};
 
 		bool Init() override;

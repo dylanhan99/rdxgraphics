@@ -5,20 +5,18 @@
 
 namespace rdx
 {
-	class ServiceLayer
+	class RX_API ServiceLayer
 	{
-		friend class RDX;
 	public:
-		static ServiceLayer* const Get();
+		ServiceLayer(BaseWindow*, Input*);
+		static void RegisterServiceLayer(ServiceLayer*);
+
 		static BaseWindow* const WindowService();
 		static Input* const InputService();
 
 	private:
-		bool Init();
-		bool Terminate();
+		inline static ServiceLayer* s_ServiceLayer{};
 
-	private:
-		inline static ServiceLayer* m_ServiceLayer{};
 		BaseWindow* m_WindowService{};
 		Input* m_InputService{};
 	};
