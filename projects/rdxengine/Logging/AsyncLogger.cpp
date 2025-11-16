@@ -20,7 +20,7 @@ bool AsyncLogger::Terminate()
 	return true;
 }
 
-void AsyncLogger::EnqueueEntry(LogEntry const& entry)
+void AsyncLogger::HandleEntry(LogEntry const& entry)
 {
 	{
 		std::lock_guard lock{ m_Mutex };

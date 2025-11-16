@@ -8,7 +8,6 @@ namespace rdx
 	class RX_API BaseWindow
 	{
 	public:
-		BaseWindow();
 		virtual ~BaseWindow();
 
 		virtual bool Init() = 0;

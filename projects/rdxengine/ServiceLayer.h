@@ -2,26 +2,26 @@
 #define RDXENGINE_H
 #include "Window/BaseWindow.h"
 #include "Input/Input.h"
-#include "Logging/AsyncLogger.h"
+#include "Logging/BaseLogger.h"
 
 namespace rdx
 {
 	class RX_API ServiceLayer
 	{
 	public:
-		ServiceLayer(BaseWindow*, Input*, AsyncLogger*);
+		ServiceLayer(BaseWindow*, Input*, BaseLogger*);
 		static void RegisterServiceLayer(ServiceLayer*);
 
 		static BaseWindow* const WindowService();
 		static Input* const InputService();
-		static AsyncLogger* const LoggingService();
+		static BaseLogger* const LoggingService();
 
 	private:
 		inline static ServiceLayer* s_ServiceLayer{};
 
 		BaseWindow* m_WindowService{};
 		Input* m_InputService{};
-		AsyncLogger* m_LoggingService{};
+		BaseLogger* m_LoggingService{};
 	};
 }
 

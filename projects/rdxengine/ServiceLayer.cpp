@@ -2,7 +2,7 @@
 
 using namespace rdx;
 
-ServiceLayer::ServiceLayer(BaseWindow* pWindow, Input* pInput, AsyncLogger* pLogger)
+ServiceLayer::ServiceLayer(BaseWindow* pWindow, Input* pInput, BaseLogger* pLogger)
 	: m_WindowService(pWindow), m_InputService(pInput), m_LoggingService(pLogger)
 {}
 
@@ -21,7 +21,7 @@ Input* const ServiceLayer::InputService()
 	return s_ServiceLayer->m_InputService;
 }
 
-AsyncLogger* const ServiceLayer::LoggingService()
+BaseLogger* const ServiceLayer::LoggingService()
 {
 	return s_ServiceLayer->m_LoggingService;
 }

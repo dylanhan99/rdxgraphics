@@ -1,6 +1,7 @@
 #include "RDX.h"
 #include "ServiceLayer.h"
-#include "Window/GLFWWindow/GLFWWindow.h"
+#include "Window/GLFWWindow.h"
+#include "Logging/AsyncLogger.h"
 
 using namespace rdx;
 

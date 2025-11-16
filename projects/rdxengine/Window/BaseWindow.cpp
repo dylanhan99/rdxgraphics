@@ -3,7 +3,6 @@
 
 using namespace rdx;
 
-BaseWindow::BaseWindow() {}
 BaseWindow::~BaseWindow() {}
 
 void BaseWindow::PollEvents()
