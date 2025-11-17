@@ -23,6 +23,7 @@ namespace rdx
 		std::unique_ptr<Input> m_Input{};
 		std::unique_ptr<BaseLogger> m_Logging{};
 		std::unique_ptr<InstantEventBus> m_InstantEventBus{};
+		std::unique_ptr<BaseEntityComponentWorld> m_EntityComponentWorld{};
 	};
 }
 

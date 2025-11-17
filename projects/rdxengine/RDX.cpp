@@ -2,6 +2,8 @@
 #include "ServiceLayer.h"
 #include "Window/GLFWWindow.h"
 #include "Logging/AsyncLogger.h"
+#include "ECS/Worlds/EnttWorld.h"
+#include "ECS/Entity.h"
 
 #include "Event/Events/Events.h"
 
@@ -13,8 +15,9 @@ RDX::RDX()
 	m_Input = std::make_unique<Input>();
 	m_Logging = std::make_unique<AsyncLogger>();
 	m_InstantEventBus = std::make_unique<InstantEventBus>();
+	m_EntityComponentWorld = std::make_unique<EnttWorld>();
 
-	m_ServiceLayer = std::make_unique<ServiceLayer>(m_Window.get(), m_Input.get(), m_Logging.get(), m_InstantEventBus.get());
+	m_ServiceLayer = std::make_unique<ServiceLayer>(m_Window.get(), m_Input.get(), m_Logging.get(), m_InstantEventBus.get(), m_EntityComponentWorld.get());
 	m_ServiceLayer->RegisterServiceLayer(m_ServiceLayer.get());
 }
 
@@ -51,6 +54,17 @@ int RDX::Run()
 					RX_TRACE("Test {}", i);
 				}
 			}
+
+			if (ServiceLayer::InputService()->IsKeyTriggered(KeyCode::D))
+			{
+				Entity ent = ServiceLayer::EntityComponentService()->CreateEntity();
+				auto xformOpt = ent.AddComponent<TransformComponent>();
+				if (xformOpt)
+				{
+					auto& xform = xformOpt->get();
+					RX_DEBUG("{}, {}, {}", xform.Position.x, xform.Position.y, xform.Position.z);
+				}
+			}
 		}
 	}
 	else
@@ -75,6 +89,7 @@ bool RDX::Init()
 	success &= m_Input->Init();
 	success &= m_Logging->Init();
 	success &= m_InstantEventBus->Init();
+	success &= m_EntityComponentWorld->Init();
 
 	return success;
 }
@@ -82,6 +97,7 @@ bool RDX::Init()
 bool RDX::Terminate()
 {
 	bool success = true;
+	success &= m_EntityComponentWorld->Terminate();
 	success &= m_InstantEventBus->Terminate();
 	success &= m_Logging->Terminate();
 	success &= m_Input->Terminate();

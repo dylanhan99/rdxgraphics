@@ -14,6 +14,7 @@
 #include <chrono>
 #include <codecvt>
 #include <condition_variable>
+#include <cstdint>
 #include <exception>
 #include <filesystem>
 #include <format>
@@ -57,6 +58,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/vector_angle.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
+
+#include "rxtypes.h"
 
 // BS_thread_pool
 //#include <BS_thread_pool.hpp>
