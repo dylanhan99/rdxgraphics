@@ -2,16 +2,17 @@
 #define BASEWINDOW_H
 #include "RXAPI.h"
 #include "Input/InputCodes.h"
+#include "BaseService.h"
 
 namespace rdx
 {
-	class RX_API BaseWindow
+	class RX_API BaseWindow : public BaseService
 	{
 	public:
 		virtual ~BaseWindow();
 
-		virtual bool Init() = 0;
-		virtual bool Terminate() = 0;
+		virtual bool InitImpl() = 0;
+		virtual bool TerminateImpl() = 0;
 		void PollEvents();
 
 		virtual bool IsWindowShouldClose() = 0;

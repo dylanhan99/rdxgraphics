@@ -1,12 +1,16 @@
 #ifndef INPUT_H
 #define INPUT_H
+#include "BaseService.h"
 #include "InputCodes.h"
 
 namespace rdx
 {
-	class Input
+	class Input final : public BaseService
 	{
 	public:
+		inline bool InitImpl() { return true; }
+		inline bool TerminateImpl() { return true; }
+
 		void SwapKeys();
 
 		void OnKeyPress(KeyCode const);

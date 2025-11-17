@@ -55,13 +55,13 @@ int RDX::Run()
 	}
 	else
 	{
-		std::cerr << "Failed to initialize something. Exiting." << std::endl;
+		RX_CRITICAL("Failed to INITIALIZE something. Exiting.");
 		exitCode = EXIT_FAILURE;
 	}
 
 	if (!Terminate())
 	{
-		std::cerr << "Failed to terminate something. Exiting." << std::endl;
+		RX_CRITICAL("Failed to TERMINATE something. Exiting.");
 		exitCode = EXIT_FAILURE;
 	}
 
@@ -72,9 +72,9 @@ bool RDX::Init()
 {
 	bool success = true;
 	success &= m_Window->Init();
-	//success &= m_Input->Init();
+	success &= m_Input->Init();
 	success &= m_Logging->Init();
-	//success &= m_InstantEventBus->Init();
+	success &= m_InstantEventBus->Init();
 
 	return success;
 }
@@ -82,9 +82,9 @@ bool RDX::Init()
 bool RDX::Terminate()
 {
 	bool success = true;
-	//success &= m_InstantEventBus->Terminate();
+	success &= m_InstantEventBus->Terminate();
 	success &= m_Logging->Terminate();
-	//success &= m_Input->Terminate();
+	success &= m_Input->Terminate();
 	success &= m_Window->Terminate();
 
 	return success;

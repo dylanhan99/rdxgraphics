@@ -2,13 +2,13 @@
 
 using namespace rdx;
 
-bool AsyncLogger::Init()
+bool AsyncLogger::InitImpl()
 {
 	m_WorkerThread = std::thread{ &AsyncLogger::WorkerLoop, this };
 	return true;
 }
 
-bool AsyncLogger::Terminate()
+bool AsyncLogger::TerminateImpl()
 {
 	{
 		std::lock_guard lock{ m_Mutex };
@@ -20,7 +20,7 @@ bool AsyncLogger::Terminate()
 	return true;
 }
 
-void AsyncLogger::HandleEntry(LogEntry const& entry)
+void AsyncLogger::HandleEntryImpl(LogEntry const& entry)
 {
 	{
 		std::lock_guard lock{ m_Mutex };

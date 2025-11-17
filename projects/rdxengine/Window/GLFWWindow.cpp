@@ -5,7 +5,7 @@
 
 using namespace rdx;
 
-bool GLFWWindow::Init()
+bool GLFWWindow::InitImpl()
 {
 	glfwSetErrorCallback(
 		[](int code, const char* desc)
@@ -65,7 +65,7 @@ bool GLFWWindow::Init()
 	return true;
 }
 
-bool GLFWWindow::Terminate()
+bool GLFWWindow::TerminateImpl()
 {
 	glfwDestroyWindow(m_pWindow);
 	glfwTerminate();

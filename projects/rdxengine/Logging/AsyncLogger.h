@@ -8,10 +8,10 @@ namespace rdx
 	{
 	public:
 		inline ~AsyncLogger() {};
-		bool Init() override;
-		bool Terminate() override;
+		bool InitImpl() override;
+		bool TerminateImpl() override;
 
-		void HandleEntry(LogEntry const&) override;
+		void HandleEntryImpl(LogEntry const&) override;
 		bool ShouldStop() const;
 
 	private:

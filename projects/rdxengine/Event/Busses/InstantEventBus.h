@@ -1,12 +1,16 @@
 #ifndef INSTANTEVENTBUS_H
 #define INSTANTEVENTBUS_H
+#include "BaseService.h"
 #include <typeindex>
 
 namespace rdx
 {
-	class InstantEventBus
+	class InstantEventBus final : public BaseService
 	{
 	public:
+		inline bool InitImpl() { return true; }
+		inline bool TerminateImpl() { return true; }
+
 		template <typename EventT>
 		void Subscribe(std::function<void(EventT const&)> listener)
 		{

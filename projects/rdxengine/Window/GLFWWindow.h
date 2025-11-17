@@ -6,13 +6,13 @@ struct GLFWwindow; struct GLFWcursor; struct HWND__; typedef HWND__* HWND;
 
 namespace rdx
 {
-	class GLFWWindow : public BaseWindow
+	class GLFWWindow final : public BaseWindow
 	{
 	public:
 		inline ~GLFWWindow() {};
 
-		bool Init() override;
-		bool Terminate() override;
+		bool InitImpl() override;
+		bool TerminateImpl() override;
 
 		bool IsWindowShouldClose() override;
 		void SetShouldClose() override;
