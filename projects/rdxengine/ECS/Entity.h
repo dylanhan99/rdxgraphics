@@ -10,7 +10,7 @@ namespace rdx
 		Entity(BaseEntityComponentWorld* pWorld, EntityID id)
 			: m_pWorld(pWorld), m_ID(id)
 		{
-			// assert m_pWorld
+			RX_ASSERT(m_pWorld);
 		}
 
 		template <typename T>

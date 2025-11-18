@@ -19,7 +19,7 @@ namespace rdx
 		template <typename T>
 		bool const HasComponentImpl(EntityID const eid)
 		{
-			// assert eid exists
+			RX_ASSERT(HasEntity(eid));
 
 			entt::entity enttid = m_HandleMap.at(eid);
 			return m_Registry.all_of<T>(enttid);
@@ -28,7 +28,7 @@ namespace rdx
 		template <typename T>
 		void* const AddComponentImpl(EntityID const eid)
 		{
-			// assert eid exists
+			RX_ASSERT(HasEntity(eid));
 
 			entt::entity enttid = m_HandleMap.at(eid);
 			return &m_Registry.emplace_or_replace<T>(enttid);
@@ -37,7 +37,7 @@ namespace rdx
 		template <typename T>
 		void* const GetComponentImpl(EntityID const eid)
 		{
-			// assert eid exists
+			RX_ASSERT(HasEntity(eid));
 
 			entt::entity enttid = m_HandleMap.at(eid);
 			return m_Registry.try_get<T>(enttid);
