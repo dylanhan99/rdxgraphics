@@ -14,6 +14,7 @@ namespace rdx
 		virtual bool InitImpl() = 0;
 		virtual bool TerminateImpl() = 0;
 		void PollEvents();
+		virtual void SwapBuffers() = 0;
 
 		virtual bool IsWindowShouldClose() = 0;
 		virtual void SetShouldClose() = 0;

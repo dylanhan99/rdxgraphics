@@ -13,6 +13,7 @@ namespace rdx
 
 		bool InitImpl() override;
 		bool TerminateImpl() override;
+		void SwapBuffers() override;
 
 		bool IsWindowShouldClose() override;
 		void SetShouldClose() override;

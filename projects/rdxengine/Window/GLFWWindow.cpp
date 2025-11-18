@@ -72,6 +72,11 @@ bool GLFWWindow::TerminateImpl()
 	return true;
 }
 
+void GLFWWindow::SwapBuffers()
+{
+	glfwSwapBuffers(m_pWindow);
+}
+
 bool GLFWWindow::IsWindowShouldClose()
 {
 	return glfwWindowShouldClose(m_pWindow);

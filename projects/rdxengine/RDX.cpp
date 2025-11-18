@@ -5,6 +5,8 @@
 #include "ECS/Worlds/EnttWorld.h"
 #include "ECS/Entity.h"
 
+#include "Graphics/CrappyRenderer.h"
+
 #include "Event/Events/Events.h"
 
 using namespace rdx;
@@ -38,6 +40,9 @@ int RDX::Run()
 				ServiceLayer::WindowService()->SetShouldClose();
 			});
 
+		CrappyRenderer renderer{};
+		renderer.Init();
+
 		while (!ServiceLayer::WindowService()->IsWindowShouldClose())
 		{
 			ServiceLayer::WindowService()->PollEvents();
@@ -65,7 +70,12 @@ int RDX::Run()
 					RX_DEBUG("{}, {}, {}", xform.Position.x, xform.Position.y, xform.Position.z);
 				}
 			}
+
+			renderer.Draw();
+			ServiceLayer::WindowService()->SwapBuffers();
 		}
+
+		renderer.Terminate();
 	}
 	else
 	{
@@ -78,6 +88,7 @@ int RDX::Run()
 		RX_CRITICAL("Failed to TERMINATE something. Exiting.");
 		exitCode = EXIT_FAILURE;
 	}
+
 
 	return exitCode;
 }
