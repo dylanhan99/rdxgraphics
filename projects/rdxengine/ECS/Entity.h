@@ -14,13 +14,13 @@ namespace rdx
 		}
 
 		template <typename T>
-		std::optional<std::reference_wrapper<T>> AddComponent()
+		T* AddComponent()
 		{
 			return m_pWorld->AddComponent<T>(m_ID); // May return nullopt if fails for some reason
 		}
 
 		template <typename T>
-		std::optional<std::reference_wrapper<T>> GetComponent()
+		T* GetComponent()
 		{
 			return m_pWorld->GetComponent<T>(m_ID);
 		}

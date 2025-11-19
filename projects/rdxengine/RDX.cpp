@@ -63,10 +63,10 @@ int RDX::Run()
 			if (ServiceLayer::InputService()->IsKeyTriggered(KeyCode::D))
 			{
 				Entity ent = ServiceLayer::EntityComponentService()->CreateEntity();
-				auto xformOpt = ent.AddComponent<TransformComponent>();
-				if (xformOpt)
+				auto pXform = ent.AddComponent<TransformComponent>();
+				if (pXform)
 				{
-					auto& xform = xformOpt->get();
+					auto& xform = *pXform;
 					RX_DEBUG("{}, {}, {}", xform.Position.x, xform.Position.y, xform.Position.z);
 				}
 			}

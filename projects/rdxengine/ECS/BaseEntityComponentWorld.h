@@ -53,46 +53,39 @@ namespace rdx
 		}
 
 		template <typename T>
-		std::optional<std::reference_wrapper<T>> AddComponent(EntityID const& eid)
+		T* AddComponent(EntityID const& eid)
 		{
 			ComponentID const cid = GetComponentID<T>();
 
 			if (!HasEntity(eid))
-				return std::nullopt;
+				return nullptr;
 
 			auto it = m_ComponentFactories.find(cid);
 			if (it == m_ComponentFactories.end())
-				return std::nullopt;
+				return nullptr;
 
 			ComponentFactory& cf = it->second;
-			if (cf.HasComponent(eid))
-			{
-				T* pComp = static_cast<T*>(cf.GetComponent(eid));
-				return pComp ? std::optional<std::reference_wrapper<T>>{*pComp} : std::nullopt;
-			}
-
-			T* pComp = static_cast<T*>(cf.AddComponent(eid));
-			return pComp ? std::optional<std::reference_wrapper<T>>{*pComp} : std::nullopt;
+			return cf.HasComponent(eid) ?
+				static_cast<T*>(cf.GetComponent(eid)) :
+				static_cast<T*>(cf.AddComponent(eid));
 		}
 
 		template <typename T>
-		std::optional<std::reference_wrapper<T>> GetComponent(EntityID const& eid)
+		T* GetComponent(EntityID const& eid)
 		{
 			ComponentID const cid = GetComponentID<T>();
 
 			if (!HasEntity(eid))
-				return std::nullopt;
+				return nullptr;
 
 			auto it = m_ComponentFactories.find(cid);
 			if (it == m_ComponentFactories.end())
-				return std::nullopt;
+				return nullptr;
 
 			ComponentFactory& cf = it->second;
-			if (!cf.HasComponent(eid))
-				return std::nullopt;
-
-			T* pComp = static_cast<T*>(cf.GetComponent(eid));
-			return pComp ? std::optional<std::reference_wrapper<T>>{*pComp} : std::nullopt;
+			return cf.HasComponent(eid) ?
+				static_cast<T*>(cf.GetComponent(eid)) :
+				nullptr;
 		}
 
 	protected:
