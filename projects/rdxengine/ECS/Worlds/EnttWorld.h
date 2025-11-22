@@ -22,7 +22,7 @@ namespace rdx
 		{
 			RX_ASSERT(HasEntity(eid));
 
-			entt::entity enttid = m_HandleMap.at(eid);
+			entt::entity enttid = m_EidEnttMap.at(eid);
 			return m_Registry.all_of<T>(enttid);
 		}
 
@@ -31,7 +31,7 @@ namespace rdx
 		{
 			RX_ASSERT(HasEntity(eid));
 
-			entt::entity enttid = m_HandleMap.at(eid);
+			entt::entity enttid = m_EidEnttMap.at(eid);
 			return &m_Registry.emplace_or_replace<T>(enttid);
 		}
 
@@ -40,23 +40,31 @@ namespace rdx
 		{
 			RX_ASSERT(HasEntity(eid));
 
-			entt::entity enttid = m_HandleMap.at(eid);
+			entt::entity enttid = m_EidEnttMap.at(eid);
 			return m_Registry.try_get<T>(enttid);
 		}
 
-		template <typename ...Cs>
-		void ViewImpl(ViewEachFn<Cs...> const& fnEach)
+		template <typename C, typename ...Cs>
+		void ViewImpl(ViewEachFn<C, Cs...> fnEach)
 		{
-			RX_DEBUG("Hi EnTTWorld");
-			//return CompView<Cs...>{};
+			auto view = m_Registry.view<C, Cs...>();
+			for (auto tup : view.each())
+			{
+				std::apply([this, &fnEach](auto enttid, auto& ...comps) {
+					fnEach(GetMapHandle(enttid), comps...); 
+				}, tup);
+			}
 		}
 
 	private:
-		void MapHandle(EntityID const, entt::entity const);
+		entt::entity GetMapHandle(EntityID const);
+		EntityID GetMapHandle(entt::entity const);
+		void SetMapHandle(EntityID const, entt::entity const);
 
 	private:
 		entt::registry m_Registry{};
-		std::map<EntityID, entt::entity> m_HandleMap{};
+		std::map<EntityID, entt::entity> m_EidEnttMap{};
+		std::map<entt::entity, EntityID> m_EnttEidMap{};
 	};
 }
 

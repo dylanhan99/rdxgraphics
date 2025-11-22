@@ -62,20 +62,33 @@ int RDX::Run()
 
 			if (ServiceLayer::InputService()->IsKeyTriggered(KeyCode::D))
 			{
-				Entity ent = ServiceLayer::EntityComponentService()->CreateEntity();
-				auto pXform = ent.AddComponent<TransformComponent>();
-				if (pXform)
+				for (int i = 0; i < 1000; ++i)
 				{
-					auto& xform = *pXform;
-					RX_DEBUG("{}, {}, {}", xform.Position.x, xform.Position.y, xform.Position.z);
+					Entity ent = ServiceLayer::EntityComponentService()->CreateEntity();
+					auto pXform = ent.AddComponent<TransformComponent>();
+					if (pXform)
+					{
+						auto& xform = *pXform;
+						xform.Position.x = i;
+						xform.Position.y = i;
+						xform.Position.z = i;
+						//RX_DEBUG("{}, {}, {}", xform.Position.x, xform.Position.y, xform.Position.z);
+					}
 				}
 
-				ServiceLayer::EntityComponentService()->View<TransformComponent&>(
-					[](EntityID id, TransformComponent& test)
+				RX_ECS_VIEWEACH(TransformComponent)(
+					[](EntityID id, TransformComponent& xform)
 					{
-						std::cout << "FnForEach\n";
-					}
-				);
+						RX_DEBUG("{}, {}, {}", xform.Position.x, xform.Position.y, xform.Position.z);
+						//std::cout << "FnForEach\n";
+					});
+
+				//ServiceLayer::EntityComponentService()->View<TransformComponent>().ForEach(
+				//	[](EntityID id, TransformComponent& xform)
+				//	{
+				//		RX_DEBUG("{}, {}, {}", xform.Position.x, xform.Position.y, xform.Position.z);
+				//		//std::cout << "FnForEach\n";
+				//	});
 			}
 
 			renderer.Draw();

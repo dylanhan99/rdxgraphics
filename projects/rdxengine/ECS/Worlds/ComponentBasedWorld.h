@@ -34,8 +34,8 @@ namespace rdx
 			return nullptr;
 		}
 
-		template <typename ...Cs>
-		void ViewImpl(ViewEachFn<Cs...> const& fnEach)
+		template <typename C, typename ...Cs>
+		void ViewImpl(ViewEachFn<C, Cs...> fnEach)
 		{
 			RX_DEBUG("Hi ComponentBasedWorld");
 			//return CompView<Cs...>{};

@@ -6,6 +6,8 @@
 
 namespace rdx
 {
+#define RX_ECS_VIEWEACH(...) ServiceLayer::EntityComponentService()->View<__VA_ARGS__>().ForEach
+
 	inline ViewSetID GenerateViewSetID()
 	{
 		static ViewSetID counter = 0;
@@ -22,17 +24,17 @@ namespace rdx
 	class Entity; // Forward declare is enough for function signature below
 
 	// For-each alias
-	template <typename ...Cs>
-	using ViewEachFn = std::function<void(EntityID, Cs...)>;
+	template <typename C, typename ...Cs>
+	using ViewEachFn = std::function<void(EntityID, C&, Cs&...)>;
 
 	// Factory function containing the CRTP casting
-	template <typename ...Cs>
-	using ViewFactoryFn = std::function<void(ViewEachFn<Cs...>)>;
+	template <typename C, typename ...Cs>
+	using ViewFactoryFn = std::function<void(ViewEachFn<C, Cs...>)>;
 
 	// Variant being used by the BaseECSWorld
 	using ViewFactoryVariant = std::variant<
-		ViewFactoryFn<>,
-		ViewFactoryFn<TransformComponent&>
+		//ViewFactoryFn<>,
+		ViewFactoryFn<TransformComponent>
 	>;
 
 	// This class handles error, null, ..., safety checks.
@@ -44,6 +46,19 @@ namespace rdx
 		{
 			return ++s_EntityCounter;
 		}
+
+		template <typename C, typename ...Cs>
+		struct ViewContainer
+		{
+			ViewFactoryFn<C, Cs...> Func{};
+
+			template <typename Fn>
+			void ForEach(Fn&& callback) 
+			{
+				RX_ASSERT(callback);
+				Func(callback);
+			}
+		};
 
 	private:
 		struct ComponentFactory
@@ -113,32 +128,35 @@ namespace rdx
 				nullptr;
 		}
 
-		template <typename ...Cs>
-		auto View(std::function<void(EntityID, Cs...)> fnEach)
+		template <typename C, typename ...Cs>
+		ViewContainer<C, Cs...> View()
 		{
 			//RX_ASSERT(GetDispatch());
 			//return GetDispatch()->View<Cs...>();
 
 			//static AutoRegister<Cs...> s_reg{};
 
-			ViewSetID const vid = GetViewSetID<Cs...>();
+			ViewSetID const vid = GetViewSetID<C, Cs...>();
 			
 			auto it = m_ViewFactories.find(vid);
 			RX_ASSERT_MSG(it != m_ViewFactories.end(), "View Cs... not registered.");
 			ViewFactoryVariant& vfVariant = it->second;
 
 			return std::visit(
-				[&](auto& factory) -> void
+				[](auto& factory)
 				{
 					using F = std::decay_t<decltype(factory)>;
-					using ExpectedF = ViewFactoryFn<Cs...>;
+					using ExpectedF = ViewFactoryFn<C, Cs...>;
 					if constexpr (std::is_same_v<F, ExpectedF>)
 					{
-						factory(fnEach);
+						return ViewContainer<C, Cs...>{
+							.Func = factory
+						};
 					}
 					else
 					{
 						RX_ASSERT_MSG(false, "View signature mismatch.");
+						return ViewContainer<C, Cs...>{};
 					}
 				}, vfVariant);
 		}
@@ -160,8 +178,8 @@ namespace rdx
 			RegisterComponent<TransformComponent>();
 
 			// Register Variants
-			RegisterViewSet<>();
-			RegisterViewSet<TransformComponent&>();
+			//RegisterViewSet<>();
+			RegisterViewSet<TransformComponent>();
 
 			return InitWorld();
 		}
@@ -190,14 +208,14 @@ namespace rdx
 				};
 		}
 
-		template <typename ...Cs>
+		template <typename C, typename ...Cs>
 		void RegisterViewSet()
 		{
-			auto& viewFactory = m_ViewFactories[GetViewSetID<Cs...>()];
-			viewFactory = ViewFactoryFn<Cs...>{
-				[this](ViewEachFn<Cs...> const& fnEach) -> void
+			auto& viewFactory = m_ViewFactories[GetViewSetID<C, Cs...>()];
+			viewFactory = ViewFactoryFn<C, Cs...>{
+				[this](ViewEachFn<C, Cs...> const& fnEach) -> void
 				{
-					static_cast<DerivedT*>(this)->template ViewImpl<Cs...>(fnEach);
+					static_cast<DerivedT*>(this)->template ViewImpl<C, Cs...>(fnEach);
 				}
 			};
 		}
