@@ -2,6 +2,7 @@
 #define ENTTWORLD_H
 #include "ECS/BaseEntityComponentWorld.h"
 #include <entt/entt.hpp>
+#include "ServiceLayer.h"
 
 namespace rdx
 {
@@ -41,6 +42,13 @@ namespace rdx
 
 			entt::entity enttid = m_HandleMap.at(eid);
 			return m_Registry.try_get<T>(enttid);
+		}
+
+		template <typename ...Cs>
+		void ViewImpl(ViewEachFn<Cs...> const& fnEach)
+		{
+			RX_DEBUG("Hi EnTTWorld");
+			//return CompView<Cs...>{};
 		}
 
 	private:

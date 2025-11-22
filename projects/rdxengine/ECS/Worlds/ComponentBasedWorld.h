@@ -1,6 +1,7 @@
 #ifndef COMPONENTBASEDWORLD_H
 #define COMPONENTBASEDWORLD_H
 #include "ECS/BaseEntityComponentWorld.h"
+#include "ServiceLayer.h"
 
 namespace rdx
 {
@@ -31,6 +32,13 @@ namespace rdx
 		void* const GetComponentImpl(EntityID const eid)
 		{
 			return nullptr;
+		}
+
+		template <typename ...Cs>
+		void ViewImpl(ViewEachFn<Cs...> const& fnEach)
+		{
+			RX_DEBUG("Hi ComponentBasedWorld");
+			//return CompView<Cs...>{};
 		}
 	};
 }

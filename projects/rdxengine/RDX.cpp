@@ -69,6 +69,13 @@ int RDX::Run()
 					auto& xform = *pXform;
 					RX_DEBUG("{}, {}, {}", xform.Position.x, xform.Position.y, xform.Position.z);
 				}
+
+				ServiceLayer::EntityComponentService()->View<TransformComponent&>(
+					[](EntityID id, TransformComponent& test)
+					{
+						std::cout << "FnForEach\n";
+					}
+				);
 			}
 
 			renderer.Draw();

@@ -1,8 +1,6 @@
 #include "CrappyRenderer.h"
 #include "ServiceLayer.h"
 #include <gl/glew.h>
-#include <glm/glm.hpp>
-#include <vector>
 
 using namespace rdx;
 
@@ -26,7 +24,7 @@ bool CrappyRenderer::InitImpl()
     GLenum glewError = glewInit();
     if (glewError != GLEW_OK)
     {
-        //RX_CRITICAL("Failed to initialize GLEW: {}", glewGetErrorString(glewError));
+        RX_CRITICAL("Failed to initialize GLEW: {}", (const char*)glewGetErrorString(glewError));
         return false;
     }
 
@@ -104,23 +102,25 @@ void CrappyRenderer::Draw()
     glBindVertexArray(tempVAO);
     glUseProgram(shaderProgram);
 
-    // FIXED: Draw all indices with correct parameters
-    glDrawElements(
-        GL_TRIANGLES,
-        static_cast<GLsizei>(indices.size()),  // Number of indices to draw
-        GL_UNSIGNED_INT,
-        nullptr  // We're using bound EBO, so no pointer needed
-    );
+    //auto view = ServiceLayer::EntityComponentService()->View<TransformComponent>();
+    //for (auto [eid, xform] : view.each())
+    {
+        // glm::mat4 const& modelXform = xform.GetTransformMatrix();
+        glm::mat4 modelXform{1.0}; // identity
+        modelXform = glm::translate(modelXform, glm::vec3{1.f,0.f,0.f});
+        GLint loc = glGetUniformLocation(shaderProgram, "model");
+        if (loc == -1)
+            RX_WARN("Failed to locate '{}' in shader.", "model");
+        glUniformMatrix4fv(loc, 1, GL_FALSE, &glm::value_ptr(modelXform)[0]);
 
-    error = glGetError();
-    if (error != GL_NO_ERROR) {
-        //RX_ERROR("OpenGL error after glDrawElements: {}", error);
-        if (drawCount >= 3) {
-            //RX_CRITICAL("Critical error on draw call #{} - this was theERROR crashing call!", drawCount);
-        }
+        // FIXED: Draw all indices with correct parameters
+        glDrawElements(
+            GL_TRIANGLES,
+            static_cast<GLsizei>(indices.size()),  // Number of indices to draw
+            GL_UNSIGNED_INT,
+            nullptr  // We're using bound EBO, so no pointer needed
+        );
     }
-
-    //RX_TRACE("Draw call #{} completed successfully", drawCount);
 }
 
 void CrappyRenderer::SetupGlewDefaults()
@@ -195,9 +195,10 @@ void CrappyRenderer::SetupDefaultAssets()
     const char* vertexShaderSource =
         "#version 330 core\n"
         "layout (location = 0) in vec3 aPos;\n"
+        "uniform mat4 model;\n"
         "void main()\n"
         "{\n"
-        "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+        "   gl_Position = model * vec4(aPos, 1.0);\n"
         "}\0";
 
     const char* fragmentShaderSource =
