@@ -24,6 +24,7 @@ namespace rdx
 		std::unique_ptr<BaseLogger> m_Logging{};
 		std::unique_ptr<InstantEventBus> m_InstantEventBus{};
 		std::unique_ptr<BaseEntityComponentWorld> m_EntityComponentWorld{};
+		std::unique_ptr<BaseRenderer> m_Renderer{};
 	};
 }
 

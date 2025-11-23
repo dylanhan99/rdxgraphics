@@ -2,8 +2,8 @@
 
 using namespace rdx;
 
-ServiceLayer::ServiceLayer(BaseWindow* pWindow, Input* pInput, BaseLogger* pLogger, InstantEventBus* pInstantEventBus, BaseEntityComponentWorld* pEntityComponentWorld)
-	: m_WindowService(pWindow), m_InputService(pInput), m_LoggingService(pLogger), m_InstantEventService(pInstantEventBus), m_EntityComponentService(pEntityComponentWorld)
+ServiceLayer::ServiceLayer(BaseWindow* pWindow, Input* pInput, BaseLogger* pLogger, InstantEventBus* pInstantEventBus, BaseEntityComponentWorld* pEntityComponentWorld, BaseRenderer* pRenderer)
+	: m_WindowService(pWindow), m_InputService(pInput), m_LoggingService(pLogger), m_InstantEventService(pInstantEventBus), m_EntityComponentService(pEntityComponentWorld), m_RenderingService(pRenderer)
 {}
 
 void ServiceLayer::RegisterServiceLayer(ServiceLayer* pLayer)
@@ -34,4 +34,9 @@ InstantEventBus* const ServiceLayer::InstantEventService()
 BaseEntityComponentWorld* const ServiceLayer::EntityComponentService()
 {
 	return s_ServiceLayer->m_EntityComponentService;
+}
+
+BaseRenderer* const ServiceLayer::RenderingService()
+{
+	return s_ServiceLayer->m_RenderingService;
 }

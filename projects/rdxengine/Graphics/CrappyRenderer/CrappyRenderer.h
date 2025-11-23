@@ -1,6 +1,6 @@
 #ifndef CRAPPYRENDERER_H
 #define CRAPPYRENDERER_H
-#include "BaseService.h"
+#include "Graphics/BaseRenderer.h"
 
 namespace rdx
 {
@@ -30,13 +30,14 @@ namespace rdx
 		std::vector<VertexAttribute> Attributes{};
 	};
 
-	class CrappyRenderer : public BaseService
+	class CrappyRenderer : public BaseRenderer
 	{
 	public:
 		bool InitImpl() override;
 		bool TerminateImpl() override;
 
-		void Draw();
+	private:
+		void DrawImpl() override;
 
 	private:
 		void SetupGlewDefaults();

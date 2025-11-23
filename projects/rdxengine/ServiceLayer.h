@@ -5,13 +5,14 @@
 #include "Logging/BaseLogger.h"
 #include "Event/Busses/InstantEventBus.h"
 #include "ECS/BaseEntityComponentWorld.h"
+#include "Graphics/BaseRenderer.h"
 
 namespace rdx
 {
 	class RX_API ServiceLayer
 	{
 	public:
-		ServiceLayer(BaseWindow*, Input*, BaseLogger*, InstantEventBus*, BaseEntityComponentWorld*);
+		ServiceLayer(BaseWindow*, Input*, BaseLogger*, InstantEventBus*, BaseEntityComponentWorld*, BaseRenderer*);
 		static void RegisterServiceLayer(ServiceLayer*);
 
 		static BaseWindow* const WindowService();
@@ -19,6 +20,7 @@ namespace rdx
 		static BaseLogger* const LoggingService();
 		static InstantEventBus* const InstantEventService();
 		static BaseEntityComponentWorld* const EntityComponentService();
+		static BaseRenderer* const RenderingService();
 
 	private:
 		inline static ServiceLayer* s_ServiceLayer{};
@@ -28,6 +30,7 @@ namespace rdx
 		BaseLogger* m_LoggingService{};
 		InstantEventBus* m_InstantEventService{};
 		BaseEntityComponentWorld* m_EntityComponentService{};
+		BaseRenderer* m_RenderingService{};
 	};
 }
 

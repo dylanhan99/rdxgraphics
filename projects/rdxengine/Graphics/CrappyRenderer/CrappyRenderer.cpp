@@ -70,7 +70,7 @@ bool CrappyRenderer::TerminateImpl()
     return true;
 }
 
-void CrappyRenderer::Draw()
+void CrappyRenderer::DrawImpl()
 {
     static int drawCount = 0;
     drawCount++;
@@ -104,23 +104,26 @@ void CrappyRenderer::Draw()
 
     //auto view = ServiceLayer::EntityComponentService()->View<TransformComponent>();
     //for (auto [eid, xform] : view.each())
-    {
-        // glm::mat4 const& modelXform = xform.GetTransformMatrix();
-        glm::mat4 modelXform{1.0}; // identity
-        modelXform = glm::translate(modelXform, glm::vec3{1.f,0.f,0.f});
-        GLint loc = glGetUniformLocation(shaderProgram, "model");
-        if (loc == -1)
-            RX_WARN("Failed to locate '{}' in shader.", "model");
-        glUniformMatrix4fv(loc, 1, GL_FALSE, &glm::value_ptr(modelXform)[0]);
+    RX_ECS_VIEWEACH(TransformComponent)(
+        [](EntityID eid, TransformComponent& xform)
+        {
+            // glm::mat4 const& modelXform = xform.GetTransformMatrix();
+            //glm::mat4 modelXform{1.0}; // identity
+            //modelXform = glm::translate(modelXform, glm::vec3{1.f,0.f,0.f});
+            glm::mat4 modelXform = glm::translate(glm::mat4{ 1.f }, xform.Position);
+            GLint loc = glGetUniformLocation(shaderProgram, "model");
+            if (loc == -1)
+                RX_WARN("Failed to locate '{}' in shader.", "model");
+            glUniformMatrix4fv(loc, 1, GL_FALSE, &glm::value_ptr(modelXform)[0]);
 
-        // FIXED: Draw all indices with correct parameters
-        glDrawElements(
-            GL_TRIANGLES,
-            static_cast<GLsizei>(indices.size()),  // Number of indices to draw
-            GL_UNSIGNED_INT,
-            nullptr  // We're using bound EBO, so no pointer needed
-        );
-    }
+            // FIXED: Draw all indices with correct parameters
+            glDrawElements(
+                GL_TRIANGLES,
+                static_cast<GLsizei>(indices.size()),  // Number of indices to draw
+                GL_UNSIGNED_INT,
+                nullptr  // We're using bound EBO, so no pointer needed
+            );
+        });
 }
 
 void CrappyRenderer::SetupGlewDefaults()

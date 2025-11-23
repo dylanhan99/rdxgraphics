@@ -5,7 +5,8 @@
 #include "ECS/Worlds/EnttWorld.h"
 #include "ECS/Entity.h"
 
-#include "Graphics/CrappyRenderer.h"
+//#include "Graphics/CrappyRenderer/CrappyRenderer.h"
+#include "Graphics/NaiveRenderer/NaiveRenderer.h"
 
 #include "Event/Events/Events.h"
 
@@ -18,8 +19,9 @@ RDX::RDX()
 	m_Logging = std::make_unique<AsyncLogger>();
 	m_InstantEventBus = std::make_unique<InstantEventBus>();
 	m_EntityComponentWorld = std::make_unique<EnttWorld>();
+	m_Renderer = std::make_unique<NaiveRenderer>();
 
-	m_ServiceLayer = std::make_unique<ServiceLayer>(m_Window.get(), m_Input.get(), m_Logging.get(), m_InstantEventBus.get(), m_EntityComponentWorld.get());
+	m_ServiceLayer = std::make_unique<ServiceLayer>(m_Window.get(), m_Input.get(), m_Logging.get(), m_InstantEventBus.get(), m_EntityComponentWorld.get(), m_Renderer.get());
 	m_ServiceLayer->RegisterServiceLayer(m_ServiceLayer.get());
 }
 
@@ -40,8 +42,7 @@ int RDX::Run()
 				ServiceLayer::WindowService()->SetShouldClose();
 			});
 
-		CrappyRenderer renderer{};
-		renderer.Init();
+		ServiceLayer::RenderingService()->Init();
 
 		while (!ServiceLayer::WindowService()->IsWindowShouldClose())
 		{
@@ -60,9 +61,15 @@ int RDX::Run()
 				}
 			}
 
+			if (ServiceLayer::InputService()->IsKeyTriggered(KeyCode::S))
+			{
+				ServiceLayer::EntityComponentService()->Clear();
+			}
+
 			if (ServiceLayer::InputService()->IsKeyTriggered(KeyCode::D))
 			{
-				for (int i = 0; i < 1000; ++i)
+				constexpr int sz = 100;
+				for (int i = -sz/2; i < sz/2; ++i)
 				{
 					Entity ent = ServiceLayer::EntityComponentService()->CreateEntity();
 					auto pXform = ent.AddComponent<TransformComponent>();
@@ -71,31 +78,17 @@ int RDX::Run()
 						auto& xform = *pXform;
 						xform.Position.x = i;
 						xform.Position.y = i;
-						xform.Position.z = i;
+						xform.Position.z = 0.f;
 						//RX_DEBUG("{}, {}, {}", xform.Position.x, xform.Position.y, xform.Position.z);
 					}
 				}
-
-				RX_ECS_VIEWEACH(TransformComponent)(
-					[](EntityID id, TransformComponent& xform)
-					{
-						RX_DEBUG("{}, {}, {}", xform.Position.x, xform.Position.y, xform.Position.z);
-						//std::cout << "FnForEach\n";
-					});
-
-				//ServiceLayer::EntityComponentService()->View<TransformComponent>().ForEach(
-				//	[](EntityID id, TransformComponent& xform)
-				//	{
-				//		RX_DEBUG("{}, {}, {}", xform.Position.x, xform.Position.y, xform.Position.z);
-				//		//std::cout << "FnForEach\n";
-				//	});
 			}
 
-			renderer.Draw();
+			ServiceLayer::RenderingService()->Draw();
 			ServiceLayer::WindowService()->SwapBuffers();
 		}
 
-		renderer.Terminate();
+		ServiceLayer::RenderingService()->Terminate();
 	}
 	else
 	{

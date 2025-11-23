@@ -55,7 +55,7 @@ namespace rdx
 			template <typename Fn>
 			void ForEach(Fn&& callback) 
 			{
-				RX_ASSERT(callback);
+				//RX_ASSERT(callback);
 				Func(callback);
 			}
 		};
@@ -78,6 +78,7 @@ namespace rdx
 		//virtual bool HasComponentImpl(ComponentID const, EntityID const) = 0;
 		//virtual void* const AddComponentImpl(ComponentID const, EntityID const) = 0;
 		//virtual void* const GetComponentImpl(ComponentID const, EntityID const) = 0;
+		virtual void ClearImpl() = 0;
 
 		template <typename T>
 		bool HasComponent(EntityID const& eid)
@@ -160,6 +161,8 @@ namespace rdx
 					}
 				}, vfVariant);
 		}
+
+		void Clear() { ClearImpl(); }
 
 	protected:
 		inline static EntityID s_EntityCounter{ 0 };

@@ -15,10 +15,7 @@ bool EnttWorld::InitWorld()
 
 bool EnttWorld::TerminateImpl()
 {
-	m_Registry.clear();
-	m_EidEnttMap.clear();
-	m_EnttEidMap.clear();
-
+	Clear();
 	return true;
 }
 
@@ -52,4 +49,11 @@ void EnttWorld::SetMapHandle(EntityID const eid, entt::entity const enttid)
 {
 	m_EidEnttMap[eid] = enttid;
 	m_EnttEidMap[enttid] = eid;
+}
+
+void EnttWorld::ClearImpl()
+{
+	m_Registry.clear();
+	m_EidEnttMap.clear();
+	m_EnttEidMap.clear();
 }

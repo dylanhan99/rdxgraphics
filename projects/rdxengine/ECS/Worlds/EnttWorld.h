@@ -56,6 +56,8 @@ namespace rdx
 			}
 		}
 
+		void ClearImpl() override;
+
 	private:
 		entt::entity GetMapHandle(EntityID const);
 		EntityID GetMapHandle(entt::entity const);

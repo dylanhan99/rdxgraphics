@@ -40,6 +40,8 @@ namespace rdx
 			RX_DEBUG("Hi ComponentBasedWorld");
 			//return CompView<Cs...>{};
 		}
+
+		void ClearImpl() override {}
 	};
 }
 
