@@ -44,7 +44,7 @@ namespace rdx
 			void SetUniformMatrix4fv(std::string_view const& name, std::vector<glm::mat4> const& v);
 
 			inline bool IsValid() const { return *this; }
-			inline operator bool() const { return m_ProgramID != 0; }
+			inline operator bool() const { return m_ProgramID > 0; }
 
 		private:
 			GLint GetUniformLocation(std::string_view const& name) const;
@@ -57,13 +57,56 @@ namespace rdx
 		private:
 			GLuint m_ProgramID{};
 		};
-		class VertexArrayObject
+		class Mesh // Structure of Arrays (SOA)
 		{
 		public:
-			bool Init(std::vector<GLuint> indices = {});
+			enum class VertexAttributeType
+			{
+				Vec2, Vec3, Vec4,
+				UInt8, UInt32, Float,
+			};
+
+			struct VertexAttribute
+			{
+				//uint32_t Location{}; // Shader location
+
+				VertexAttributeType AttributeType{}; // eg vec4
+				uint32_t AttributeCount{};			 // Most would be 1, but say for Mat4, it has to be made of 4 vec4
+
+				VertexAttributeType FundamentalType{}; // eg float
+				uint32_t FundamentalCount{}; // Would be 4 floats for vec4
+
+				void* Data{};
+				size_t Length{}; // Array size
+
+				bool IsInstanced{};
+				bool IsNormalized{};
+			};
+
+			struct VertexLayout
+			{
+				inline void Push(VertexAttribute attrib) { Attributes.emplace_back(std::move(attrib)); }
+
+				std::vector<VertexAttribute> Attributes{};
+			};
+
+		public:
+			bool Init(VertexLayout const& layout, std::vector<GLuint> indices = {});
+			bool Terminate();
+
+			void Bind() const;
+
+			inline bool IsValid() const { return *this; }
+			inline operator bool() const { return m_VAO > 0; }
+
+			std::vector<GLuint> m_VBOs; // temp
 
 		private:
-			GLuint m_ID;
+			size_t GetFundamentalSize(VertexAttributeType const t);
+			GLenum TraslateAttribType(VertexAttributeType const t);
+
+		private:
+			GLuint m_VAO;
 		};
 
 	public:
@@ -76,6 +119,7 @@ namespace rdx
 
 	private:
 		Shader m_DefaultShader{};
+		Mesh m_DefaultMesh{};
 	};
 }
 

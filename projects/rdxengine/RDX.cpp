@@ -68,7 +68,7 @@ int RDX::Run()
 
 			if (ServiceLayer::InputService()->IsKeyTriggered(KeyCode::D))
 			{
-				constexpr int sz = 100;
+				constexpr int sz = 3;
 				for (int i = -sz/2; i < sz/2; ++i)
 				{
 					Entity ent = ServiceLayer::EntityComponentService()->CreateEntity();
