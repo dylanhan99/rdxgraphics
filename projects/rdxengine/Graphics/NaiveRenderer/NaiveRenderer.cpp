@@ -14,6 +14,10 @@ extern std::vector<GLuint> indices;
 //	3, 2, 5, 5, 4, 3  // Right face
 //};
 
+namespace {
+	constexpr int MAX_INSTANCES = 5;
+}
+
 bool NaiveRenderer::InitImpl()
 {
 	{
@@ -24,12 +28,6 @@ bool NaiveRenderer::InitImpl()
 		{
 			RX_CRITICAL("Failed to initialize GLEW: {}", (const char*)glewGetErrorString(glewError));
 			return false;
-		}
-
-		// Clear the initial GLEW error that occurs with glewExperimental
-		GLenum err = glGetError();
-		if (err != GL_NO_ERROR) {
-			//RX_WARN("Initial GLEW error (normal): {}", err);
 		}
 	}
 
@@ -48,20 +46,20 @@ bool NaiveRenderer::InitImpl()
 
 	{
 		const char* vertexShaderSource =
-			"#version 330 core\n"
+			"#version 450 core\n"
 			"layout (location = 0) in vec3 aPos;\n"
-			"uniform mat4 model;\n"
+			"layout (location = 1) in mat4 aXform;\n"
 			"void main()\n"
 			"{\n"
-			"   gl_Position = model * vec4(aPos, 1.0);\n"
+			"   gl_Position = aXform * vec4(aPos, 1.0);\n"
 			"}\0";
 
 		const char* fragmentShaderSource =
-			"#version 330 core\n"
+			"#version 450 core\n"
 			"out vec4 FragColor;\n"
 			"void main()\n"
 			"{\n"
-			"   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+			"   FragColor = vec4(1.f, 0.f, 1.f, 1.f);\n"
 			"}\n";
 		m_DefaultShader.Init({
 			{Shader::Type::Vertex, vertexShaderSource},
@@ -69,6 +67,43 @@ bool NaiveRenderer::InitImpl()
 			});
 	}
 	RX_ASSERT(m_DefaultShader);
+
+	{
+		std::vector<glm::vec3> vertices{
+			{ -0.5f,  0.5f,  0.5f }, // 0
+			{ -0.5f, -0.5f,  0.5f }, // 1
+			{  0.5f, -0.5f,  0.5f }, // 2
+			{  0.5f,  0.5f,  0.5f }, // 3
+			{  0.5f,  0.5f, -0.5f }, // 4
+			{  0.5f, -0.5f, -0.5f }, // 5
+			{ -0.5f, -0.5f, -0.5f }, // 6
+			{ -0.5f,  0.5f, -0.5f }  // 7
+		};
+
+		Mesh::VertexLayout layout{};
+		layout.Push(Mesh::VertexAttribute{
+			.AttributeType = Mesh::VertexAttributeType::Vec3,
+			.AttributeCount = 1,
+			.FundamentalType = Mesh::VertexAttributeType::Float,
+			.FundamentalCount = 3,
+			.Data = vertices.data(),
+			.Length = vertices.size(),
+			.IsInstanced = false,
+			.IsNormalized = false
+			});
+		layout.Push(Mesh::VertexAttribute{
+			.AttributeType = Mesh::VertexAttributeType::Vec4,
+			.AttributeCount = 4,
+			.FundamentalType = Mesh::VertexAttributeType::Float,
+			.FundamentalCount = 4,
+			.Data = nullptr,
+			.Length = 0,
+			.IsInstanced = true,
+			.IsNormalized = false
+			});
+		m_DefaultMesh.Init(layout, indices);
+	}
+	RX_ASSERT(m_DefaultMesh);
 
 	{
 		glGenVertexArrays(1, &tempVAO);
@@ -133,23 +168,30 @@ void NaiveRenderer::DrawImpl()
 	glClearColor(m_BackbufferColor.r, m_BackbufferColor.g, m_BackbufferColor.b, m_BackbufferColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	glBindVertexArray(tempVAO);
-	m_DefaultShader.Bind();
+	std::vector<glm::mat4> xforms{};
 	RX_ECS_VIEWEACH(TransformComponent)(
 		[&](EntityID eid, TransformComponent& xform)
 		{
 			// glm::mat4 const& modelXform = xform.GetTransformMatrix();
 			glm::mat4 modelXform = glm::translate(glm::mat4{ 1.f }, xform.Position);
-			m_DefaultShader.SetUniformMatrix4f("model", modelXform);
 
-			// FIXED: Draw all indices with correct parameters
-			glDrawElements(
-				GL_TRIANGLES,
-				static_cast<GLsizei>(indices.size()),  // Number of indices to draw
-				GL_UNSIGNED_INT,
-				nullptr  // We're using bound EBO, so no pointer needed
-			);
+			xforms.emplace_back(modelXform);
 		});
+
+	glNamedBufferSubData(m_DefaultMesh.m_VBOs[1],
+		0,
+		xforms.size() * sizeof(glm::mat4),
+		(void*)(xforms.data() /*+ offset*/)); // Offset is when you have to batch the instancing, in case you overflow the maxinstances
+
+	m_DefaultMesh.Bind();
+	m_DefaultShader.Bind();
+	glDrawElementsInstanced(
+		GL_TRIANGLES,
+		(GLsizei)indices.size(),
+		GL_UNSIGNED_INT,
+		nullptr,
+		(GLsizei)xforms.size()
+	);
 	m_DefaultShader.Unbind();
 }
 
@@ -301,5 +343,135 @@ void NaiveRenderer::Shader::CleanupShaders(std::vector<GLuint> const& shaderIDs)
 {
 	for (GLuint const& id : shaderIDs)
 		glDeleteShader(id);
+}
+#pragma endregion
+
+#pragma region ::Mesh
+bool NaiveRenderer::Mesh::Init(Mesh::VertexLayout const& layout, std::vector<GLuint> indices)
+{
+	glCreateVertexArrays(1, &m_VAO);
+
+	if (!indices.empty())
+	{
+		GLuint ebo{};
+		glCreateBuffers(1, &ebo);
+		glNamedBufferData(ebo,
+			indices.size() * sizeof(GLuint),
+			indices.data(),
+			GL_STATIC_DRAW);
+
+		glVertexArrayElementBuffer(m_VAO, ebo);
+	}
+
+	GLuint location = 0;
+	for (Mesh::VertexAttribute const& attrib : layout.Attributes)
+	{
+		size_t const fundamentalSize = GetFundamentalSize(attrib.FundamentalType);
+		size_t const bufferSize = (attrib.IsInstanced ? MAX_INSTANCES : attrib.Length) * 
+			attrib.AttributeCount * attrib.FundamentalCount * fundamentalSize;
+		void* const bufferData = attrib.IsInstanced ? nullptr : attrib.Data;
+
+		GLuint vbo{};
+		glCreateBuffers(1, &vbo);
+		glNamedBufferStorage(vbo, bufferSize, bufferData, GL_DYNAMIC_STORAGE_BIT);
+
+		if (attrib.AttributeCount > 1)  // AOS: packed (e.g., mat4)
+		{
+			size_t stride = attrib.AttributeCount * attrib.FundamentalCount * fundamentalSize;
+			GLuint bindingIndex = location;
+			glVertexArrayVertexBuffer(m_VAO, bindingIndex, vbo, 0, stride);
+
+			for (uint32_t i = 0; i < attrib.AttributeCount; ++i)
+			{
+				uint32_t currLocation = location + i;
+				glEnableVertexArrayAttrib(m_VAO, currLocation);
+				glVertexArrayAttribBinding(m_VAO, currLocation, bindingIndex);
+				glVertexArrayAttribFormat(m_VAO, currLocation,
+					attrib.FundamentalCount, TraslateAttribType(attrib.FundamentalType), // For this attrib, how many of GLenums?
+					attrib.IsNormalized,
+					i * attrib.FundamentalCount * fundamentalSize);  // Offset within stride
+
+				if (attrib.IsInstanced)
+					glVertexArrayBindingDivisor(m_VAO, currLocation, 1);
+			}
+		}
+		else  // SOA: separate columns
+		{
+			size_t stride = attrib.FundamentalCount * fundamentalSize;
+
+			uint32_t currLocation = location;
+			GLuint bindingIndex = location;
+			size_t offset = 0;// MAX_INSTANCES* attrib.FundamentalCount* fundamentalSize;
+
+			glVertexArrayVertexBuffer(m_VAO, bindingIndex, vbo, offset, stride);
+			glEnableVertexArrayAttrib(m_VAO, currLocation);
+			glVertexArrayAttribBinding(m_VAO, currLocation, bindingIndex);
+			glVertexArrayAttribFormat(m_VAO, currLocation,
+				attrib.FundamentalCount, TraslateAttribType(attrib.FundamentalType), // For this attrib, how many of GLenums?
+				attrib.IsNormalized,
+				0);  // No offset since binding already points to the column
+
+			if (attrib.IsInstanced)
+				glVertexArrayBindingDivisor(m_VAO, currLocation, 1);
+		}
+
+		m_VBOs.push_back(vbo);
+		location += attrib.AttributeCount;
+	}
+
+	return true;
+}
+
+bool NaiveRenderer::Mesh::Terminate()
+{
+	// Clean up ALL VAO, VBO, EBO
+
+	return true;
+}
+
+void NaiveRenderer::Mesh::Bind() const
+{
+	glBindVertexArray(m_VAO);
+}
+
+size_t NaiveRenderer::Mesh::GetFundamentalSize(VertexAttributeType const t)
+{
+	switch (t)
+	{
+		case VertexAttributeType::Vec2:
+		case VertexAttributeType::Vec3:
+		case VertexAttributeType::Vec4:
+		case VertexAttributeType::Float:
+			return sizeof(float);
+		case VertexAttributeType::UInt8:
+			return sizeof(uint8_t);
+		case VertexAttributeType::UInt32:
+			return sizeof(uint32_t);
+		default:
+			RX_ASSERT(false);
+			return 0;
+	}
+}
+
+GLenum NaiveRenderer::Mesh::TraslateAttribType(VertexAttributeType const t)
+{
+	switch (t)
+	{
+	case VertexAttributeType::Vec2:
+		return GL_FLOAT;
+	case VertexAttributeType::Vec3:
+		return GL_FLOAT;
+	case VertexAttributeType::Vec4:
+		return GL_FLOAT;
+	case VertexAttributeType::UInt8:
+		return GL_UNSIGNED_BYTE;
+	case VertexAttributeType::UInt32:
+		return GL_UNSIGNED_INT;
+	case VertexAttributeType::Float:
+		return GL_FLOAT;
+	default:
+		RX_ASSERT(false);
+		return 0;
+	}
 }
 #pragma endregion
