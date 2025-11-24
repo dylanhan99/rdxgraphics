@@ -367,28 +367,13 @@ bool NaiveRenderer::Mesh::Init(Mesh::VertexLayout const& layout, std::vector<GLu
 	for (Mesh::VertexAttribute const& attrib : layout.Attributes)
 	{
 		size_t const fundamentalSize = GetFundamentalSize(attrib.FundamentalType);
-
-		// Calculate buffer requirements
-		size_t bufferSize{};
-		if (attrib.IsInstanced)
-		{
-			if (attrib.AttributeCount > 1)  // AOS: packed data like mat4
-			{
-				bufferSize = MAX_INSTANCES * attrib.AttributeCount * attrib.FundamentalCount * fundamentalSize;
-			}
-			else  // SOA: separate columns
-			{
-				bufferSize = MAX_INSTANCES * attrib.FundamentalCount * fundamentalSize;
-			}
-		}
-		else
-		{
-			bufferSize = attrib.Length * attrib.AttributeCount * attrib.FundamentalCount * fundamentalSize;
-		}
+		size_t const bufferSize = (attrib.IsInstanced ? MAX_INSTANCES : attrib.Length) * 
+			attrib.AttributeCount * attrib.FundamentalCount * fundamentalSize;
+		void* const bufferData = attrib.IsInstanced ? nullptr : attrib.Data;
 
 		GLuint vbo{};
 		glCreateBuffers(1, &vbo);
-		glNamedBufferStorage(vbo, bufferSize, attrib.Data, GL_DYNAMIC_STORAGE_BIT);
+		glNamedBufferStorage(vbo, bufferSize, bufferData, GL_DYNAMIC_STORAGE_BIT);
 
 		if (attrib.AttributeCount > 1)  // AOS: packed (e.g., mat4)
 		{
@@ -402,37 +387,32 @@ bool NaiveRenderer::Mesh::Init(Mesh::VertexLayout const& layout, std::vector<GLu
 				glEnableVertexArrayAttrib(m_VAO, currLocation);
 				glVertexArrayAttribBinding(m_VAO, currLocation, bindingIndex);
 				glVertexArrayAttribFormat(m_VAO, currLocation,
-					attrib.FundamentalCount,
-					TraslateAttribType(attrib.FundamentalType),
+					attrib.FundamentalCount, TraslateAttribType(attrib.FundamentalType), // For this attrib, how many of GLenums?
 					attrib.IsNormalized,
-					i * attrib.FundamentalCount * fundamentalSize);  // Offset within instance
+					i * attrib.FundamentalCount * fundamentalSize);  // Offset within stride
 
 				if (attrib.IsInstanced)
-					glVertexAttribDivisor(currLocation, 1);
+					glVertexArrayBindingDivisor(m_VAO, currLocation, 1);
 			}
 		}
 		else  // SOA: separate columns
 		{
 			size_t stride = attrib.FundamentalCount * fundamentalSize;
 
-			for (uint32_t i = 0; i < attrib.AttributeCount; ++i)
-			{
-				uint32_t currLocation = location + i;
-				GLuint bindingIndex = location + i;
-				size_t offset = i * MAX_INSTANCES * attrib.FundamentalCount * fundamentalSize;
+			uint32_t currLocation = location;
+			GLuint bindingIndex = location;
+			size_t offset = 0;// MAX_INSTANCES* attrib.FundamentalCount* fundamentalSize;
 
-				glVertexArrayVertexBuffer(m_VAO, bindingIndex, vbo, offset, stride);
-				glEnableVertexArrayAttrib(m_VAO, currLocation);
-				glVertexArrayAttribBinding(m_VAO, currLocation, bindingIndex);
-				glVertexArrayAttribFormat(m_VAO, currLocation,
-					attrib.FundamentalCount,
-					TraslateAttribType(attrib.FundamentalType),
-					attrib.IsNormalized,
-					0);  // No offset since binding already points to the column
+			glVertexArrayVertexBuffer(m_VAO, bindingIndex, vbo, offset, stride);
+			glEnableVertexArrayAttrib(m_VAO, currLocation);
+			glVertexArrayAttribBinding(m_VAO, currLocation, bindingIndex);
+			glVertexArrayAttribFormat(m_VAO, currLocation,
+				attrib.FundamentalCount, TraslateAttribType(attrib.FundamentalType), // For this attrib, how many of GLenums?
+				attrib.IsNormalized,
+				0);  // No offset since binding already points to the column
 
-				if (attrib.IsInstanced)
-					glVertexAttribDivisor(currLocation, 1);
-			}
+			if (attrib.IsInstanced)
+				glVertexArrayBindingDivisor(m_VAO, currLocation, 1);
 		}
 
 		m_VBOs.push_back(vbo);

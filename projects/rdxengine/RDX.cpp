@@ -68,18 +68,51 @@ int RDX::Run()
 
 			if (ServiceLayer::InputService()->IsKeyTriggered(KeyCode::D))
 			{
-				constexpr int sz = 3;
-				for (int i = -sz/2; i < sz/2; ++i)
+				//constexpr int sz = 3;
+				//for (int i = -sz/2; i < sz/2; ++i)
+				//{
+				//	Entity ent = ServiceLayer::EntityComponentService()->CreateEntity();
+				//	auto pXform = ent.AddComponent<TransformComponent>();
+				//	if (pXform)
+				//	{
+				//		auto& xform = *pXform;
+				//		xform.Position.x = i;
+				//		xform.Position.y = i;
+				//		xform.Position.z = 0.f;
+				//		//RX_DEBUG("{}, {}, {}", xform.Position.x, xform.Position.y, xform.Position.z);
+				//	}
+				//}
 				{
 					Entity ent = ServiceLayer::EntityComponentService()->CreateEntity();
 					auto pXform = ent.AddComponent<TransformComponent>();
 					if (pXform)
 					{
 						auto& xform = *pXform;
-						xform.Position.x = i;
-						xform.Position.y = i;
+						xform.Position.x = -1.f;
+						xform.Position.y = -1.f;
+						xform.Position.z = -1.f;
+					}
+				}
+				{
+					Entity ent = ServiceLayer::EntityComponentService()->CreateEntity();
+					auto pXform = ent.AddComponent<TransformComponent>();
+					if (pXform)
+					{
+						auto& xform = *pXform;
+						xform.Position.x = 0.f;
+						xform.Position.y = 0.f;
 						xform.Position.z = 0.f;
-						//RX_DEBUG("{}, {}, {}", xform.Position.x, xform.Position.y, xform.Position.z);
+					}
+				}
+				{
+					Entity ent = ServiceLayer::EntityComponentService()->CreateEntity();
+					auto pXform = ent.AddComponent<TransformComponent>();
+					if (pXform)
+					{
+						auto& xform = *pXform;
+						xform.Position.x = 1.f;
+						xform.Position.y = 1.f;
+						xform.Position.z = 1.f;
 					}
 				}
 			}
