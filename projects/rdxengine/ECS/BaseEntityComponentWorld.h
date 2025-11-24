@@ -3,6 +3,7 @@
 #include "rxdebug.h"
 #include "BaseService.h"
 #include "Components/Component.h"
+#include "Components/CameraComponent.h"
 
 namespace rdx
 {
@@ -34,7 +35,8 @@ namespace rdx
 	// Variant being used by the BaseECSWorld
 	using ViewFactoryVariant = std::variant<
 		//ViewFactoryFn<>,
-		ViewFactoryFn<TransformComponent>
+		ViewFactoryFn<TransformComponent>,
+		ViewFactoryFn<TransformComponent, CameraComponent>
 	>;
 
 	// This class handles error, null, ..., safety checks.
@@ -179,10 +181,12 @@ namespace rdx
 		{
 			// Register Components
 			RegisterComponent<TransformComponent>();
+			RegisterComponent<CameraComponent>();
 
 			// Register Variants
 			//RegisterViewSet<>();
 			RegisterViewSet<TransformComponent>();
+			RegisterViewSet<TransformComponent, CameraComponent>();
 
 			return InitWorld();
 		}

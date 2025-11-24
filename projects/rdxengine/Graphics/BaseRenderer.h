@@ -1,6 +1,7 @@
 #ifndef BASERENDERER_H
 #define BASERENDERER_H
 #include "BaseService.h"
+#include "ECS/Components/CameraComponent.h"
 
 namespace rdx
 {
@@ -11,6 +12,9 @@ namespace rdx
 
 	private:
 		virtual void DrawImpl() = 0;
+
+	protected:
+		CameraComponent m_DefaultCamera{};
 	};
 }
 

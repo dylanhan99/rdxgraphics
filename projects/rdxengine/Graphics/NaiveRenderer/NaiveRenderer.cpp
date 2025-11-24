@@ -49,9 +49,11 @@ bool NaiveRenderer::InitImpl()
 			"#version 450 core\n"
 			"layout (location = 0) in vec3 aPos;\n"
 			"layout (location = 1) in mat4 aXform;\n"
+			"uniform mat4 viewMat;\n"
+			"uniform mat4 projMat;\n"
 			"void main()\n"
 			"{\n"
-			"   gl_Position = aXform * vec4(aPos, 1.0);\n"
+			"   gl_Position = projMat * viewMat * aXform * vec4(aPos, 1.0);\n"
 			"}\0";
 
 		const char* fragmentShaderSource =
@@ -164,6 +166,8 @@ bool NaiveRenderer::TerminateImpl()
 
 void NaiveRenderer::DrawImpl()
 {
+	m_DefaultCamera.UpdateCameraVectors(glm::vec3{ 0.f, 0.f, 5.f }, glm::vec3{ 0.f });
+
 	glm::vec4 m_BackbufferColor{ 0.2f, 0.3f, 0.3f, 1.0f };
 	glClearColor(m_BackbufferColor.r, m_BackbufferColor.g, m_BackbufferColor.b, m_BackbufferColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -185,6 +189,9 @@ void NaiveRenderer::DrawImpl()
 
 	m_DefaultMesh.Bind();
 	m_DefaultShader.Bind();
+	m_DefaultShader.SetUniformMatrix4f("viewMat", m_DefaultCamera.GetViewMatrix());
+	m_DefaultShader.SetUniformMatrix4f("projMat", m_DefaultCamera.GetProjMatrix());
+
 	glDrawElementsInstanced(
 		GL_TRIANGLES,
 		(GLsizei)indices.size(),
