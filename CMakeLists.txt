@@ -81,7 +81,12 @@ if (IS_DIRECTORY "${PROJECTS_DIR}")
             include(${child_source_dir}/config.cmake)
 
             if (IS_DIRECTORY "${child_source_dir}")
-                target_link_libraries(${child} PRIVATE ${childLibs})
+                if (childType STREQUAL "EXECUTABLE")
+                    target_link_libraries(${child} PRIVATE ${childLibs})
+                else()
+                    target_link_libraries(${child} PUBLIC ${childLibs})
+                endif()
+
                 target_compile_definitions(${child} PRIVATE ${childLibs})
 
                 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
@@ -94,7 +99,11 @@ if (IS_DIRECTORY "${PROJECTS_DIR}")
                     endif()
                 endif()
 
-                target_include_directories(${child} PRIVATE ${child_source_dir} ${PROJECTS_DIR})
+                if (childType STREQUAL "EXECUTABLE")
+                    target_include_directories(${child} PRIVATE ${child_source_dir} ${PROJECTS_DIR})
+                else()
+                    target_include_directories(${child} PUBLIC ${child_source_dir} ${PROJECTS_DIR})
+                endif()
             endif()
         endif()
     endforeach()
@@ -111,3 +120,9 @@ endif()
 #        COMMENT "Copying assets directory to build output"
 #    )
 #endif()
+
+add_custom_command(TARGET rdxengine POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        $<TARGET_FILE:glfw>
+        $<TARGET_FILE_DIR:rdxengine>
+)
