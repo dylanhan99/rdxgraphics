@@ -1,11 +1,12 @@
 #ifndef INSTANTEVENTBUS_H
 #define INSTANTEVENTBUS_H
+#include "RXAPI.h"
 #include "BaseService.h"
 #include <typeindex>
 
 namespace rdx
 {
-	class InstantEventBus final : public BaseService
+	class RX_API InstantEventBus final : public BaseService
 	{
 	public:
 		inline bool InitImpl() { return true; }

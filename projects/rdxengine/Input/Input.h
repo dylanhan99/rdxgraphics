@@ -1,11 +1,12 @@
 #ifndef INPUT_H
 #define INPUT_H
+#include "RXAPI.h"
 #include "BaseService.h"
 #include "InputCodes.h"
 
 namespace rdx
 {
-	class Input final : public BaseService
+	class RX_API Input final : public BaseService
 	{
 	public:
 		inline bool InitImpl() { return true; }

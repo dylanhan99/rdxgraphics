@@ -3,19 +3,18 @@
 
 using namespace rdx;
 
-extern GLuint tempVAO;
-extern std::vector<GLuint> indices;
-//std::vector<GLuint> indices{
-//	0, 1, 2, 2, 3, 0, // Front face
-//	4, 5, 6, 6, 7, 4, // Back face
-//	6, 5, 2, 2, 1, 6, // Bottom face
-//	0, 3, 4, 4, 7, 0, // Top face
-//	7, 6, 1, 1, 0, 7, // Left face
-//	3, 2, 5, 5, 4, 3  // Right face
-//};
-
 namespace {
 	constexpr int MAX_INSTANCES = 5;
+
+	std::vector<GLuint> indices{
+		0, 1, 2, 2, 3, 0, // Front face
+		4, 5, 6, 6, 7, 4, // Back face
+		6, 5, 2, 2, 1, 6, // Bottom face
+		0, 3, 4, 4, 7, 0, // Top face
+		7, 6, 1, 1, 0, 7, // Left face
+		3, 2, 5, 5, 4, 3  // Right face
+	};
+
 }
 
 bool NaiveRenderer::InitImpl()
@@ -62,7 +61,7 @@ bool NaiveRenderer::InitImpl()
 			"void main()\n"
 			"{\n"
 			"   FragColor = vec4(1.f, 0.f, 1.f, 1.f);\n"
-			"}\n";
+			"}\0";
 		m_DefaultShader.Init({
 			{Shader::Type::Vertex, vertexShaderSource},
 			{Shader::Type::Fragment, fragmentShaderSource}
@@ -107,54 +106,6 @@ bool NaiveRenderer::InitImpl()
 	}
 	RX_ASSERT(m_DefaultMesh);
 
-	{
-		glGenVertexArrays(1, &tempVAO);
-		glBindVertexArray(tempVAO);
-
-		// Vertex data
-		std::vector<glm::vec3> vertices{
-			{ -0.5f,  0.5f,  0.5f }, // 0
-			{ -0.5f, -0.5f,  0.5f }, // 1
-			{  0.5f, -0.5f,  0.5f }, // 2
-			{  0.5f,  0.5f,  0.5f }, // 3
-			{  0.5f,  0.5f, -0.5f }, // 4
-			{  0.5f, -0.5f, -0.5f }, // 5
-			{ -0.5f, -0.5f, -0.5f }, // 6
-			{ -0.5f,  0.5f, -0.5f }  // 7
-		};
-
-		// Setup Element Buffer Object (EBO) for indices
-		GLuint ebo{};
-		glGenBuffers(1, &ebo);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-			indices.size() * sizeof(GLuint),
-			indices.data(),
-			GL_STATIC_DRAW);
-
-		// Setup Vertex Buffer Object (VBO) for vertex positions
-		GLuint vbo{};
-		glGenBuffers(1, &vbo);
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glBufferData(GL_ARRAY_BUFFER,
-			vertices.size() * sizeof(glm::vec3),
-			vertices.data(),
-			GL_STATIC_DRAW);
-
-		// Setup vertex attribute pointer for position (location = 0)
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0,                    // location = 0
-			3,                    // 3 components (x, y, z)
-			GL_FLOAT,             // type
-			GL_FALSE,             // normalized
-			sizeof(glm::vec3),    // stride (12 bytes)
-			(void*)0);            // offset (0 bytes)
-
-		// Unbind VAO first (important!), then other buffers
-		glBindVertexArray(0);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-	}
-
 	return true;
 }
 
@@ -166,7 +117,7 @@ bool NaiveRenderer::TerminateImpl()
 
 void NaiveRenderer::DrawImpl()
 {
-	m_DefaultCamera.UpdateCameraVectors(glm::vec3{ 0.f, 0.f, 5.f }, glm::vec3{ 0.f });
+	m_EditorCamera.UpdateCameraVectors(glm::vec3{ 0.f, 0.f, 5.f }, glm::vec3{ 0.f });
 
 	glm::vec4 m_BackbufferColor{ 0.2f, 0.3f, 0.3f, 1.0f };
 	glClearColor(m_BackbufferColor.r, m_BackbufferColor.g, m_BackbufferColor.b, m_BackbufferColor.a);
@@ -189,8 +140,8 @@ void NaiveRenderer::DrawImpl()
 
 	m_DefaultMesh.Bind();
 	m_DefaultShader.Bind();
-	m_DefaultShader.SetUniformMatrix4f("viewMat", m_DefaultCamera.GetViewMatrix());
-	m_DefaultShader.SetUniformMatrix4f("projMat", m_DefaultCamera.GetProjMatrix());
+	m_DefaultShader.SetUniformMatrix4f("viewMat", m_EditorCamera.GetViewMatrix());
+	m_DefaultShader.SetUniformMatrix4f("projMat", m_EditorCamera.GetProjMatrix());
 
 	glDrawElementsInstanced(
 		GL_TRIANGLES,

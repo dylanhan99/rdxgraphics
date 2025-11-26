@@ -1,20 +1,22 @@
 #ifndef BASERENDERER_H
 #define BASERENDERER_H
+#include "RXAPI.h"
 #include "BaseService.h"
 #include "ECS/Components/CameraComponent.h"
 
 namespace rdx
 {
-	class BaseRenderer : public BaseService
+	class RX_API BaseRenderer : public BaseService
 	{
 	public:
-		void Draw() { DrawImpl(); }
+		void Draw();
+		virtual void SetDepthTest(bool flag);
 
 	private:
 		virtual void DrawImpl() = 0;
 
 	protected:
-		CameraComponent m_DefaultCamera{};
+		CameraComponent m_EditorCamera{};
 	};
 }
 

@@ -1,5 +1,6 @@
 #ifndef BASEENTITYCOMPONENTWORLD_H
 #define BASEENTITYCOMPONENTWORLD_H
+#include "RXAPI.h"
 #include "rxdebug.h"
 #include "BaseService.h"
 #include "Components/Component.h"
@@ -41,7 +42,7 @@ namespace rdx
 
 	// This class handles error, null, ..., safety checks.
 	// The derived class's _Impl functions simply do ONE job, no checks.
-	class BaseEntityComponentWorld : public BaseService
+	class RX_API BaseEntityComponentWorld : public BaseService
 	{
 	public:
 		inline static EntityID GenerateEntityID()

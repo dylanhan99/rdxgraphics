@@ -1,6 +1,6 @@
 #ifndef GLFWWINDOW_H
 #define GLFWWINDOW_H
-#include "Window/BaseWindow.h"
+#include "rdxengine/Window/BaseWindow.h"
 
 struct GLFWwindow; struct GLFWcursor; struct HWND__; typedef HWND__* HWND;
 
@@ -9,7 +9,7 @@ namespace rdx
 	class GLFWWindow final : public BaseWindow
 	{
 	public:
-		inline ~GLFWWindow() {};
+		~GLFWWindow() override;
 
 		bool InitImpl() override;
 		bool TerminateImpl() override;
@@ -17,6 +17,9 @@ namespace rdx
 
 		bool IsWindowShouldClose() override;
 		void SetShouldClose() override;
+
+		GLFWwindow* GetWindowPointer() { return m_pWindow; }
+		void SetContextCurrent() const;
 
 	private:
 		void PollEventsImpl() override;

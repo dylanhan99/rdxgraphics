@@ -113,6 +113,7 @@ namespace rdx
 		bool InitImpl() override;
 		bool TerminateImpl() override;
 
+		void SetDepthTest(bool flag) override { if (flag) glEnable(GL_DEPTH_TEST); else glDisable(GL_DEPTH_TEST); }
 
 	private:
 		void DrawImpl() override;

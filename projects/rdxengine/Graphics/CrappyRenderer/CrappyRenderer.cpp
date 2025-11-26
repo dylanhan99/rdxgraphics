@@ -4,17 +4,19 @@
 
 using namespace rdx;
 
-GLuint tempVAO{};
-GLuint shaderProgram{};
+namespace { // Anonymous ns to keep things local to this translation unit
+    GLuint tempVAO{};
+    GLuint shaderProgram{};
 
-std::vector<GLuint> indices{
-    0, 1, 2, 2, 3, 0, // Front face
-    4, 5, 6, 6, 7, 4, // Back face
-    6, 5, 2, 2, 1, 6, // Bottom face
-    0, 3, 4, 4, 7, 0, // Top face
-    7, 6, 1, 1, 0, 7, // Left face
-    3, 2, 5, 5, 4, 3  // Right face
-};
+    std::vector<GLuint> indices{
+        0, 1, 2, 2, 3, 0, // Front face
+        4, 5, 6, 6, 7, 4, // Back face
+        6, 5, 2, 2, 1, 6, // Bottom face
+        0, 3, 4, 4, 7, 0, // Top face
+        7, 6, 1, 1, 0, 7, // Left face
+        3, 2, 5, 5, 4, 3  // Right face
+    };
+}
 
 bool CrappyRenderer::InitImpl()
 {

@@ -5,6 +5,11 @@
 
 using namespace rdx;
 
+GLFWWindow::~GLFWWindow()
+{
+
+}
+
 bool GLFWWindow::InitImpl()
 {
 	glfwSetErrorCallback(
@@ -13,7 +18,7 @@ bool GLFWWindow::InitImpl()
 			std::cerr << "GLFW Error code " << code << " - " << desc << std::endl;
 		});
 
-	if (glfwInit() == GLFW_FALSE)
+	if (glfwInit() != GLFW_TRUE)
 	{
 		std::cerr << "Failed to initialize GLFW." << std::endl;
 		return false;
@@ -85,6 +90,11 @@ bool GLFWWindow::IsWindowShouldClose()
 void GLFWWindow::SetShouldClose()
 {
 	glfwSetWindowShouldClose(m_pWindow, true);
+}
+
+void GLFWWindow::SetContextCurrent() const
+{
+	glfwMakeContextCurrent(m_pWindow);
 }
 
 void GLFWWindow::PollEventsImpl()
