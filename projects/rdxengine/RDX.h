@@ -12,19 +12,15 @@ namespace rdx
 		~RDX();
 		int Run();
 
+		inline bool IsInitialized() const { return m_IsInitialized; }
+		void SetServiceLayer(ServiceLayer* sl);
+
 	private:
 		bool Init();
 		bool Terminate();
 
 	private:
-		std::unique_ptr<ServiceLayer> m_ServiceLayer{};
-
-		std::unique_ptr<BaseWindow> m_Window{};
-		std::unique_ptr<Input> m_Input{};
-		std::unique_ptr<BaseLogger> m_Logging{};
-		std::unique_ptr<InstantEventBus> m_InstantEventBus{};
-		std::unique_ptr<BaseEntityComponentWorld> m_EntityComponentWorld{};
-		std::unique_ptr<BaseRenderer> m_Renderer{};
+		bool m_IsInitialized{ false }; // Change to some "Engine Status" enum in the future
 	};
 }
 

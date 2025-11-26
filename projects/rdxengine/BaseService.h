@@ -28,6 +28,7 @@ namespace rdx
 
 		inline bool IsInitialized() const { return m_IsInitialized; }
 
+	private:
 		virtual bool InitImpl() = 0;
 		virtual bool TerminateImpl() = 0;
 

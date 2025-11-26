@@ -14,15 +14,6 @@ using namespace rdx;
 
 RDX::RDX()
 {
-	m_Window = std::make_unique<GLFWWindow>();
-	m_Input = std::make_unique<Input>();
-	m_Logging = std::make_unique<AsyncLogger>();
-	m_InstantEventBus = std::make_unique<InstantEventBus>();
-	m_EntityComponentWorld = std::make_unique<EnttWorld>();
-	m_Renderer = std::make_unique<NaiveRenderer>();
-
-	m_ServiceLayer = std::make_unique<ServiceLayer>(m_Window.get(), m_Input.get(), m_Logging.get(), m_InstantEventBus.get(), m_EntityComponentWorld.get(), m_Renderer.get());
-	m_ServiceLayer->RegisterServiceLayer(m_ServiceLayer.get());
 }
 
 RDX::~RDX()
@@ -33,7 +24,7 @@ int RDX::Run()
 {
 	int exitCode = EXIT_SUCCESS;
 
-	if (Init())
+	if (IsInitialized())
 	{
 		ServiceLayer::InstantEventService()->Subscribe<ShutdownEngineEvent>(
 			[](ShutdownEngineEvent const& e)
@@ -42,11 +33,11 @@ int RDX::Run()
 				ServiceLayer::WindowService()->SetShouldClose();
 			});
 
-		ServiceLayer::RenderingService()->Init();
-
 		while (!ServiceLayer::WindowService()->IsWindowShouldClose())
 		{
 			ServiceLayer::WindowService()->PollEvents();
+
+			ServiceLayer::ApplicationService()->FrameStart();
 
 			if (ServiceLayer::InputService()->IsKeyTriggered(KeyCode::Escape))
 			{
@@ -118,10 +109,9 @@ int RDX::Run()
 			}
 
 			ServiceLayer::RenderingService()->Draw();
+			ServiceLayer::ApplicationService()->FrameEnd();
 			ServiceLayer::WindowService()->SwapBuffers();
 		}
-
-		ServiceLayer::RenderingService()->Terminate();
 	}
 	else
 	{
@@ -139,26 +129,54 @@ int RDX::Run()
 	return exitCode;
 }
 
+void RDX::SetServiceLayer(ServiceLayer* sl)
+{
+	RX_ASSERT(sl);
+
+	bool success{};
+	if (ServiceLayer::GetServiceLayer())
+	{
+		success = Terminate();
+		RX_ASSERT(success);
+	}
+
+	ServiceLayer::SetServiceLayer(sl);
+
+	success = Init();
+	m_IsInitialized = success;
+}
+
 bool RDX::Init()
 {
+	RX_ASSERT(ServiceLayer::GetServiceLayer());
+
 	bool success = true;
-	success &= m_Window->Init();
-	success &= m_Input->Init();
-	success &= m_Logging->Init();
-	success &= m_InstantEventBus->Init();
-	success &= m_EntityComponentWorld->Init();
+	success &= ServiceLayer::WindowService()->Init();
+	//if (ServiceLayer::WindowService()->IsInitialized())
+	//	ServiceLayer::WindowService()->PollEvents();
+
+	success &= ServiceLayer::InputService()->Init();
+	success &= ServiceLayer::LoggingService()->Init();
+	success &= ServiceLayer::InstantEventService()->Init();
+	success &= ServiceLayer::EntityComponentService()->Init();
+	success &= ServiceLayer::RenderingService()->Init();
+	success &= ServiceLayer::ApplicationService()->Init();
 
 	return success;
 }
 
 bool RDX::Terminate()
 {
+	RX_ASSERT(ServiceLayer::GetServiceLayer());
+
 	bool success = true;
-	success &= m_EntityComponentWorld->Terminate();
-	success &= m_InstantEventBus->Terminate();
-	success &= m_Logging->Terminate();
-	success &= m_Input->Terminate();
-	success &= m_Window->Terminate();
+	success &= ServiceLayer::ApplicationService()->Terminate();
+	success &= ServiceLayer::RenderingService()->Terminate();
+	success &= ServiceLayer::EntityComponentService()->Terminate();
+	success &= ServiceLayer::InstantEventService()->Terminate();
+	success &= ServiceLayer::LoggingService()->Terminate();
+	success &= ServiceLayer::InputService()->Terminate();
+	success &= ServiceLayer::WindowService()->Terminate();
 
 	return success;
 }
