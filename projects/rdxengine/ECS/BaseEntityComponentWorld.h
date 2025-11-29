@@ -45,6 +45,9 @@ namespace rdx
 	class RX_API BaseEntityComponentWorld : public BaseService
 	{
 	public:
+		inline const char* GetName() const override { return "EntityComponentWorld"; }
+
+	public:
 		inline static EntityID GenerateEntityID()
 		{
 			return ++s_EntityCounter;

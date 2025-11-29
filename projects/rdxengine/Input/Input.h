@@ -9,6 +9,9 @@ namespace rdx
 	class RX_API Input final : public BaseService
 	{
 	public:
+		inline const char* GetName() const override { return "Input"; }
+
+	public:
 		inline bool InitImpl() { return true; }
 		inline bool TerminateImpl() { return true; }
 

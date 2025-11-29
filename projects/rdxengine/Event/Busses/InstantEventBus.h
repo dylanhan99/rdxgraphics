@@ -9,6 +9,9 @@ namespace rdx
 	class RX_API InstantEventBus final : public BaseService
 	{
 	public:
+		inline const char* GetName() const override { return "Instant Event Bus"; }
+
+	public:
 		inline bool InitImpl() { return true; }
 		inline bool TerminateImpl() { return true; }
 

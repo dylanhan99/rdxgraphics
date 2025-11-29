@@ -9,6 +9,9 @@ namespace rdx
 	class RX_API BaseWindow : public BaseService
 	{
 	public:
+		inline const char* GetName() const override { return "Window"; }
+
+	public:
 		virtual ~BaseWindow();
 
 		virtual bool InitImpl() = 0;
