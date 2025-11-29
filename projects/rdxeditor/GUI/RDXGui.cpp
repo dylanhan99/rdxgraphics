@@ -6,6 +6,7 @@
 
 #include "rdxengine/ServiceLayer.h"
 #include "rdxengine/Window/GLFWWindow.h" // Should not be like this, but it's easier to just do this rn
+#include "Panels/EngineProfiler.h"
 using namespace rdxgui;
 
 // In the future, for stuff like OpenGL3 and GLFW, need to have precompile flags to ensure the correct
@@ -31,6 +32,8 @@ bool RDXGui::InitImpl()
 	ImGui_ImplGlfw_InitForOpenGL(windowPointer, true);
 	ImGui_ImplOpenGL3_Init("#version 460");
 
+	RegisterPanel<EngineProfiler>("Profiler", 0);
+
 	return true;
 }
 
@@ -50,7 +53,17 @@ void RDXGui::FrameStartImpl()
 
 void RDXGui::FrameEndImpl()
 {
-	uint32_t const dockID = 67;
+	{
+		auto* pInput = rdx::ServiceLayer::InputService();
+		RX_ASSERT(pInput);
+		if (pInput->IsKeyDown(rdx::KeyCode::LCtrl) && pInput->IsKeyTriggered(rdx::KeyCode::E))
+			m_IsEnabled = !m_IsEnabled;
+	}
+
+	if (!IsEnabled())
+		return;
+
+	constexpr uint32_t dockID = 67;
 
 	{ // Frame start
 		ImGui_ImplOpenGL3_NewFrame();
@@ -68,7 +81,8 @@ void RDXGui::FrameEndImpl()
 			ImGui::DockBuilderSetNodeSize(dockID, viewport->Size);
 
 			uint32_t mainDockID = dockID;
-			//ImGui::DockBuilderDockWindow("test", mainDockID);
+			ImGui::DockBuilderDockWindow("test", mainDockID);
+			ImGui::DockBuilderDockWindow("Engine Profiler", mainDockID);
 
 			ImGui::DockBuilderFinish(dockID);
 			dockLoaded = true;
@@ -79,6 +93,9 @@ void RDXGui::FrameEndImpl()
 		if (ImGui::Begin("test", nullptr))
 			;
 		ImGui::End();
+
+		for (auto& pPanel : m_Panels)
+			pPanel->Update(0.f);
 	}
 
 	{ // Draw
