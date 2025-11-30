@@ -33,16 +33,18 @@ int main()
 		std::unique_ptr<InstantEventBus> m_InstantEventBus = std::make_unique<InstantEventBus>();
 		std::unique_ptr<EnttWorld>		 m_EntityComponentWorld = std::make_unique<EnttWorld>();
 		std::unique_ptr<NaiveRenderer>	 m_Renderer = std::make_unique<NaiveRenderer>();
+		std::unique_ptr<PerformanceProfiler>	 m_Profiler = std::make_unique<PerformanceProfiler>();
 		std::unique_ptr<RDXGui>		     m_App = std::make_unique<RDXGui>();
 
 		std::shared_ptr<ServiceLayer> serviceLayer = std::make_unique<ServiceLayer>(
-			m_Window.get(), 
-			m_Input.get(), 
-			m_Logging.get(), 
-			m_InstantEventBus.get(), 
-			m_EntityComponentWorld.get(), 
-			m_Renderer.get(), 
-			m_App.get() 
+			m_Window.get(),
+			m_Input.get(),
+			m_Logging.get(),
+			m_InstantEventBus.get(),
+			m_EntityComponentWorld.get(),
+			m_Renderer.get(),
+			m_App.get(),
+			m_Profiler.get()
 		);
 
 		rdx::RDX engine{ };

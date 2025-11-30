@@ -6,6 +6,7 @@
 #include "Event/Busses/InstantEventBus.h"
 #include "ECS/BaseEntityComponentWorld.h"
 #include "Graphics/BaseRenderer.h"
+#include "Profiling/PerformanceProfiler.h"
 #include "BaseApp.h"
 
 namespace rdx
@@ -13,7 +14,7 @@ namespace rdx
 	class RX_API ServiceLayer
 	{
 	public:
-		ServiceLayer(BaseWindow*, Input*, BaseLogger*, InstantEventBus*, BaseEntityComponentWorld*, BaseRenderer*, BaseApp*);
+		ServiceLayer(BaseWindow*, Input*, BaseLogger*, InstantEventBus*, BaseEntityComponentWorld*, BaseRenderer*, BaseApp*, PerformanceProfiler*);
 		static void SetServiceLayer(ServiceLayer*);
 		static ServiceLayer* GetServiceLayer();
 
@@ -24,6 +25,7 @@ namespace rdx
 		static BaseEntityComponentWorld* const EntityComponentService();
 		static BaseRenderer* const RenderingService();
 		static BaseApp* const ApplicationService();
+		static PerformanceProfiler* const PerformanceProfilingService();
 
 	private:
 		static ServiceLayer* s_ServiceLayer;
@@ -35,6 +37,7 @@ namespace rdx
 		BaseEntityComponentWorld* m_EntityComponentService{};
 		BaseRenderer* m_RenderingService{};
 		BaseApp* m_ApplicationService{};
+		PerformanceProfiler* m_PerformanceProfilingService{};
 	};
 }
 

@@ -1,5 +1,6 @@
 #ifndef PERFORMANCEPROFILER_H
 #define PERFORMANCEPROFILER_H
+#include "BaseService.h"
 
 #define RX_PROFILE_ENTER(name) rdx::PerformanceProfilerEnterRAII(name)
 #define RX_PROFILE(name) rdx::PerformanceProfilerLogRAII(name)
@@ -27,7 +28,7 @@ namespace rdx
 		uint64_t m_StartTime{};
 	};
 
-	class PerformanceProfiler
+	class PerformanceProfiler : public BaseService
 	{
 	public:
 		struct NodeData {
@@ -43,22 +44,27 @@ namespace rdx
 		};
 
 	public:
-		static void EnterChild(std::string const& name);
-		static void ExitChild();
-		static void Log(std::string const& name, uint64_t const start, uint64_t const end);
+		PerformanceProfiler();
 
-		static Node const& GetRootNode();
+		void EnterChild(std::string const& name);
+		void ExitChild();
+		void Log(std::string const& name, uint64_t const start, uint64_t const end);
+
+		Node const& GetRootNode();
+		bool IsProfiling() const;
+		void EnableProfiling();
 
 	private:
-		PerformanceProfiler();
-		inline static PerformanceProfiler* Get() {
-			static PerformanceProfiler g{};
-			return &g;
-		}
+		bool InitImpl() override;
+		bool TerminateImpl() override;
+		void UpdateImpl(float dt) override;
 
 	private:
 		Node m_RootNode{};
 		Node* m_CurrentNode{};
+
+		inline static const float s_RecordingDuration{ 10.f };
+		float m_RecordingTime{ s_RecordingDuration };
 	};
 }
 

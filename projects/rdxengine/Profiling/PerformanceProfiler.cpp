@@ -1,16 +1,19 @@
 #include "PerformanceProfiler.h"
+#include "ServiceLayer.h"
 
 using namespace rdx;
 namespace ch = std::chrono;
 
 PerformanceProfilerEnterRAII::PerformanceProfilerEnterRAII(std::string name)
 {
-	PerformanceProfiler::EnterChild(name);
+	if (ServiceLayer::PerformanceProfilingService()->IsProfiling())
+		ServiceLayer::PerformanceProfilingService()->EnterChild(name);
 }
 
 PerformanceProfilerEnterRAII::~PerformanceProfilerEnterRAII()
 {
-	PerformanceProfiler::ExitChild();
+	if (ServiceLayer::PerformanceProfilingService()->IsProfiling())
+		ServiceLayer::PerformanceProfilingService()->ExitChild();
 }
 
 PerformanceProfilerLogRAII::PerformanceProfilerLogRAII(std::string name)
@@ -20,7 +23,8 @@ PerformanceProfilerLogRAII::PerformanceProfilerLogRAII(std::string name)
 
 PerformanceProfilerLogRAII::~PerformanceProfilerLogRAII()
 {
-	PerformanceProfiler::Log(m_Name, m_StartTime, Now());
+	if (ServiceLayer::PerformanceProfilingService()->IsProfiling())
+		ServiceLayer::PerformanceProfilingService()->Log(m_Name, m_StartTime, Now());
 }
 
 uint64_t PerformanceProfilerLogRAII::Now()
@@ -38,31 +42,28 @@ PerformanceProfiler::PerformanceProfiler()
 
 void PerformanceProfiler::EnterChild(std::string const& name)
 {
-	auto& g = *Get();
-	auto& children = g.m_CurrentNode->Children;
+	auto& children = m_CurrentNode->Children;
 	auto& child = children[name]; // Auto constructs in place if it doesn't exist yet
 
 	// Setting up child
-	child.Parent = g.m_CurrentNode;
+	child.Parent = m_CurrentNode;
 
 	// Setting new current node
-	g.m_CurrentNode = &child;
+	m_CurrentNode = &child;
 }
 
 void PerformanceProfiler::ExitChild()
 {
-	auto& g = *Get();
-	RX_ASSERT(g.m_CurrentNode != &g.m_RootNode);
+	RX_ASSERT(m_CurrentNode != &m_RootNode);
 
-	g.m_CurrentNode = g.m_CurrentNode->Parent;
+	m_CurrentNode = m_CurrentNode->Parent;
 }
 
 void PerformanceProfiler::Log(std::string const& name, uint64_t const start, uint64_t const end)
 {
-	auto& g = *Get();
-	RX_ASSERT(g.m_CurrentNode);
+	RX_ASSERT(m_CurrentNode);
 
-	g.m_CurrentNode->Data.emplace_back(NodeData{
+	m_CurrentNode->Data.emplace_back(NodeData{
 			.Name = name,
 			.StartTime = start,
 			.Duration = end - start
@@ -71,6 +72,38 @@ void PerformanceProfiler::Log(std::string const& name, uint64_t const start, uin
 
 PerformanceProfiler::Node const& PerformanceProfiler::GetRootNode()
 { 
-	auto& g = *Get();
-	return g.m_RootNode; 
+	return m_RootNode; 
+}
+
+bool PerformanceProfiler::IsProfiling() const
+{
+	return m_RecordingTime < s_RecordingDuration;
+}
+
+void PerformanceProfiler::EnableProfiling()
+{
+	m_RecordingTime = 0.f;
+	RX_DEBUG("Profiling Started");
+}
+
+bool PerformanceProfiler::InitImpl()
+{
+	return true;
+}
+
+bool PerformanceProfiler::TerminateImpl()
+{
+	return true;
+}
+
+void PerformanceProfiler::UpdateImpl(float dt)
+{
+	if (IsProfiling())
+	{
+		m_RecordingTime += dt;
+		if (m_RecordingTime >= s_RecordingDuration)
+		{
+			RX_DEBUG("Profiling Ended");
+		}
+	}
 }

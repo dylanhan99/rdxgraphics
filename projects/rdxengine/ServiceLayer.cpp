@@ -4,8 +4,8 @@ using namespace rdx;
 
 RX_API ServiceLayer* ServiceLayer::s_ServiceLayer{};
 
-ServiceLayer::ServiceLayer(BaseWindow* pWindow, Input* pInput, BaseLogger* pLogger, InstantEventBus* pInstantEventBus, BaseEntityComponentWorld* pEntityComponentWorld, BaseRenderer* pRenderer, BaseApp* pApp)
-	: m_WindowService(pWindow), m_InputService(pInput), m_LoggingService(pLogger), m_InstantEventService(pInstantEventBus), m_EntityComponentService(pEntityComponentWorld), m_RenderingService(pRenderer), m_ApplicationService(pApp)
+ServiceLayer::ServiceLayer(BaseWindow* pWindow, Input* pInput, BaseLogger* pLogger, InstantEventBus* pInstantEventBus, BaseEntityComponentWorld* pEntityComponentWorld, BaseRenderer* pRenderer, BaseApp* pApp, PerformanceProfiler* pProfiler)
+	: m_WindowService(pWindow), m_InputService(pInput), m_LoggingService(pLogger), m_InstantEventService(pInstantEventBus), m_EntityComponentService(pEntityComponentWorld), m_RenderingService(pRenderer), m_ApplicationService(pApp), m_PerformanceProfilingService(pProfiler)
 {}
 
 void ServiceLayer::SetServiceLayer(ServiceLayer* pLayer)
@@ -51,4 +51,9 @@ BaseRenderer* const ServiceLayer::RenderingService()
 BaseApp* const ServiceLayer::ApplicationService()
 {
 	return s_ServiceLayer->m_ApplicationService;
+}
+
+PerformanceProfiler* const ServiceLayer::PerformanceProfilingService()
+{
+	return s_ServiceLayer->m_PerformanceProfilingService;
 }

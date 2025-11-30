@@ -109,6 +109,8 @@ int RDX::Run()
 				}
 			}
 
+			ServiceLayer::PerformanceProfilingService()->Update(0.00015f);
+
 			ServiceLayer::RenderingService()->Draw();
 			ServiceLayer::ApplicationService()->FrameEnd();
 			ServiceLayer::WindowService()->SwapBuffers();
@@ -162,6 +164,7 @@ bool RDX::Init()
 	success &= ServiceLayer::EntityComponentService()->Init();
 	success &= ServiceLayer::RenderingService()->Init();
 	success &= ServiceLayer::ApplicationService()->Init();
+	success &= ServiceLayer::PerformanceProfilingService()->Init();
 
 	return success;
 }
@@ -171,6 +174,7 @@ bool RDX::Terminate()
 	RX_ASSERT(ServiceLayer::GetServiceLayer());
 
 	bool success = true;
+	success &= ServiceLayer::PerformanceProfilingService()->Terminate();
 	success &= ServiceLayer::ApplicationService()->Terminate();
 	success &= ServiceLayer::RenderingService()->Terminate();
 	success &= ServiceLayer::EntityComponentService()->Terminate();
