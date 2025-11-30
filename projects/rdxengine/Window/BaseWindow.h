@@ -2,15 +2,13 @@
 #define BASEWINDOW_H
 #include "RXAPI.h"
 #include "Input/InputCodes.h"
-#include "BaseService.h"
+#include "BaseSystem.h"
 
 namespace rdx
 {
-	class RX_API BaseWindow : public BaseService
+	class RX_API BaseWindow : public BaseSystem
 	{
-	public:
-		inline const char* GetName() const override { return "Window"; }
-
+		RX_DECLARE_SYSTEM("Window", Window);
 	public:
 		virtual ~BaseWindow();
 

@@ -30,13 +30,13 @@ int RDX::Run()
 			[](ShutdownEngineEvent const& e)
 			{
 				RX_INFO("Shutting down yo mama because: {}", e.Reason);
-				ServiceLayer::WindowService()->SetShouldClose();
+				ServiceLayer::WindowSystem()->SetShouldClose();
 			});
 
-		while (!ServiceLayer::WindowService()->IsWindowShouldClose())
+		while (!ServiceLayer::WindowSystem()->IsWindowShouldClose())
 		{
 			RX_PROFILE("Main Loop");
-			ServiceLayer::WindowService()->PollEvents();
+			ServiceLayer::WindowSystem()->PollEvents();
 
 			ServiceLayer::ApplicationService()->FrameStart();
 
@@ -109,11 +109,16 @@ int RDX::Run()
 				}
 			}
 
-			ServiceLayer::PerformanceProfilingService()->Update(0.00015f);
 
-			ServiceLayer::RenderingService()->Draw();
+			for (BaseSystem* p : ServiceLayer::GetSystems())
+				p->Update(0.0015f);
+
+			for (BaseSystem* p : ServiceLayer::GetSystems())
+				p->Draw();
+
+			ServiceLayer::PerformanceProfilingService()->Update(0.00015f);
 			ServiceLayer::ApplicationService()->FrameEnd();
-			ServiceLayer::WindowService()->SwapBuffers();
+			ServiceLayer::WindowSystem()->SwapBuffers();
 		}
 	}
 	else
@@ -154,17 +159,11 @@ bool RDX::Init()
 	RX_ASSERT(ServiceLayer::GetServiceLayer());
 
 	bool success = true;
-	success &= ServiceLayer::WindowService()->Init();
-	//if (ServiceLayer::WindowService()->IsInitialized())
-	//	ServiceLayer::WindowService()->PollEvents();
-
-	success &= ServiceLayer::InputService()->Init();
-	success &= ServiceLayer::LoggingService()->Init();
-	success &= ServiceLayer::InstantEventService()->Init();
-	success &= ServiceLayer::EntityComponentService()->Init();
-	success &= ServiceLayer::RenderingService()->Init();
-	success &= ServiceLayer::ApplicationService()->Init();
-	success &= ServiceLayer::PerformanceProfilingService()->Init();
+	for (BaseUtil* p : ServiceLayer::GetUtils())
+		success &= p->Init();
+	for (BaseSystem* p : ServiceLayer::GetSystems())
+		success &= p->Init();
+	success &= ServiceLayer::GetApp()->Init();
 
 	return success;
 }
@@ -174,14 +173,11 @@ bool RDX::Terminate()
 	RX_ASSERT(ServiceLayer::GetServiceLayer());
 
 	bool success = true;
-	success &= ServiceLayer::PerformanceProfilingService()->Terminate();
-	success &= ServiceLayer::ApplicationService()->Terminate();
-	success &= ServiceLayer::RenderingService()->Terminate();
-	success &= ServiceLayer::EntityComponentService()->Terminate();
-	success &= ServiceLayer::InstantEventService()->Terminate();
-	success &= ServiceLayer::LoggingService()->Terminate();
-	success &= ServiceLayer::InputService()->Terminate();
-	success &= ServiceLayer::WindowService()->Terminate();
+	success &= ServiceLayer::GetApp()->Terminate();
+	for (auto it = ServiceLayer::GetSystems().rbegin(); it != ServiceLayer::GetSystems().rend(); ++it)
+		success &= (*it)->Terminate();
+	for (auto it = ServiceLayer::GetUtils().rbegin(); it != ServiceLayer::GetUtils().rend(); ++it)
+		success &= (*it)->Terminate();
 
 	return success;
 }

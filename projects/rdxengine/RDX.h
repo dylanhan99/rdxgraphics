@@ -19,7 +19,7 @@ namespace rdx
 		bool Init();
 		bool Terminate();
 
-	private:
+	protected:
 		bool m_IsInitialized{ false }; // Change to some "Engine Status" enum in the future
 	};
 }

@@ -1,14 +1,17 @@
 #ifndef BASEPANEL_H
 #define BASEPANEL_H
-#include "rdxengine/BaseService.h"
+#include "rdxengine/BaseSystem.h"
 #include <imgui.h>
 
-class BasePanel : public rdx::BaseService
+class BasePanel : public rdx::BaseSystem
 {
 public:
 	const char* GetWindowName() const { return m_WindowName; }
 	
 private:
+	inline bool InitImpl() override { return true; }
+	inline bool TerminateImpl() override { return true; }
+
 	inline void UpdateImpl(float dt) override final
 	{
 		if (ImGui::Begin(m_WindowName, nullptr, m_Flags))

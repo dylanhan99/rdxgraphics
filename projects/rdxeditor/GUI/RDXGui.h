@@ -11,8 +11,8 @@ namespace rdxgui
 		inline bool IsEnabled() const { return m_IsEnabled; }
 
 	private:
-		bool InitImpl() override;
-		bool TerminateImpl() override;
+		bool Init() override;
+		bool Terminate() override;
 
 		void FrameStartImpl() override;
 		void FrameEndImpl() override;

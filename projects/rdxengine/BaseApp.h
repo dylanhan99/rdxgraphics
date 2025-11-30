@@ -8,8 +8,8 @@ namespace rdx
 	class RX_API BaseApp : public BaseService
 	{
 	public:
-		// Init
-		// Terminate
+		virtual bool Init() { return true; }
+		virtual bool Terminate() { return true; }
 
 		inline void FrameStart() { FrameStartImpl(); }
 		inline void FrameEnd() { FrameEndImpl(); }

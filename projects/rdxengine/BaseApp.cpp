@@ -1,9 +1,10 @@
-#include "BaseService.h"
+#include "BaseSystem.h"
+#include "BaseUtil.h"
 #include "Profiling/PerformanceProfiler.h"
 
 using namespace rdx;
 
-bool BaseService::Init()
+bool BaseSystem::Init()
 {
 	RX_PROFILE_ENTER(GetName());
 	RX_PROFILE("Initialization");
@@ -14,7 +15,7 @@ bool BaseService::Init()
 	return m_IsInitialized = InitImpl();
 }
 
-bool BaseService::Terminate()
+bool BaseSystem::Terminate()
 {
 	RX_PROFILE_ENTER(GetName());
 	RX_PROFILE("Terminate");
@@ -27,7 +28,7 @@ bool BaseService::Terminate()
 	return success;
 }
 
-void BaseService::Update(float dt)
+void BaseSystem::Update(float dt)
 {
 	RX_PROFILE_ENTER(GetName());
 	RX_PROFILE("Update");
@@ -35,10 +36,28 @@ void BaseService::Update(float dt)
 	UpdateImpl(dt);
 }
 
-void BaseService::Draw()
+void BaseSystem::Draw()
 {
 	RX_PROFILE_ENTER(GetName());
 	RX_PROFILE("Draw");
 
 	DrawImpl();
+}
+
+bool BaseUtil::Init()
+{
+	if (IsInitialized())
+		return false;
+
+	return m_IsInitialized = InitImpl();
+}
+
+bool BaseUtil::Terminate()
+{
+	bool success = false;
+	if (IsInitialized())
+		success = TerminateImpl();
+
+	m_IsInitialized = false;
+	return success;
 }

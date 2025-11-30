@@ -1,16 +1,14 @@
 #ifndef INSTANTEVENTBUS_H
 #define INSTANTEVENTBUS_H
 #include "RXAPI.h"
-#include "BaseService.h"
+#include "BaseUtil.h"
 #include <typeindex>
 
 namespace rdx
 {
-	class RX_API InstantEventBus final : public BaseService
+	class RX_API InstantEventBus final : public BaseUtil
 	{
-	public:
-		inline const char* GetName() const override { return "Instant Event Bus"; }
-
+		RX_DECLARE_UTIL("Instant Event Bus", InstantEvent);
 	public:
 		inline bool InitImpl() { return true; }
 		inline bool TerminateImpl() { return true; }

@@ -1,6 +1,6 @@
 #ifndef PERFORMANCEPROFILER_H
 #define PERFORMANCEPROFILER_H
-#include "BaseService.h"
+#include "BaseUtil.h"
 
 #define RX_PROFILE_ENTER(name) rdx::PerformanceProfilerEnterRAII(name)
 #define RX_PROFILE(name) rdx::PerformanceProfilerLogRAII(name)
@@ -28,8 +28,9 @@ namespace rdx
 		uint64_t m_StartTime{};
 	};
 
-	class PerformanceProfiler : public BaseService
+	class PerformanceProfiler : public BaseUtil
 	{
+		RX_DECLARE_UTIL("Performance Profiler", PerformanceProfiler)
 	public:
 		struct NodeData {
 			std::string Name{};
@@ -54,10 +55,11 @@ namespace rdx
 		bool IsProfiling() const;
 		void EnableProfiling();
 
+		void Update(float dt);
+
 	private:
 		bool InitImpl() override;
 		bool TerminateImpl() override;
-		void UpdateImpl(float dt) override;
 
 	private:
 		Node m_RootNode{};

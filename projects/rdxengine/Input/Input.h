@@ -1,15 +1,14 @@
 #ifndef INPUT_H
 #define INPUT_H
 #include "RXAPI.h"
-#include "BaseService.h"
+#include "BaseUtil.h"
 #include "InputCodes.h"
 
 namespace rdx
 {
-	class RX_API Input final : public BaseService
+	class RX_API Input final : public BaseUtil
 	{
-	public:
-		inline const char* GetName() const override { return "Input"; }
+		RX_DECLARE_UTIL("Input", Input)
 
 	public:
 		inline bool InitImpl() { return true; }

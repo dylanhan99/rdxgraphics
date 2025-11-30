@@ -96,7 +96,7 @@ bool PerformanceProfiler::TerminateImpl()
 	return true;
 }
 
-void PerformanceProfiler::UpdateImpl(float dt)
+void PerformanceProfiler::Update(float dt)
 {
 	if (IsProfiling())
 	{

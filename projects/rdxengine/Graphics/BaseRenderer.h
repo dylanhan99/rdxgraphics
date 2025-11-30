@@ -1,16 +1,14 @@
 #ifndef BASERENDERER_H
 #define BASERENDERER_H
 #include "RXAPI.h"
-#include "BaseService.h"
+#include "BaseSystem.h"
 #include "ECS/Components/CameraComponent.h"
 
 namespace rdx
 {
-	class RX_API BaseRenderer : public BaseService
+	class RX_API BaseRenderer : public BaseSystem
 	{
-	public:
-		inline const char* GetName() const override { return "Renderer"; }
-
+		RX_DECLARE_SYSTEM("Renderer", Renderer);
 	public:
 		void Draw();
 		virtual void SetDepthTest(bool flag);

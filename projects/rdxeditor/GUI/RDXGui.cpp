@@ -12,7 +12,7 @@ using namespace rdxgui;
 // In the future, for stuff like OpenGL3 and GLFW, need to have precompile flags to ensure the correct
 // Function or header is being used.
 
-bool RDXGui::InitImpl()
+bool RDXGui::Init()
 {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -28,7 +28,7 @@ bool RDXGui::InitImpl()
 	io.IniFilename = nullptr; // Disable .ini persistence
 	ImGui::StyleColorsDark();
 
-	GLFWwindow* windowPointer = static_cast<rdx::GLFWWindow*>(rdx::ServiceLayer::WindowService())->GetWindowPointer();
+	GLFWwindow* windowPointer = static_cast<rdx::GLFWWindow*>(rdx::ServiceLayer::WindowSystem())->GetWindowPointer();
 	ImGui_ImplGlfw_InitForOpenGL(windowPointer, true);
 	ImGui_ImplOpenGL3_Init("#version 460");
 
@@ -37,7 +37,7 @@ bool RDXGui::InitImpl()
 	return true;
 }
 
-bool RDXGui::TerminateImpl()
+bool RDXGui::Terminate()
 {
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
@@ -99,14 +99,14 @@ void RDXGui::FrameEndImpl()
 	}
 
 	{ // Draw
-		rdx::ServiceLayer::RenderingService()->SetDepthTest(false);
+		rdx::ServiceLayer::RenderingSystem()->SetDepthTest(false);
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
 			ImGui::UpdatePlatformWindows();
 			ImGui::RenderPlatformWindowsDefault();
-			static_cast<rdx::GLFWWindow*>(rdx::ServiceLayer::WindowService())->SetContextCurrent();
+			static_cast<rdx::GLFWWindow*>(rdx::ServiceLayer::WindowSystem())->SetContextCurrent();
 		}
 	}
 }

@@ -1,7 +1,7 @@
 #ifndef BASELOGGER_H
 #define BASELOGGER_H
 #include "RXAPI.h"
-#include "BaseService.h"
+#include "BaseUtil.h"
 
 #define RX_TRACE(fmt, ...)	  ServiceLayer::LoggingService()->Log("[trace] [{}] - \n"    fmt, __FUNCTION__, ##__VA_ARGS__)
 #define RX_DEBUG(fmt, ...)	  ServiceLayer::LoggingService()->Log("[debug] [{}] - \n"    fmt, __FUNCTION__, ##__VA_ARGS__)
@@ -27,8 +27,9 @@ namespace rdx
 		std::function<std::string()> FnFormatter{}; // Lambda capturing all entries. Type erased storage.
 	};
 
-	class RX_API BaseLogger : public BaseService
+	class RX_API BaseLogger : public BaseUtil
 	{
+		RX_DECLARE_UTIL("Logger", Logger)
 	public:
 		virtual ~BaseLogger();
 		//virtual bool Init() = 0; // These are pure virtual from BaseService already

@@ -2,7 +2,7 @@
 #define BASEENTITYCOMPONENTWORLD_H
 #include "RXAPI.h"
 #include "rxdebug.h"
-#include "BaseService.h"
+#include "BaseUtil.h"
 #include "Components/Component.h"
 #include "Components/CameraComponent.h"
 
@@ -42,11 +42,9 @@ namespace rdx
 
 	// This class handles error, null, ..., safety checks.
 	// The derived class's _Impl functions simply do ONE job, no checks.
-	class RX_API BaseEntityComponentWorld : public BaseService
+	class RX_API BaseEntityComponentWorld : public BaseUtil
 	{
-	public:
-		inline const char* GetName() const override { return "EntityComponentWorld"; }
-
+		RX_DECLARE_UTIL("EntityComponentWorld", ECS)
 	public:
 		inline static EntityID GenerateEntityID()
 		{
