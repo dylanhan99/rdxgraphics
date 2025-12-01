@@ -59,7 +59,6 @@ namespace rdx
 		std::vector<Frame> const& GetFrames() const;
 		bool IsProfiling() const;
 		bool IsAlwaysProfiling() const;
-		bool& IsAlwaysProfiling() { return m_IsAlwaysProfiling; }
 		void EnableProfiling();
 
 		void Update(float dt);
@@ -73,7 +72,7 @@ namespace rdx
 		Node* m_CurrentNode{};
 
 		float m_RecordingDuration{ 5.f };
-		float m_RecordingTime{};
+		float m_RecordingTime{ 0.f };
 		bool m_IsAlwaysProfiling{ true };
 		uint32_t m_TargetFramerate{ 60 }; // Used to limit the size of maps when IsAlwaysEnabled
 	};

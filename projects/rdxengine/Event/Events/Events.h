@@ -7,6 +7,17 @@ namespace rdx
 	{
 		std::string Reason;
 	};
+
+	// Profiling
+	struct TemporaryProfilingEvent
+	{
+		float ProfilingDuration;
+	};
+
+	struct TogglePerformanceProfileEvent
+	{
+		bool IsAlwaysProfiling;
+	};
 }
 
 #endif

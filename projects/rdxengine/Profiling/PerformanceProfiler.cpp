@@ -1,5 +1,6 @@
 #include "PerformanceProfiler.h"
 #include "ServiceLayer.h"
+#include "Event/Events/Events.h"
 
 using namespace rdx;
 namespace ch = std::chrono;
@@ -117,6 +118,30 @@ void PerformanceProfiler::EnableProfiling()
 
 bool PerformanceProfiler::InitImpl()
 {
+	auto* es = ServiceLayer::InstantEventService();
+	es->Subscribe<TogglePerformanceProfileEvent>(
+		[this](TogglePerformanceProfileEvent const& e)
+		{
+			// Reset
+			m_RecordingDuration = 0.f;
+			m_RecordingTime = 0.f; 
+
+			m_IsAlwaysProfiling = e.IsAlwaysProfiling;
+
+			RX_INFO("Performance Profiler IsAlwaysEnabled = {}", m_IsAlwaysProfiling ? "true" : "false");
+		});
+
+	es->Subscribe<TemporaryProfilingEvent>(
+		[this](TemporaryProfilingEvent const& e)
+		{
+			// Reset
+			m_IsAlwaysProfiling = false;
+
+			m_RecordingDuration = e.ProfilingDuration;
+			m_RecordingTime = 0.f;
+
+			RX_INFO("Performance Profiler temporary profiling for {} seconds", m_RecordingDuration);
+		});
 	return true;
 }
 
@@ -140,10 +165,9 @@ void PerformanceProfiler::Update(float dt)
 				m_Frames.erase(m_Frames.begin(), it);
 			}
 		}
-		else if (m_RecordingTime <= 0.f)
-		{
-			RX_DEBUG("Profiling Ended");
-			m_Frames.clear();
-		}
+		//else if (m_RecordingTime <= 0.f)
+		//{
+		//	RX_DEBUG("Profiling Ended");
+		//}
 	}
 }
