@@ -82,7 +82,7 @@ void RDXGui::FrameEndImpl()
 
 			uint32_t mainDockID = dockID;
 			ImGui::DockBuilderDockWindow("test", mainDockID);
-			ImGui::DockBuilderDockWindow("Engine Profiler", mainDockID);
+			ImGui::DockBuilderDockWindow("Profiler", mainDockID);
 
 			ImGui::DockBuilderFinish(dockID);
 			dockLoaded = true;

@@ -73,7 +73,7 @@ namespace rdx
 		};
 
 	public:
-		virtual ~BaseEntityComponentWorld() {};
+		virtual ~BaseEntityComponentWorld() = default;
 
 		virtual Entity CreateEntity() = 0;
 		virtual bool HasEntity(EntityID const) = 0;

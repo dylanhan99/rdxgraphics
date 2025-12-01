@@ -10,6 +10,8 @@ namespace rdx
 	{
 		RX_DECLARE_SYSTEM("Renderer", Renderer);
 	public:
+		virtual ~BaseRenderer() = default;
+
 		void Draw();
 		virtual void SetDepthTest(bool flag);
 

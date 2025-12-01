@@ -8,6 +8,8 @@ namespace rdx
 	class RX_API BaseApp : public BaseService
 	{
 	public:
+		virtual ~BaseApp() = default;
+
 		virtual bool Init() { return true; }
 		virtual bool Terminate() { return true; }
 

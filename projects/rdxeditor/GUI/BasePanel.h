@@ -1,25 +1,35 @@
 #ifndef BASEPANEL_H
 #define BASEPANEL_H
-#include "rdxengine/BaseSystem.h"
+//#include "rdxengine/BaseSystem.h"
 #include <imgui.h>
 
-class BasePanel : public rdx::BaseSystem
+class BasePanel// : public rdx::BaseSystem
 {
 public:
 	const char* GetWindowName() const { return m_WindowName; }
-	
-private:
-	inline bool InitImpl() override { return true; }
-	inline bool TerminateImpl() override { return true; }
+	virtual ~BasePanel() = default;
 
-	inline void UpdateImpl(float dt) override final
+	inline bool Init()
+	{
+		return InitImpl();
+	}
+	
+	inline bool Terminate()
+	{
+		return TerminateImpl();
+	}
+
+	inline void Update(float dt)
 	{
 		if (ImGui::Begin(m_WindowName, nullptr, m_Flags))
-			UpdatePanel(dt);
+			UpdateImpl(dt);
 		ImGui::End();
 	}
 	
-	virtual void UpdatePanel(float dt) = 0;
+private:
+	inline virtual bool InitImpl() { return true; }
+	inline virtual bool TerminateImpl() { return true; }
+	inline virtual void UpdateImpl(float dt) = 0;
 
 protected:
 	BasePanel(const char* windowName, ImGuiWindowFlags flags) : m_WindowName(windowName), m_Flags(flags) {}

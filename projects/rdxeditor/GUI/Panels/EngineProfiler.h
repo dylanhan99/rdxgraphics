@@ -8,7 +8,7 @@ public:
 	EngineProfiler(const char* windowName, ImGuiWindowFlags flags = 0) : BasePanel(windowName, flags) {}
 
 private:
-	void UpdatePanel(float dt) override final;
+	void UpdateImpl(float dt) override final;
 };
 
 #endif

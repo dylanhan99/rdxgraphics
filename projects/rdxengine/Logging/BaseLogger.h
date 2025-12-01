@@ -31,7 +31,7 @@ namespace rdx
 	{
 		RX_DECLARE_UTIL("Logger", Logger)
 	public:
-		virtual ~BaseLogger();
+		virtual ~BaseLogger() = default;
 		//virtual bool Init() = 0; // These are pure virtual from BaseService already
 		//virtual bool Terminate() = 0;
 
