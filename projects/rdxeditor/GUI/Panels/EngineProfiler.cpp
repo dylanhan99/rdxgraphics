@@ -6,8 +6,8 @@ float values_getter(void* data, int index)
 	using namespace rdx;
 	using PP = PerformanceProfiler;
 
-	PP::NodeData const* pData = static_cast<PP::NodeData const*>(data);
-	return static_cast<float>(pData[index].Duration);
+	PP::Frame const* pData = static_cast<PP::Frame const*>(data);
+	return static_cast<float>(pData[index].NodeData.Duration);
 }
 
 void EngineProfiler::UpdatePanel(float dt)
@@ -18,12 +18,10 @@ void EngineProfiler::UpdatePanel(float dt)
 	{
 		using namespace rdx;
 		using PP = PerformanceProfiler;
-		PP::Node const& rootNode = profilingService->GetRootNode();
-
-		auto const& data = rootNode.Data;
-		void const* pData = data.data();
-		int dataLen = std::min(60, static_cast<int>(data.size()));
-		int dataOffset = static_cast<int>(data.size()) - dataLen;
+		auto const& frames = profilingService->GetFrames();
+		void const* pData = frames.data();
+		int dataLen = std::min(60, static_cast<int>(frames.size()));
+		int dataOffset = static_cast<int>(frames.size()) - dataLen;
 
 		// Stride is handled in the values_getter helper function
 		ImGui::PlotLines("Performance", values_getter, (void*)pData, dataLen, dataOffset,

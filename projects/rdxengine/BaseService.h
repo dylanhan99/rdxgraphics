@@ -9,7 +9,7 @@ namespace rdx
 		virtual ~BaseService() = default;
 
 		inline bool IsInitialized() const { return m_IsInitialized; }
-		inline virtual const char* GetName() const { return "Missing Name"; }
+		inline virtual std::string GetName() const { return "Missing Name"; }
 
 	protected:
 		bool m_IsInitialized{ false };

@@ -2,16 +2,23 @@
 #define PERFORMANCEPROFILER_H
 #include "BaseUtil.h"
 
-#define RX_PROFILE_ENTER(name) rdx::PerformanceProfilerEnterRAII(name)
+#define RX_PROFILE_FRAME(frame) rdx::PerformanceProfilerFrameRAII(frame)
 #define RX_PROFILE(name) rdx::PerformanceProfilerLogRAII(name)
+#define RX_PROFILE_FUNC() RX_PROFILE(__func__)
 
 namespace rdx
 {
-	class PerformanceProfilerEnterRAII
+	class PerformanceProfilerFrameRAII
 	{
 	public:
-		PerformanceProfilerEnterRAII(std::string name);
-		~PerformanceProfilerEnterRAII();
+		PerformanceProfilerFrameRAII(uint64_t const frameNumber);
+		~PerformanceProfilerFrameRAII();
+
+	public:
+		static uint64_t Now();
+
+	private:
+		uint64_t m_StartTime{};
 	};
 
 	class PerformanceProfilerLogRAII
@@ -21,10 +28,6 @@ namespace rdx
 		~PerformanceProfilerLogRAII();
 
 	private:
-		static uint64_t Now();
-
-	private:
-		std::string m_Name{};
 		uint64_t m_StartTime{};
 	};
 
@@ -32,27 +35,31 @@ namespace rdx
 	{
 		RX_DECLARE_UTIL("Performance Profiler", PerformanceProfiler)
 	public:
-		struct NodeData {
+		struct Node {
+			std::vector<Node> Children{};
 			std::string Name{};
-			uint64_t StartTime{}; // micro seconds
-			uint64_t Duration{};  // micro seconds
+			uint64_t StartTime{};
+			uint64_t Duration{};
+			Node* Parent{};
 		};
 
-		struct Node {
-			Node* Parent{};
-			std::vector<NodeData> Data{};
-			std::map<std::string, Node> Children{}; // Don't accidentally overlap profile names
+		struct Frame {
+			Node NodeData;
+			uint64_t FrameNumber;
 		};
 
 	public:
 		PerformanceProfiler();
 
-		void EnterChild(std::string const& name);
-		void ExitChild();
-		void Log(std::string const& name, uint64_t const start, uint64_t const end);
+		void BeginFrame(uint64_t const frameNumber);
+		void EndFrame(uint64_t const start, uint64_t const end);
+		void BeginChild(std::string name);
+		void EndChild(uint64_t const start, uint64_t const end);
 
-		Node const& GetRootNode();
+		std::vector<Frame> const& GetFrames() const;
 		bool IsProfiling() const;
+		bool IsAlwaysProfiling() const;
+		bool& IsAlwaysProfiling() { return m_IsAlwaysProfiling; }
 		void EnableProfiling();
 
 		void Update(float dt);
@@ -62,11 +69,13 @@ namespace rdx
 		bool TerminateImpl() override;
 
 	private:
-		Node m_RootNode{};
+		std::vector<Frame> m_Frames{};
 		Node* m_CurrentNode{};
 
-		inline static const float s_RecordingDuration{ 10.f };
-		float m_RecordingTime{ s_RecordingDuration };
+		float m_RecordingDuration{ 5.f };
+		float m_RecordingTime{};
+		bool m_IsAlwaysProfiling{ true };
+		uint32_t m_TargetFramerate{ 60 }; // Used to limit the size of maps when IsAlwaysEnabled
 	};
 }
 

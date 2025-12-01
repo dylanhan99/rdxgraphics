@@ -6,8 +6,7 @@ using namespace rdx;
 
 bool BaseSystem::Init()
 {
-	RX_PROFILE_ENTER(GetName());
-	RX_PROFILE("Initialization");
+	//RX_PROFILE(GetName() + "Init");
 
 	if (IsInitialized())
 		return false;
@@ -17,8 +16,7 @@ bool BaseSystem::Init()
 
 bool BaseSystem::Terminate()
 {
-	RX_PROFILE_ENTER(GetName());
-	RX_PROFILE("Terminate");
+	//RX_PROFILE(GetName() + "Terminate");
 
 	bool success = false;
 	if (IsInitialized())
@@ -30,16 +28,14 @@ bool BaseSystem::Terminate()
 
 void BaseSystem::Update(float dt)
 {
-	RX_PROFILE_ENTER(GetName());
-	RX_PROFILE("Update");
+	RX_PROFILE(GetName() + "Update");
 
 	UpdateImpl(dt);
 }
 
 void BaseSystem::Draw()
 {
-	RX_PROFILE_ENTER(GetName());
-	RX_PROFILE("Draw");
+	RX_PROFILE(GetName() + "Draw");
 
 	DrawImpl();
 }

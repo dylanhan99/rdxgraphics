@@ -4,7 +4,7 @@
 
 #define RX_DECLARE_UTIL(name, ty)									   \
 public:																   \
-		inline const char* GetName() const override { return name; }   \
+		inline std::string GetName() const override { return name; }   \
 private:															   \
 	friend class ServiceLayer;										   \
 	inline static constexpr UtilType s_UtilType{ UtilType::ty };

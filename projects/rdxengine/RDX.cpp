@@ -35,6 +35,7 @@ int RDX::Run()
 
 		while (!ServiceLayer::WindowSystem()->IsWindowShouldClose())
 		{
+			RX_PROFILE_FRAME(1);
 			RX_PROFILE("Main Loop");
 			ServiceLayer::WindowSystem()->PollEvents();
 
