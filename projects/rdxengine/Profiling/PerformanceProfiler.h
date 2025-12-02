@@ -2,8 +2,8 @@
 #define PERFORMANCEPROFILER_H
 #include "BaseUtil.h"
 
-#define RX_PROFILE_FRAME(frame) rdx::PerformanceProfilerFrameRAII(frame)
-#define RX_PROFILE(name) rdx::PerformanceProfilerLogRAII(name)
+#define RX_PROFILE_FRAME(frame) rdx::PerformanceProfilerFrameRAII RX_PerformanceProfilerFrameRAII_##__FILE__##__LINE__(frame)
+#define RX_PROFILE(name) rdx::PerformanceProfilerLogRAII RX_PerformanceProfilerLogRAII_##__FILE__##__LINE__(name)
 #define RX_PROFILE_FUNC() RX_PROFILE(__func__)
 
 namespace rdx
