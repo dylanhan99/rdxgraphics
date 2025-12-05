@@ -7,6 +7,7 @@
 #include "rdxengine/Event/Busses/InstantEventBus.h"
 #include "rdxengine/ECS/Worlds/EnttWorld.h"
 #include "rdxengine/Graphics/NaiveRenderer/NaiveRenderer.h"
+#include "rdxengine/Utils/FrameRateController.h"
 
 #include <GLFW/glfw3.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -36,6 +37,7 @@ int main()
 		std::unique_ptr<InstantEventBus> m_InstantEventBus = std::make_unique<InstantEventBus>();
 		std::unique_ptr<EnttWorld>		 m_EntityComponentWorld = std::make_unique<EnttWorld>();
 		std::unique_ptr<PerformanceProfiler>	 m_Profiler = std::make_unique<PerformanceProfiler>();
+		std::unique_ptr<FrameRateController>	 m_FRC = std::make_unique<FrameRateController>();
 
 		//
 		std::unique_ptr<RDXGui>		     m_App = std::make_unique<RDXGui>();
@@ -49,6 +51,7 @@ int main()
 		serviceLayer->RegisterUtil(m_InstantEventBus.get());
 		serviceLayer->RegisterUtil(m_EntityComponentWorld.get());
 		serviceLayer->RegisterUtil(m_Profiler.get());
+		serviceLayer->RegisterUtil(m_FRC.get());
 
 		serviceLayer->RegisterApp(m_App.get());
 

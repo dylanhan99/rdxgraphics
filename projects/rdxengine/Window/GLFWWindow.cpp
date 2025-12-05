@@ -3,6 +3,9 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 
+#include "ServiceLayer.h"
+#include "Event/Events/Events.h"
+
 using namespace rdx;
 
 GLFWWindow::~GLFWWindow()
@@ -60,12 +63,24 @@ bool GLFWWindow::InitImpl()
 	glfwSetInputMode(m_pWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
 	glfwMakeContextCurrent(m_pWindow);
-	//SetIsVSync(false); // Disable vsync
+	glfwSwapInterval(static_cast<int>(
+		ServiceLayer::FrameRateControllerService()->IsVSync()
+		));
+	{
+		ServiceLayer::InstantEventService()->Subscribe<ToggleVSyncEvent>(
+			[this](ToggleVSyncEvent const& e)
+			{
+				glfwSwapInterval(static_cast<int>(e.IsVSync));
+			});
+		ServiceLayer::InstantEventService()->Subscribe<ChangeWindowTitleEvent>(
+			[this](ChangeWindowTitleEvent const& e)
+			{
+				glfwSetWindowTitle(m_pWindow, e.Title.data());
+			});
+	}
 
 	//Input::Init();
 	RegisterCallbacks();
-
-	//SetTargetFPS(30); // Hardcoded to 30FPS by default.
 
 	return true;
 }

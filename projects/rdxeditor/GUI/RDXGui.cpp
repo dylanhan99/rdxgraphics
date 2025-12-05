@@ -5,6 +5,7 @@
 #include <imgui_impl_glfw.h>
 
 #include "rdxengine/ServiceLayer.h"
+#include "rdxengine/Event/Events/Events.h"
 #include "rdxengine/Window/GLFWWindow.h" // Should not be like this, but it's easier to just do this rn
 #include "Panels/EngineProfiler.h"
 using namespace rdxgui;
@@ -54,6 +55,13 @@ void RDXGui::FrameStartImpl()
 void RDXGui::FrameEndImpl()
 {
 	{
+		std::string title{ "RDXEditor [" };
+		title += std::to_string(rdx::ServiceLayer::FrameRateControllerService()->GetEstimatedFPS()) + "]";
+
+		rdx::ServiceLayer::InstantEventService()->Publish(rdx::ChangeWindowTitleEvent{ std::move(title) });
+	}
+
+	{
 		auto* pInput = rdx::ServiceLayer::InputService();
 		RX_ASSERT(pInput);
 		if (pInput->IsKeyDown(rdx::KeyCode::LCtrl) && pInput->IsKeyTriggered(rdx::KeyCode::E))
@@ -81,7 +89,6 @@ void RDXGui::FrameEndImpl()
 			ImGui::DockBuilderSetNodeSize(dockID, viewport->Size);
 
 			uint32_t mainDockID = dockID;
-			ImGui::DockBuilderDockWindow("test", mainDockID);
 			ImGui::DockBuilderDockWindow("Profiler", mainDockID);
 
 			ImGui::DockBuilderFinish(dockID);
@@ -90,10 +97,7 @@ void RDXGui::FrameEndImpl()
 	}
 
 	{ // Update
-		if (ImGui::Begin("test", nullptr))
-			;
-		ImGui::End();
-
+		MenuBar();
 		for (auto& pPanel : m_Panels)
 			pPanel->Update(0.f);
 	}
@@ -108,5 +112,33 @@ void RDXGui::FrameEndImpl()
 			ImGui::RenderPlatformWindowsDefault();
 			static_cast<rdx::GLFWWindow*>(rdx::ServiceLayer::WindowSystem())->SetContextCurrent();
 		}
+	}
+}
+
+void rdxgui::RDXGui::MenuBar()
+{
+	if (ImGui::BeginMainMenuBar())
+	{
+		if (ImGui::BeginMenu("General"))
+		{
+			static int s_FPSIndex = 1; // Defaults at 30
+			static std::array<const char*, 7> s_FPSs{ "15", "30", "60", "120", "144", "240", "No Lim." };
+			static std::array<uint32_t, 7> s_FPSsNum{ 15, 30, 60, 120, 144, 240, std::numeric_limits<uint32_t>::max() };
+			bool isVSync = rdx::ServiceLayer::FrameRateControllerService()->IsVSync();
+			ImGui::BeginDisabled(isVSync);
+			if (ImGui::SliderInt("FPS", &s_FPSIndex, 0, static_cast<int>(s_FPSs.size() - 1), s_FPSs[s_FPSIndex]))
+			{
+				RX_ASSERT(0 <= s_FPSIndex && s_FPSIndex < s_FPSsNum.size());
+				rdx::ServiceLayer::InstantEventService()->Publish(rdx::FPSChangedEvent{ s_FPSsNum[s_FPSIndex] });
+			}
+			ImGui::EndDisabled();
+		
+			if (ImGui::Checkbox("V-Sync", &isVSync))
+			{
+				rdx::ServiceLayer::InstantEventService()->Publish(rdx::ToggleVSyncEvent{ isVSync });
+			}
+			ImGui::EndMenu();
+		}
+		ImGui::EndMainMenuBar();
 	}
 }

@@ -23,6 +23,8 @@ namespace rdxgui
 			m_Panels.emplace_back(std::make_unique<T>(windowName, flags));
 		}
 
+		void MenuBar();
+
 	private:
 		bool m_IsEnabled{ false };
 

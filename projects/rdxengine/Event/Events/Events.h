@@ -8,6 +8,21 @@ namespace rdx
 		std::string Reason;
 	};
 
+	struct FPSChangedEvent
+	{
+		uint32_t TargetFPS;
+	};
+
+	struct ToggleVSyncEvent
+	{
+		bool IsVSync;
+	};
+
+	struct ChangeWindowTitleEvent
+	{
+		std::string Title;
+	};
+
 	// Profiling
 	struct TemporaryProfilingEvent
 	{

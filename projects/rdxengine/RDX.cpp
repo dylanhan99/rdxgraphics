@@ -33,38 +33,12 @@ int RDX::Run()
 				ServiceLayer::WindowSystem()->SetShouldClose();
 			});
 
-		static uint64_t frame = 0;
-		auto lastTime = std::chrono::system_clock::now();
-		float dt{};
-		constexpr int targetFrames = 30;
-		constexpr float targetDt = 1.f / targetFrames;
-		int currentFPS{};
 		while (!ServiceLayer::WindowSystem()->IsWindowShouldClose())
 		{
-			++frame;
-			{
-				auto now = std::chrono::system_clock::now();
-				auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(now - lastTime);
-				lastTime = now;
-				dt = elapsed.count() * 0.001f; // Convert ms to seconds
-			}
-			{ // FPS value displayer. Resets every 1 second
-				static float dtAccum = 0.f;
-				static int numFrames = 0;
+			ServiceLayer::FrameRateControllerService()->FrameStart();
+			const float dt = ServiceLayer::FrameRateControllerService()->GetDT();
 
-				dtAccum += dt;
-				++numFrames;
-
-				if (dtAccum >= 1000.f)
-				{
-					currentFPS = dtAccum / numFrames;
-					dtAccum = 0.f;
-					numFrames = 0;
-					std::cout << currentFPS << "\n";
-				}
-			}
-
-			RX_PROFILE_FRAME(frame);
+			RX_PROFILE_FRAME(ServiceLayer::FrameRateControllerService()->GetFrame());
 			RX_PROFILE("Main Loop");
 			ServiceLayer::WindowSystem()->PollEvents();
 
@@ -151,22 +125,7 @@ int RDX::Run()
 			ServiceLayer::ApplicationService()->FrameEnd();
 			ServiceLayer::WindowSystem()->SwapBuffers();
 
-#if 0
-			{
-				static float accum{};
-				accum += dt;
-				std::cout << accum << "\n";
-			}
-#endif
-			
-			{
-				// Becareful of a pure sleep_until approach. The OS may sleep for +-[2,5]ms, which is inconsequential at lower fps
-				// But at higher target fps, the 2ms really adds up, maybe a 244fps may only perform at 150+fps
-				// Not really important right now, but something to thinka bout next time.
-				using namespace std::chrono;
-				auto end = lastTime + round<milliseconds>(duration<float>(targetDt)); // The "correct" next frame time
-				std::this_thread::sleep_until(end);
-			}
+			ServiceLayer::FrameRateControllerService()->FrameEnd();
 		}
 	}
 	else

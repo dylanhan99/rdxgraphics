@@ -17,6 +17,7 @@ namespace rdx
 		ECS,
 		InstantEvent,
 		PerformanceProfiler,
+		FrameRateController,
 
 		MAX
 	};

@@ -8,6 +8,7 @@
 #include "Event/Busses/InstantEventBus.h"
 #include "ECS/BaseEntityComponentWorld.h"
 #include "Profiling/PerformanceProfiler.h"
+#include "Utils/FrameRateController.h"
 
 #include "BaseApp.h"
 
@@ -29,6 +30,7 @@ namespace rdx
 		static InstantEventBus* const InstantEventService();
 		static BaseEntityComponentWorld* const EntityComponentService();
 		static PerformanceProfiler* const PerformanceProfilingService();
+		static FrameRateController* const FrameRateControllerService();
 
 		static BaseApp* const ApplicationService();
 

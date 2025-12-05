@@ -52,6 +52,11 @@ PerformanceProfiler* const ServiceLayer::PerformanceProfilingService()
 	return static_cast<PerformanceProfiler*>(s_ServiceLayer->m_Utils[static_cast<size_t>(UtilType::PerformanceProfiler)]);
 }
 
+FrameRateController* const ServiceLayer::FrameRateControllerService()
+{
+	return static_cast<FrameRateController*>(s_ServiceLayer->m_Utils[static_cast<size_t>(UtilType::FrameRateController)]);
+}
+
 BaseApp* const ServiceLayer::ApplicationService()
 {
 	return s_ServiceLayer->m_App;
