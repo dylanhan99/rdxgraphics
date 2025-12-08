@@ -5,8 +5,8 @@
 #include "ECS/Worlds/EnttWorld.h"
 #include "ECS/Entity.h"
 
-//#include "Graphics/CrappyRenderer/CrappyRenderer.h"
-#include "Graphics/NaiveRenderer/NaiveRenderer.h"
+//#include "Graphics/Rendering/CrappyRenderer/CrappyRenderer.h"
+#include "Graphics/Rendering/NaiveRenderer/NaiveRenderer.h"
 
 #include "Event/Events/Events.h"
 

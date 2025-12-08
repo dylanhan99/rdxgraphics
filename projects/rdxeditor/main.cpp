@@ -6,7 +6,7 @@
 #include "rdxengine/Logging/AsyncLogger.h"
 #include "rdxengine/Event/Busses/InstantEventBus.h"
 #include "rdxengine/ECS/Worlds/EnttWorld.h"
-#include "rdxengine/Graphics/NaiveRenderer/NaiveRenderer.h"
+#include "rdxengine/Graphics/Rendering/NaiveRenderer/NaiveRenderer.h"
 #include "rdxengine/Utils/FrameRateController.h"
 
 #include <GLFW/glfw3.h>
@@ -16,6 +16,8 @@
 #include <imgui_internal.h>
 #include <imgui_impl_opengl3.h>
 #include <imgui_impl_glfw.h>
+
+#include "rdxengine/Graphics/MultiPassing/Passes/TestPass.h"
 
 int main()
 {
@@ -31,16 +33,29 @@ int main()
 		std::unique_ptr<GLFWWindow>		 m_Window = std::make_unique<GLFWWindow>();
 		std::unique_ptr<NaiveRenderer>	 m_Renderer = std::make_unique<NaiveRenderer>();
 
-		//
-		std::unique_ptr<Input>			 m_Input = std::make_unique<Input>();
-		std::unique_ptr<AsyncLogger>	 m_Logging = std::make_unique<AsyncLogger>();
-		std::unique_ptr<InstantEventBus> m_InstantEventBus = std::make_unique<InstantEventBus>();
-		std::unique_ptr<EnttWorld>		 m_EntityComponentWorld = std::make_unique<EnttWorld>();
-		std::unique_ptr<PerformanceProfiler>	 m_Profiler = std::make_unique<PerformanceProfiler>();
-		std::unique_ptr<FrameRateController>	 m_FRC = std::make_unique<FrameRateController>();
+		// Passes
+		std::shared_ptr<TestPass> m_TestPass = std::make_shared<TestPass>();
+		{
+			rdx::RenderPipeline editorPipe{};
+			editorPipe.RegisterPass(m_TestPass);
+			m_Renderer->RegisterPipeline(editorPipe);
+		}
+		{
+			rdx::RenderPipeline gamePipe{};
+			gamePipe.RegisterPass(m_TestPass);
+			m_Renderer->RegisterPipeline(gamePipe);
+		}
 
 		//
-		std::unique_ptr<RDXGui>		     m_App = std::make_unique<RDXGui>();
+		std::unique_ptr<Input>					m_Input = std::make_unique<Input>();
+		std::unique_ptr<AsyncLogger>			m_Logging = std::make_unique<AsyncLogger>();
+		std::unique_ptr<InstantEventBus>		m_InstantEventBus = std::make_unique<InstantEventBus>();
+		std::unique_ptr<EnttWorld>				m_EntityComponentWorld = std::make_unique<EnttWorld>();
+		std::unique_ptr<PerformanceProfiler>	m_Profiler = std::make_unique<PerformanceProfiler>();
+		std::unique_ptr<FrameRateController>	m_FRC = std::make_unique<FrameRateController>();
+
+		//
+		std::unique_ptr<RDXGui>	m_App = std::make_unique<RDXGui>();
 
 		std::shared_ptr<ServiceLayer> serviceLayer = std::make_shared<ServiceLayer>();
 		serviceLayer->RegisterSystem(m_Window.get());

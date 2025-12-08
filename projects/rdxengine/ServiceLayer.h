@@ -1,7 +1,7 @@
 #ifndef RDXENGINE_H
 #define RDXENGINE_H
 #include "Window/BaseWindow.h"
-#include "Graphics/BaseRenderer.h"
+#include "Graphics/Rendering/BaseRenderer.h"
 
 #include "Input/Input.h"
 #include "Logging/BaseLogger.h"

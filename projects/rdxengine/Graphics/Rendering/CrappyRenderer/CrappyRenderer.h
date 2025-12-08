@@ -1,6 +1,6 @@
 #ifndef CRAPPYRENDERER_H
 #define CRAPPYRENDERER_H
-#include "Graphics/BaseRenderer.h"
+#include "Graphics/Rendering/BaseRenderer.h"
 
 namespace rdx
 {

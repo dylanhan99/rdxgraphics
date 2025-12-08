@@ -117,40 +117,16 @@ bool NaiveRenderer::TerminateImpl()
 
 void NaiveRenderer::DrawImpl()
 {
+	// Need to have a way to bind camera to passes instead
 	m_EditorCamera.UpdateCameraVectors(glm::vec3{ 0.f, 0.f, 5.f }, glm::vec3{ 0.f });
 
-	glm::vec4 m_BackbufferColor{ 0.2f, 0.3f, 0.3f, 1.0f };
-	glClearColor(m_BackbufferColor.r, m_BackbufferColor.g, m_BackbufferColor.b, m_BackbufferColor.a);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	std::vector<glm::mat4> xforms{};
-	RX_ECS_VIEWEACH(TransformComponent)(
-		[&](EntityID eid, TransformComponent& xform)
+	for (auto const& pipeline : m_Pipelines)
+	{
+		for (std::weak_ptr<BasePass> pass : pipeline.Passes)
 		{
-			// glm::mat4 const& modelXform = xform.GetTransformMatrix();
-			glm::mat4 modelXform = glm::translate(glm::mat4{ 1.f }, xform.Position);
-
-			xforms.emplace_back(modelXform);
-		});
-
-	glNamedBufferSubData(m_DefaultMesh.m_VBOs[1],
-		0,
-		xforms.size() * sizeof(glm::mat4),
-		(void*)(xforms.data() /*+ offset*/)); // Offset is when you have to batch the instancing, in case you overflow the maxinstances
-
-	m_DefaultMesh.Bind();
-	m_DefaultShader.Bind();
-	m_DefaultShader.SetUniformMatrix4f("viewMat", m_EditorCamera.GetViewMatrix());
-	m_DefaultShader.SetUniformMatrix4f("projMat", m_EditorCamera.GetProjMatrix());
-
-	glDrawElementsInstanced(
-		GL_TRIANGLES,
-		(GLsizei)indices.size(),
-		GL_UNSIGNED_INT,
-		nullptr,
-		(GLsizei)xforms.size()
-	);
-	m_DefaultShader.Unbind();
+			pass.lock()->Draw();
+		}
+	}
 }
 
 #pragma region ::Shader

@@ -55,10 +55,12 @@ void RDXGui::FrameStartImpl()
 void RDXGui::FrameEndImpl()
 {
 	{
-		std::string title{ "RDXEditor [" };
-		title += std::to_string(rdx::ServiceLayer::FrameRateControllerService()->GetEstimatedFPS()) + "]";
-
-		rdx::ServiceLayer::InstantEventService()->Publish(rdx::ChangeWindowTitleEvent{ std::move(title) });
+		std::ostringstream ss{};
+		ss << "RDXEditor ["
+			<< rdx::ServiceLayer::FrameRateControllerService()->GetEstimatedFPS()
+			<< "]";
+		
+		rdx::ServiceLayer::InstantEventService()->Publish(rdx::ChangeWindowTitleEvent{ std::move(ss.str()) });
 	}
 
 	{

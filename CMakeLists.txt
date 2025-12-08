@@ -36,78 +36,118 @@ importDependencies()
 #include_directories(${CMAKE_CURRENT_LIST_DIR}/lib/glm)
 
 # ======================= PROJECT SETUP =========================
-SET(PROJECTS_DIR "${CMAKE_CURRENT_LIST_DIR}/projects")
+# Auto-discover project folders under /projects
+# Stable for Visual Studio (NO RELATIVE PATHS)
+set(PROJECTS_DIR "${CMAKE_CURRENT_LIST_DIR}/projects")
 if (IS_DIRECTORY "${PROJECTS_DIR}")
-    file(GLOB children RELATIVE "${PROJECTS_DIR}" "${PROJECTS_DIR}/*")
+    # --- Find all project subfolders (absolute paths, stable in VS) ---
+    file(GLOB children LIST_DIRECTORIES TRUE "${PROJECTS_DIR}/*")
 
-    # First pass, create all libraries/executables
-    foreach (child ${children})
-        message("Creating ${child} project...")
-        SET(child_source_dir "${PROJECTS_DIR}/${child}")
-        set(childType "")
-        set(childLibs "")
-        set(childDefs "")
+    # Containers holding info about each project
+    set(ALL_PROJECT_NAMES "")
+    set(PROJECT_TYPE "")
+    set(PROJECT_LIBS "")
+    set(PROJECT_DEFS "")
 
-        if (EXISTS ${child_source_dir}/config.cmake)
-            include(${child_source_dir}/config.cmake)
+    # ===============================================
+    # FIRST PASS: Create all targets
+    # ===============================================
+    foreach(child ${children})
 
-            if (IS_DIRECTORY "${child_source_dir}")
-                file(GLOB_RECURSE child_source_files
-                    ${child_source_dir}/*.cpp
-                    ${child_source_dir}/*.h
-                    ${child_source_dir}/*.hpp
-                )
+        if (IS_DIRECTORY "${child}")
 
-                if (childType STREQUAL "STATIC")
-                    add_library(${child} STATIC ${child_source_files} "${PROJECTS_DIR}/RXAPI.h")
-                elseif (childType STREQUAL "SHARED")
-                    add_library(${child} SHARED ${child_source_files} "${PROJECTS_DIR}/RXAPI.h")
-                elseif (childType STREQUAL "EXECUTABLE")
-                    add_executable(${child} ${child_source_files} "${PROJECTS_DIR}/RXAPI.h")
-                endif()
+            # Extract the folder name (ProjectA, ProjectB, ...)
+            get_filename_component(child_name "${child}" NAME)
+
+            message("Configuring ${child_name}...")
+
+            # Reset values for this project
+            set(childType "")
+            set(childLibs "")
+            set(childDefs "")
+
+            # Load the per-project config if it exists
+            if (EXISTS "${child}/config.cmake")
+                include("${child}/config.cmake")
             endif()
+
+            # Collect source files
+            file(GLOB_RECURSE child_sources
+                "${child}/*.cpp"
+                "${child}/*.c"
+                "${child}/*.h"
+                "${child}/*.hpp"
+            )
+
+            # RXAPI is common?
+            set(common_headers "${PROJECTS_DIR}/RXAPI.h")
+
+            # Create the target based on childType
+            if (childType STREQUAL "STATIC")
+                add_library(${child_name} STATIC ${child_sources} ${common_headers})
+            elseif (childType STREQUAL "SHARED")
+                add_library(${child_name} SHARED ${child_sources} ${common_headers})
+            elseif (childType STREQUAL "EXECUTABLE")
+                add_executable(${child_name} ${child_sources} ${common_headers})
+            else()
+                message(FATAL_ERROR "Project ${child_name} has no valid childType.")
+            endif()
+
+            # Save info for pass #2
+            list(APPEND ALL_PROJECT_NAMES ${child_name})
+            set(PROJECT_TYPE_${child_name} ${childType})
+            set(PROJECT_LIBS_${child_name} ${childLibs})
+            set(PROJECT_DEFS_${child_name} ${childDefs})
+
         endif()
     endforeach()
 
-    # Second pass, all linking
-    foreach (child ${children})
-        message("Linking ${child} project...")
-        SET(child_source_dir "${PROJECTS_DIR}/${child}")
-        set(childType "")
-        set(childLibs "")
-        set(childDefs "")
 
-        if (EXISTS ${child_source_dir}/config.cmake)
-            include(${child_source_dir}/config.cmake)
+    # ===============================================
+    # SECOND PASS: Linking, include dirs, PCH, options
+    # ===============================================
+    foreach(child_name ${ALL_PROJECT_NAMES})
+        message("Finalizing ${child_name}...")
 
-            if (IS_DIRECTORY "${child_source_dir}")
-                if (childType STREQUAL "EXECUTABLE")
-                    target_link_libraries(${child} PRIVATE ${childLibs})
-                else()
-                    target_link_libraries(${child} PUBLIC ${childLibs})
-                endif()
+        set(child "${PROJECTS_DIR}/${child_name}")
+        set(childType ${PROJECT_TYPE_${child_name}})
+        set(childLibs ${PROJECT_LIBS_${child_name}})
+        set(childDefs ${PROJECT_DEFS_${child_name}})
 
-                target_compile_definitions(${child} PRIVATE ${childLibs})
-
-                if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-                    target_compile_options(${child} PRIVATE -Wall ${DisableWarnings})
-                elseif (MSVC)
-                    target_compile_options(${child} PRIVATE /W3 /WX- /Zc:preprocessor)
-
-                    if (EXISTS "${child_source_dir}/pch.h")
-	                    target_precompile_headers(${child} PRIVATE "${child_source_dir}/pch.h")
-                    endif()
-                endif()
-
-                if (childType STREQUAL "EXECUTABLE")
-                    target_include_directories(${child} PRIVATE ${child_source_dir} ${PROJECTS_DIR})
-                else()
-                    target_include_directories(${child} PUBLIC ${child_source_dir} ${PROJECTS_DIR})
-                endif()
-            endif()
+        # --- Linking ---
+        if (childType STREQUAL "EXECUTABLE")
+            target_link_libraries(${child_name} PRIVATE ${childLibs})
+        else()
+            target_link_libraries(${child_name} PUBLIC ${childLibs})
         endif()
+
+        # --- Definitions ---
+        target_compile_definitions(${child_name} PRIVATE ${childDefs})
+
+        # --- Compiler-specific flags ---
+        if (MSVC)
+            target_compile_options(${child_name} PRIVATE /W3 /WX- /Zc:preprocessor)
+
+            # Precompiled headers
+            if (EXISTS "${child}/pch.h")
+                target_precompile_headers(${child_name} PRIVATE "${child}/pch.h")
+            endif()
+
+        elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+            target_compile_options(${child_name} PRIVATE -Wall)
+        endif()
+
+        # --- Include directories ---
+        if (childType STREQUAL "EXECUTABLE")
+            target_include_directories(${child_name} PRIVATE ${child} ${PROJECTS_DIR})
+        else()
+            target_include_directories(${child_name} PUBLIC ${child} ${PROJECTS_DIR})
+        endif()
+
     endforeach()
+
 endif()
+
 
 # Copy the models/ folder to the output dir
 #if(TARGET ${PROJECT_NAME})

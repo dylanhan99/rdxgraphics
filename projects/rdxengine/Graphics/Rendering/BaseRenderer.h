@@ -18,7 +18,7 @@ namespace rdx
 	private:
 		virtual void DrawImpl() = 0;
 
-	protected:
+	public:
 		CameraComponent m_EditorCamera{};
 	};
 }

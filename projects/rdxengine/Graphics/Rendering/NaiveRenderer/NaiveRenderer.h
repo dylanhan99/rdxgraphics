@@ -1,6 +1,7 @@
 #ifndef NAIVERENDERER_H
 #define NAIVERENDERER_H
-#include "Graphics/BaseRenderer.h"
+#include "Graphics/Rendering/BaseRenderer.h"
+#include "Graphics/MultiPassing/RenderPipeline.h"
 #include <gl/glew.h>
 
 namespace rdx
@@ -115,12 +116,20 @@ namespace rdx
 
 		void SetDepthTest(bool flag) override { if (flag) glEnable(GL_DEPTH_TEST); else glDisable(GL_DEPTH_TEST); }
 
+		inline void RegisterPipeline(RenderPipeline pipeline)
+		{
+			m_Pipelines.emplace_back(std::move(pipeline));
+		}
+
 	private:
 		void DrawImpl() override;
 
-	private:
+	public: // temp public
 		Shader m_DefaultShader{};
 		Mesh m_DefaultMesh{};
+		
+	private:
+		std::vector<RenderPipeline> m_Pipelines{};
 	};
 }
 
