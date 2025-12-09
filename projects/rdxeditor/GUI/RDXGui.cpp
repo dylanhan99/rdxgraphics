@@ -8,14 +8,13 @@
 #include "rdxengine/Event/Events/Events.h"
 #include "rdxengine/Window/GLFWWindow.h" // Should not be like this, but it's easier to just do this rn
 #include "Panels/EngineProfiler.h"
+#include "Panels/Viewport.h"
+#include "Panels/Hierarchy.h"
+#include "Panels/Inspector.h"
 using namespace rdxgui;
-
-#include "rdxengine/Graphics/MultiPassing/Passes/TestPass.h"
 
 // In the future, for stuff like OpenGL3 and GLFW, need to have precompile flags to ensure the correct
 // Function or header is being used.
-
-std::shared_ptr<rdx::TestPass> PPP{};
 
 bool RDXGui::Init()
 {
@@ -37,17 +36,29 @@ bool RDXGui::Init()
 	ImGui_ImplGlfw_InitForOpenGL(windowPointer, true);
 	ImGui_ImplOpenGL3_Init("#version 460");
 
-	RegisterPanel<EngineProfiler>("Profiler", 0);
+	RegisterPanel<ToolBar>("Tool Bar");
+	RegisterPanel<EngineProfiler>("Profiler");
+	RegisterPanel<EngineViewport>("Engine");
+	RegisterPanel<GameViewport>("Game");
+	RegisterPanel<Hierarchy>("Hierarchy");
+	RegisterPanel<Inspector>("Inspector");
+
+	for (auto& panel : m_Panels)
+		panel->Init();
 
 	return true;
 }
 
 bool RDXGui::Terminate()
 {
+	for (auto& panel : m_Panels)
+		panel->Terminate();
+
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
 
+	m_Panels.clear();
 	return true;
 }
 
@@ -69,7 +80,6 @@ void RDXGui::FrameEndImpl()
 
 	{
 		auto* pInput = rdx::ServiceLayer::InputService();
-		RX_ASSERT(pInput);
 		if (pInput->IsKeyDown(rdx::KeyCode::LCtrl) && pInput->IsKeyTriggered(rdx::KeyCode::E))
 			m_IsEnabled = !m_IsEnabled;
 	}
@@ -77,7 +87,7 @@ void RDXGui::FrameEndImpl()
 	if (!IsEnabled())
 		return;
 
-	constexpr uint32_t dockID = 67;
+	constexpr ImGuiID dockID = 67;
 
 	{ // Frame start
 		ImGui_ImplOpenGL3_NewFrame();
@@ -94,9 +104,31 @@ void RDXGui::FrameEndImpl()
 			ImGui::DockBuilderAddNode(dockID, ImGuiDockNodeFlags_DockSpace);
 			ImGui::DockBuilderSetNodeSize(dockID, viewport->Size);
 
-			uint32_t mainDockID = dockID;
-			ImGui::DockBuilderDockWindow("Viewport", mainDockID);
-			ImGui::DockBuilderDockWindow("Profiler", mainDockID);
+			ImGuiID mainDockID{ dockID }, leftDockID{}, rightDockID{}, downDockID{}, toolbarDockID{};
+			ImGui::DockBuilderSplitNode(mainDockID, ImGuiDir_Up, 0.05f, &toolbarDockID, &mainDockID);
+			ImGui::DockBuilderSplitNode(mainDockID, ImGuiDir_Left, 0.2f, &leftDockID, &mainDockID);
+			ImGui::DockBuilderSplitNode(mainDockID, ImGuiDir_Right, 0.3f, &rightDockID, &mainDockID);
+			ImGui::DockBuilderSplitNode(mainDockID, ImGuiDir_Down, 0.3f, &downDockID, &mainDockID);
+
+			// Further split the main dock into left and right
+			ImGuiID engineDockID{}, gameDockID{};
+			ImGui::DockBuilderSplitNode(mainDockID, ImGuiDir_Left, 0.5f, &engineDockID, &mainDockID);
+			gameDockID = mainDockID;
+
+			ImGui::DockBuilderDockWindow("Tool Bar", toolbarDockID);
+			ImGui::DockBuilderDockWindow("Engine", engineDockID);
+			ImGui::DockBuilderDockWindow("Game", gameDockID);
+			ImGui::DockBuilderDockWindow("Profiler", downDockID);
+			ImGui::DockBuilderDockWindow("Hierarchy", leftDockID);
+			ImGui::DockBuilderDockWindow("Inspector", rightDockID);
+
+			// Lock the toolbar node
+			ImGuiDockNode* toolbarNode = ImGui::DockBuilderGetNode(toolbarDockID);
+			toolbarNode->LocalFlags |=
+				ImGuiDockNodeFlags_NoTabBar |
+				ImGuiDockNodeFlags_NoDocking |
+				ImGuiDockNodeFlags_NoSplit |
+				ImGuiDockNodeFlags_NoResize;
 
 			ImGui::DockBuilderFinish(dockID);
 			dockLoaded = true;
@@ -105,16 +137,8 @@ void RDXGui::FrameEndImpl()
 
 	{ // Update
 		MenuBar();
-
-		if (ImGui::Begin("Viewport"))
-		{
-			ImGui::Image(PPP->m_TextureBuffer, ImVec2{ 600, 600 });
-
-		}
-		ImGui::End();
-
 		for (auto& pPanel : m_Panels)
-			pPanel->Update(0.f);
+			pPanel->Update(rdx::ServiceLayer::FrameRateControllerService()->GetDT());
 	}
 
 	{ // Draw
