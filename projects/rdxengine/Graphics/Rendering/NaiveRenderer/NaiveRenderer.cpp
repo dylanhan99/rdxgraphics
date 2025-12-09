@@ -106,11 +106,31 @@ bool NaiveRenderer::InitImpl()
 	}
 	RX_ASSERT(m_DefaultMesh);
 
+	{
+		bool passesOK = true;
+		for (auto& pipeline : m_Pipelines)
+		{
+			for (auto pass : pipeline.Passes)
+				passesOK &= pass.lock()->Init();
+		}
+		RX_ASSERT(passesOK);
+	}
+
 	return true;
 }
 
 bool NaiveRenderer::TerminateImpl()
 {
+	{
+		bool passesOK = true;
+		for (auto& pipeline : m_Pipelines)
+		{
+			for (auto pass : pipeline.Passes)
+				passesOK &= pass.lock()->Terminate();
+		}
+		RX_ASSERT(passesOK);
+	}
+
 	m_DefaultShader.Terminate();
 	return true;
 }

@@ -19,6 +19,8 @@
 
 #include "rdxengine/Graphics/MultiPassing/Passes/TestPass.h"
 
+extern std::shared_ptr<rdx::TestPass> PPP;
+
 int main()
 {
 	using namespace rdx;
@@ -35,6 +37,7 @@ int main()
 
 		// Passes
 		std::shared_ptr<TestPass> m_TestPass = std::make_shared<TestPass>();
+		PPP = m_TestPass; // temp
 		{
 			rdx::RenderPipeline editorPipe{};
 			editorPipe.RegisterPass(m_TestPass);

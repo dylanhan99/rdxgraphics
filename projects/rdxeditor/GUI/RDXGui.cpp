@@ -10,8 +10,12 @@
 #include "Panels/EngineProfiler.h"
 using namespace rdxgui;
 
+#include "rdxengine/Graphics/MultiPassing/Passes/TestPass.h"
+
 // In the future, for stuff like OpenGL3 and GLFW, need to have precompile flags to ensure the correct
 // Function or header is being used.
+
+std::shared_ptr<rdx::TestPass> PPP{};
 
 bool RDXGui::Init()
 {
@@ -91,6 +95,7 @@ void RDXGui::FrameEndImpl()
 			ImGui::DockBuilderSetNodeSize(dockID, viewport->Size);
 
 			uint32_t mainDockID = dockID;
+			ImGui::DockBuilderDockWindow("Viewport", mainDockID);
 			ImGui::DockBuilderDockWindow("Profiler", mainDockID);
 
 			ImGui::DockBuilderFinish(dockID);
@@ -100,6 +105,14 @@ void RDXGui::FrameEndImpl()
 
 	{ // Update
 		MenuBar();
+
+		if (ImGui::Begin("Viewport"))
+		{
+			ImGui::Image(PPP->m_TextureBuffer, ImVec2{ 600, 600 });
+
+		}
+		ImGui::End();
+
 		for (auto& pPanel : m_Panels)
 			pPanel->Update(0.f);
 	}
