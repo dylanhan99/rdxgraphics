@@ -2,6 +2,7 @@
 #define RDXGUI_H
 #include "rdxengine/BaseApp.h"
 #include "BasePanel.h"
+#include "ECS/Components/CameraComponent.h"
 
 namespace rdxgui
 {
@@ -9,6 +10,7 @@ namespace rdxgui
 	{
 	public:
 		inline bool IsEnabled() const { return m_IsEnabled; }
+		inline rdx::CameraComponent* GetCamera() { return &m_EditorCamera; }
 
 	private:
 		bool Init() override;
@@ -27,6 +29,8 @@ namespace rdxgui
 
 	private:
 		bool m_IsEnabled{ false };
+		rdx::CameraComponent m_EditorCamera{};
+		rdx::CameraComponent m_GameCamera{}; // Editor will own this for now, while there still is no entity with camera available.
 
 		std::vector<std::unique_ptr<BasePanel>> m_Panels{};
 	};

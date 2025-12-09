@@ -7,6 +7,7 @@ namespace rdx
 	class TestPass : public BasePass
 	{
 	public:
+		TestPass(CameraComponent* camera = nullptr) : BasePass(camera) {}
 		
 	private:
 		void DrawImpl() override;

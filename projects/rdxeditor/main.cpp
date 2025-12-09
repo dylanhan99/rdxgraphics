@@ -19,7 +19,8 @@
 
 #include "rdxengine/Graphics/MultiPassing/Passes/TestPass.h"
 
-extern std::shared_ptr<rdx::TestPass> PPP;
+extern std::shared_ptr<rdx::TestPass> editorPass;
+extern std::shared_ptr<rdx::TestPass> gamePass;
 
 int main()
 {
@@ -35,20 +36,6 @@ int main()
 		std::unique_ptr<GLFWWindow>		 m_Window = std::make_unique<GLFWWindow>();
 		std::unique_ptr<NaiveRenderer>	 m_Renderer = std::make_unique<NaiveRenderer>();
 
-		// Passes
-		std::shared_ptr<TestPass> m_TestPass = std::make_shared<TestPass>();
-		PPP = m_TestPass; // temp
-		{
-			rdx::RenderPipeline editorPipe{};
-			editorPipe.RegisterPass(m_TestPass);
-			m_Renderer->RegisterPipeline(editorPipe);
-		}
-		{
-			rdx::RenderPipeline gamePipe{};
-			gamePipe.RegisterPass(m_TestPass);
-			m_Renderer->RegisterPipeline(gamePipe);
-		}
-
 		//
 		std::unique_ptr<Input>					m_Input = std::make_unique<Input>();
 		std::unique_ptr<AsyncLogger>			m_Logging = std::make_unique<AsyncLogger>();
@@ -59,6 +46,26 @@ int main()
 
 		//
 		std::unique_ptr<RDXGui>	m_App = std::make_unique<RDXGui>();
+
+		// Passes
+		std::shared_ptr<TestPass> m_EditorTestPass = std::make_shared<TestPass>(m_App->GetCamera());
+		std::shared_ptr<TestPass> m_GameTestPass = std::make_shared<TestPass>();
+		{
+			{
+				rdx::RenderPipeline editorPipe{};
+				editorPipe.RegisterPass(m_EditorTestPass);
+
+				m_Renderer->RegisterPipeline(editorPipe);
+				editorPass = m_EditorTestPass; // This is the pass you wanna see in the viewport
+			}
+			{
+				rdx::RenderPipeline gamePipe{};
+				gamePipe.RegisterPass(m_GameTestPass);
+
+				m_Renderer->RegisterPipeline(gamePipe);
+				gamePass = m_GameTestPass; // This is the pass you wanna see in the viewport
+			}
+		}
 
 		std::shared_ptr<ServiceLayer> serviceLayer = std::make_shared<ServiceLayer>();
 		serviceLayer->RegisterSystem(m_Window.get());

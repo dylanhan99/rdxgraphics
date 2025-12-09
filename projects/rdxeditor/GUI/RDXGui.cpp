@@ -46,6 +46,8 @@ bool RDXGui::Init()
 	for (auto& panel : m_Panels)
 		panel->Init();
 
+	rdx::ServiceLayer::InstantEventService()->Publish(rdx::CameraChangeEvent{ &m_GameCamera });
+
 	return true;
 }
 
@@ -64,7 +66,7 @@ bool RDXGui::Terminate()
 
 void RDXGui::FrameStartImpl()
 {
-
+	m_EditorCamera.UpdateCameraVectors(glm::vec3{ 0.f, 0.f, 10.f }, glm::vec3{ 0.f });
 }
 
 void RDXGui::FrameEndImpl()

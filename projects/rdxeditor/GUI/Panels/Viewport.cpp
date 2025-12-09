@@ -1,7 +1,8 @@
 #include "Viewport.h"
 
 #include "rdxengine/Graphics/MultiPassing/Passes/TestPass.h"
-std::shared_ptr<rdx::TestPass> PPP{};
+std::shared_ptr<rdx::TestPass> editorPass{};
+std::shared_ptr<rdx::TestPass> gamePass{};
 
 void ToolBar::UpdateImpl(float)
 {
@@ -12,10 +13,10 @@ void ToolBar::UpdateImpl(float)
 void EngineViewport::UpdateImpl(float)
 {
 	ImVec2 const size = ImGui::GetContentRegionAvail();
-	ImGui::Image(PPP->m_TextureBuffer, size);
+	ImGui::Image(editorPass->m_TextureBuffer, size);
 }
 
 void GameViewport::UpdateImpl(float)
 {
-	ImGui::Image(PPP->m_TextureBuffer, ImVec2{ 600, 600 });
+	ImGui::Image(gamePass->m_TextureBuffer, ImVec2{ 600, 600 });
 }

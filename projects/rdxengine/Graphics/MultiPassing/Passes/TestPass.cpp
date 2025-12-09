@@ -42,8 +42,8 @@ void TestPass::DrawImpl()
 
 	pRenderer->m_DefaultMesh.Bind();
 	pRenderer->m_DefaultShader.Bind();
-	pRenderer->m_DefaultShader.SetUniformMatrix4f("viewMat", pRenderer->m_EditorCamera.GetViewMatrix());
-	pRenderer->m_DefaultShader.SetUniformMatrix4f("projMat", pRenderer->m_EditorCamera.GetProjMatrix());
+	pRenderer->m_DefaultShader.SetUniformMatrix4f("viewMat", m_Camera->GetViewMatrix());
+	pRenderer->m_DefaultShader.SetUniformMatrix4f("projMat", m_Camera->GetProjMatrix());
 
 	glDrawElementsInstanced(
 		GL_TRIANGLES,

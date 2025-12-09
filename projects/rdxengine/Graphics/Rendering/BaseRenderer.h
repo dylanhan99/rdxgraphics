@@ -2,10 +2,11 @@
 #define BASERENDERER_H
 #include "RXAPI.h"
 #include "BaseSystem.h"
-#include "ECS/Components/CameraComponent.h"
 
 namespace rdx
 {
+	struct CameraComponent;
+
 	class RX_API BaseRenderer : public BaseSystem
 	{
 		RX_DECLARE_SYSTEM("Renderer", Renderer);
@@ -15,11 +16,13 @@ namespace rdx
 		void Draw();
 		virtual void SetDepthTest(bool flag);
 
+		CameraComponent* GetCurrentCamera() { return m_CurrentCamera; }
+
 	private:
 		virtual void DrawImpl() = 0;
 
-	public:
-		CameraComponent m_EditorCamera{};
+	protected:
+		CameraComponent* m_CurrentCamera{}; // This is assumed to be the game's camera fyi. Logic end can change cameras at will.
 	};
 }
 

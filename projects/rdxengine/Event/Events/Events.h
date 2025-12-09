@@ -33,6 +33,12 @@ namespace rdx
 	{
 		bool IsAlwaysProfiling;
 	};
+
+	//
+	struct CameraChangeEvent
+	{
+		CameraComponent* pCamera;
+	};
 }
 
 #endif

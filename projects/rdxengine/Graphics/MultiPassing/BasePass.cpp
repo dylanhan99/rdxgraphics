@@ -1,4 +1,6 @@
 #include "BasePass.h"
+#include "ServiceLayer.h"
+#include "Event/Events/Events.h"
 
 using namespace rdx;
 
@@ -17,6 +19,18 @@ bool BasePass::Init()
 	glNamedFramebufferRenderbuffer(m_FBO, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_DepthBuffer);
 
 	RX_ASSERT(glCheckNamedFramebufferStatus(m_FBO, GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+
+	if (!m_Camera)
+	{
+		m_Camera = ServiceLayer::RenderingSystem()->GetCurrentCamera(); // A default
+
+		// And assuming that no m_Camera means it's a game's pass, we'd need to respond to the game's Camera Chagne Event
+		ServiceLayer::InstantEventService()->Subscribe<CameraChangeEvent>(
+			[this](CameraChangeEvent const& e)
+			{
+				m_Camera = e.pCamera;
+			});
+	}
 
 	return true;
 }

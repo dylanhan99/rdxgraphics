@@ -137,12 +137,10 @@ bool NaiveRenderer::TerminateImpl()
 
 void NaiveRenderer::DrawImpl()
 {
-	// Need to have a way to bind camera to passes instead
-	m_EditorCamera.UpdateCameraVectors(glm::vec3{ 0.f, 0.f, 5.f }, glm::vec3{ 0.f });
 
 	for (auto const& pipeline : m_Pipelines)
 	{
-		for (std::weak_ptr<BasePass> pass : pipeline.Passes)
+		for (auto pass : pipeline.Passes)
 		{
 			pass.lock()->Draw();
 		}

@@ -4,6 +4,8 @@
 
 namespace rdx
 {
+	struct CameraComponent;
+
 	struct RenderPipeline
 	{
 		void RegisterPass(std::weak_ptr<BasePass> pass)

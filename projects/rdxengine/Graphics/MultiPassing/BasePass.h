@@ -4,9 +4,12 @@
 
 namespace rdx
 {
+	struct CameraComponent;
+
 	class BasePass
 	{
 	public:
+		BasePass(CameraComponent* camera = nullptr) : m_Camera(camera) {};
 		~BasePass() = default;
 
 		bool Init();
@@ -19,6 +22,7 @@ namespace rdx
 
 	public:
 		glm::vec2 m_BufferDims{ 1280.f, 720.f };
+		CameraComponent* m_Camera{};
 
 		GLuint m_FBO{};
 		GLuint m_TextureBuffer{};
