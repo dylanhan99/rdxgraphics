@@ -67,7 +67,7 @@ bool RDXGui::Terminate()
 
 void RDXGui::FrameStartImpl()
 {
-	m_EditorCamera.UpdateCameraVectors(glm::vec3{ 0.f, 0.f, 10.f }, glm::vec3{ 0.f });
+	m_EditorCamera.UpdateCameraVectors(m_EditorCameraPos.Position, m_EditorCameraPos.Rotation);
 }
 
 void RDXGui::FrameEndImpl()

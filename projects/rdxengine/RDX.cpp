@@ -50,35 +50,13 @@ int RDX::Run()
 					ServiceLayer::InstantEventService()->Publish(ShutdownEngineEvent{ "ESCAPE!" });
 				}
 
-				if (ServiceLayer::InputService()->IsKeyTriggered(KeyCode::A))
-				{
-					for (int i = 0; i < 1000; ++i)
-					{
-						RX_TRACE("Test {}", i);
-					}
-				}
-
-				if (ServiceLayer::InputService()->IsKeyTriggered(KeyCode::S))
+				if (ServiceLayer::InputService()->IsKeyTriggered(KeyCode::Alpha5))
 				{
 					ServiceLayer::EntityComponentService()->Clear();
 				}
 
-				if (ServiceLayer::InputService()->IsKeyTriggered(KeyCode::D))
+				if (ServiceLayer::InputService()->IsKeyTriggered(KeyCode::Alpha6))
 				{
-					//constexpr int sz = 3;
-					//for (int i = -sz/2; i < sz/2; ++i)
-					//{
-					//	Entity ent = ServiceLayer::EntityComponentService()->CreateEntity();
-					//	auto pXform = ent.AddComponent<TransformComponent>();
-					//	if (pXform)
-					//	{
-					//		auto& xform = *pXform;
-					//		xform.Position.x = i;
-					//		xform.Position.y = i;
-					//		xform.Position.z = 0.f;
-					//		//RX_DEBUG("{}, {}, {}", xform.Position.x, xform.Position.y, xform.Position.z);
-					//	}
-					//}
 					{
 						Entity ent = ServiceLayer::EntityComponentService()->CreateEntity();
 						auto pXform = ent.AddComponent<TransformComponent>();

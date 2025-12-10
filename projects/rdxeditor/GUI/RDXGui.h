@@ -2,6 +2,7 @@
 #define RDXGUI_H
 #include "rdxengine/BaseApp.h"
 #include "BasePanel.h"
+#include "ECS/Components/Component.h"
 #include "ECS/Components/CameraComponent.h"
 
 namespace rdxgui
@@ -10,7 +11,7 @@ namespace rdxgui
 	{
 	public:
 		inline bool IsEnabled() const { return m_IsEnabled; }
-		inline rdx::CameraComponent const& GetCamera() const { return m_EditorCamera; }
+		inline rdx::TransformComponent& GetCameraPosition() { return m_EditorCameraPos; }
 		inline rdx::CameraComponent& GetCamera() { return m_EditorCamera; }
 
 	private:
@@ -30,6 +31,8 @@ namespace rdxgui
 
 	private:
 		bool m_IsEnabled{ false };
+
+		rdx::TransformComponent m_EditorCameraPos{};
 		rdx::CameraComponent m_EditorCamera{};
 		rdx::CameraComponent m_GameCamera{}; // Editor will own this for now, while there still is no entity with camera available.
 
