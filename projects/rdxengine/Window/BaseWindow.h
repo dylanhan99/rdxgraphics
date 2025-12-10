@@ -20,12 +20,19 @@ namespace rdx
 		virtual bool IsWindowShouldClose() = 0;
 		virtual void SetShouldClose() = 0;
 
+		virtual glm::vec2 GetWindowDims() const { return {}; }
+		virtual void SetMousePos(int, int) const {}
+
 	private:
 		virtual void PollEventsImpl() = 0;
 
 	protected:
 		void OnKeyPress(KeyCode const);
 		void OnKeyRelease(KeyCode const);
+		void OnMousePress(MouseCode const);
+		void OnMouseRelease(MouseCode const);
+		void OnMouseMove(double const xpos, double const ypos);
+		void OnScroll(double const yoffset);
 	};
 }
 

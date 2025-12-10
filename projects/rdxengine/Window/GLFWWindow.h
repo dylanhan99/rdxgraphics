@@ -18,12 +18,16 @@ namespace rdx
 		bool IsWindowShouldClose() override;
 		void SetShouldClose() override;
 
+		glm::vec2 GetWindowDims() const override;
+		void SetMousePos(int xpos, int ypos) const override;
+
 		GLFWwindow* GetWindowPointer() { return m_pWindow; }
 		void SetContextCurrent() const;
 
 	private:
 		void PollEventsImpl() override;
 		KeyCode TranslateKey(const int key);
+		MouseCode TranslateMouse(const int button);
 		void RegisterCallbacks();
 
 	private:

@@ -35,7 +35,23 @@ namespace rdx
 	};
 	enum class MouseCode
 	{
+		Unknown,
 
+		Mouse0, // Left
+		Mouse1, // Right
+		Mouse2, // Middle
+		Mouse3,
+		Mouse4,
+		Mouse5,
+		Mouse6,
+		Mouse7,
+
+		MAX,
+
+		// Aliases. Must come after MAX.
+		Left = Mouse0,
+		Right = Mouse1,
+		Middle = Mouse2,
 	};
 }
 

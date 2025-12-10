@@ -107,6 +107,18 @@ void GLFWWindow::SetShouldClose()
 	glfwSetWindowShouldClose(m_pWindow, true);
 }
 
+glm::vec2 GLFWWindow::GetWindowDims() const
+{
+	int x{}, y{};
+	glfwGetWindowSize(m_pWindow, &x, &y);
+	return glm::vec2{ x, y };
+}
+
+void GLFWWindow::SetMousePos(int xpos, int ypos) const
+{
+	glfwSetCursorPos(m_pWindow, static_cast<double>(xpos), static_cast<double>(ypos));
+}
+
 void GLFWWindow::SetContextCurrent() const
 {
 	glfwMakeContextCurrent(m_pWindow);
@@ -228,6 +240,23 @@ KeyCode GLFWWindow::TranslateKey(const int key)
 	return KeyCode::Unknown;
 }
 
+MouseCode GLFWWindow::TranslateMouse(const int button)
+{
+	switch (button)
+	{
+	case GLFW_MOUSE_BUTTON_1: return MouseCode::Mouse0;
+	case GLFW_MOUSE_BUTTON_2: return MouseCode::Mouse1;
+	case GLFW_MOUSE_BUTTON_3: return MouseCode::Mouse2;
+	case GLFW_MOUSE_BUTTON_4: return MouseCode::Mouse3;
+	case GLFW_MOUSE_BUTTON_5: return MouseCode::Mouse4;
+	case GLFW_MOUSE_BUTTON_6: return MouseCode::Mouse5;
+	case GLFW_MOUSE_BUTTON_7: return MouseCode::Mouse6;
+	case GLFW_MOUSE_BUTTON_8: return MouseCode::Mouse7;
+	default: break;
+	}
+	return MouseCode::Unknown;
+}
+
 void GLFWWindow::RegisterCallbacks()
 {
 	glfwSetKeyCallback(m_pWindow,
@@ -237,7 +266,6 @@ void GLFWWindow::RegisterCallbacks()
 			//	return;
 			GLFWWindow* pWin = reinterpret_cast<GLFWWindow*>(glfwGetWindowUserPointer(window));
 			
-			//std::cout << action << std::endl;
 			switch (action)
 			{
 				case GLFW_RELEASE:
@@ -247,7 +275,44 @@ void GLFWWindow::RegisterCallbacks()
 				case GLFW_REPEAT:
 					pWin->OnKeyPress(pWin->TranslateKey(key));
 					break;
-				default: break;
+				default: RX_ASSERT(false); break;
 			}
+		});
+
+	glfwSetMouseButtonCallback(m_pWindow,
+		[](GLFWwindow* window, int button, int action, int)
+		{
+			//if (!GLFWWindow::IsFocused())
+			//	return;
+			GLFWWindow* pWin = reinterpret_cast<GLFWWindow*>(glfwGetWindowUserPointer(window));
+			switch (action)
+			{
+			case GLFW_RELEASE:
+				pWin->OnMouseRelease(pWin->TranslateMouse(button));
+				break;
+			case GLFW_PRESS:
+				pWin->OnMousePress(pWin->TranslateMouse(button));
+				break;
+			default: RX_ASSERT(false); break;
+			}
+		});
+
+	glfwSetCursorPosCallback(m_pWindow,
+		[](GLFWwindow* window, double xpos, double ypos)
+		{
+			//if (!GLFWWindow::IsFocused())
+			//	return;
+			GLFWWindow* pWin = reinterpret_cast<GLFWWindow*>(glfwGetWindowUserPointer(window));
+			pWin->OnMouseMove(xpos, ypos);
+			//Input::MousePosCallback(xpos, ypos);
+		});
+
+	glfwSetScrollCallback(m_pWindow,
+		[](GLFWwindow* window, double, double yoffset)
+		{
+			//if (!GLFWWindow::IsFocused())
+			//	return;
+			GLFWWindow* pWin = reinterpret_cast<GLFWWindow*>(glfwGetWindowUserPointer(window));
+			pWin->OnScroll(yoffset);
 		});
 }
