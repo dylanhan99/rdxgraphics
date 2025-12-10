@@ -41,7 +41,7 @@ void FrameRateController::FrameStart()
 
 	{
 		auto now = ch::system_clock::now();
-		auto elapsed = ch::duration_cast<ch::microseconds>(now - m_LastTime);
+		auto elapsed = ch::duration_cast<ch::milliseconds>(now - m_LastTime);
 		m_LastTime = now;
 		m_DT = elapsed.count() * 0.001f; // Convert ms to seconds
 	}
@@ -53,7 +53,7 @@ void FrameRateController::FrameStart()
 		dtAccum += m_DT;
 		++numFrames;
 
-		if (dtAccum >= 1000.f)
+		if (dtAccum >= 1.f)
 		{
 			m_EstimatedFPS = numFrames;
 			dtAccum = 0.f;
