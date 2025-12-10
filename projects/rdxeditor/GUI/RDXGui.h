@@ -10,7 +10,8 @@ namespace rdxgui
 	{
 	public:
 		inline bool IsEnabled() const { return m_IsEnabled; }
-		inline rdx::CameraComponent* GetCamera() { return &m_EditorCamera; }
+		inline rdx::CameraComponent const& GetCamera() const { return m_EditorCamera; }
+		inline rdx::CameraComponent& GetCamera() { return m_EditorCamera; }
 
 	private:
 		bool Init() override;

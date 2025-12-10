@@ -11,6 +11,7 @@
 #include "Panels/Viewport.h"
 #include "Panels/Hierarchy.h"
 #include "Panels/Inspector.h"
+
 using namespace rdxgui;
 
 // In the future, for stuff like OpenGL3 and GLFW, need to have precompile flags to ensure the correct

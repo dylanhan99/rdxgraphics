@@ -48,7 +48,7 @@ int main()
 		std::unique_ptr<RDXGui>	m_App = std::make_unique<RDXGui>();
 
 		// Passes
-		std::shared_ptr<TestPass> m_EditorTestPass = std::make_shared<TestPass>(m_App->GetCamera());
+		std::shared_ptr<TestPass> m_EditorTestPass = std::make_shared<TestPass>(&m_App->GetCamera());
 		std::shared_ptr<TestPass> m_GameTestPass = std::make_shared<TestPass>();
 		{
 			{

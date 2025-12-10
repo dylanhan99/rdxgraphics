@@ -2,13 +2,16 @@
 #define INSPECTOR_H
 #include "GUI/BasePanel.h"
 
-class Inspector final : public BasePanel
+namespace rdxgui
 {
-public:
-	Inspector(const char* windowName, ImGuiWindowFlags flags) : BasePanel(windowName, flags) {}
+	class Inspector final : public BasePanel
+	{
+	public:
+		Inspector(const char* windowName, ImGuiWindowFlags flags) : BasePanel(windowName, flags) {}
 
-private:
-	void UpdateImpl(float dt) override;
-};
+	private:
+		void UpdateImpl(float dt) override;
+	};
+}
 
 #endif

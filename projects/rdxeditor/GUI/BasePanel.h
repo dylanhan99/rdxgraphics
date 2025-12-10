@@ -3,40 +3,43 @@
 //#include "rdxengine/BaseSystem.h"
 #include <imgui.h>
 
-class BasePanel// : public rdx::BaseSystem
+namespace rdxgui
 {
-public:
-	const char* GetWindowName() const { return m_WindowName; }
-	virtual ~BasePanel() = default;
-
-	inline bool Init()
+	class BasePanel// : public rdx::BaseSystem
 	{
-		return InitImpl();
-	}
-	
-	inline bool Terminate()
-	{
-		return TerminateImpl();
-	}
+	public:
+		const char* GetWindowName() const { return m_WindowName; }
+		virtual ~BasePanel() = default;
 
-	inline void Update(float dt)
-	{
-		if (ImGui::Begin(m_WindowName, nullptr, m_Flags))
-			UpdateImpl(dt);
-		ImGui::End();
-	}
-	
-private:
-	inline virtual bool InitImpl() { return true; }
-	inline virtual bool TerminateImpl() { return true; }
-	inline virtual void UpdateImpl(float dt) = 0;
+		inline bool Init()
+		{
+			return InitImpl();
+		}
 
-protected:
-	BasePanel(const char* windowName, ImGuiWindowFlags flags) : m_WindowName(windowName), m_Flags(flags) {}
+		inline bool Terminate()
+		{
+			return TerminateImpl();
+		}
 
-private:
-	const char* m_WindowName{};
-	ImGuiWindowFlags m_Flags{};
-};
+		inline void Update(float dt)
+		{
+			if (ImGui::Begin(m_WindowName, nullptr, m_Flags))
+				UpdateImpl(dt);
+			ImGui::End();
+		}
+
+	private:
+		inline virtual bool InitImpl() { return true; }
+		inline virtual bool TerminateImpl() { return true; }
+		inline virtual void UpdateImpl(float dt) = 0;
+
+	protected:
+		BasePanel(const char* windowName, ImGuiWindowFlags flags) : m_WindowName(windowName), m_Flags(flags) {}
+
+	private:
+		const char* m_WindowName{};
+		ImGuiWindowFlags m_Flags{};
+	};
+}
 
 #endif

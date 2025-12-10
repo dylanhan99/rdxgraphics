@@ -2,13 +2,16 @@
 #define ENGINEPROFILER_H
 #include "GUI/BasePanel.h"
 
-class EngineProfiler final : public BasePanel
+namespace rdxgui
 {
-public:
-	EngineProfiler(const char* windowName, ImGuiWindowFlags flags) : BasePanel(windowName, flags) {}
+	class EngineProfiler final : public BasePanel
+	{
+	public:
+		EngineProfiler(const char* windowName, ImGuiWindowFlags flags) : BasePanel(windowName, flags) {}
 
-private:
-	void UpdateImpl(float dt) override;
-};
+	private:
+		void UpdateImpl(float dt) override;
+	};
+}
 
 #endif

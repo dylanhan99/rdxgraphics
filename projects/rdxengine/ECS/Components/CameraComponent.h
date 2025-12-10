@@ -31,8 +31,9 @@ namespace rdx
 		inline glm::mat4 const& GetProjMatrix() const { return m_ProjectionMatrix; }
 
 		inline float& GetFOV() { return m_FOV; }
-		inline glm::vec3 GetFront() { return m_Front; }
+		inline glm::vec3 const& GetFront() const { return m_Front; }
 		inline glm::vec2& GetClipPlanes() { return m_Clip; }
+		inline void SetAspectRatio(glm::vec2 const& ratio) { m_AspectRatio = ratio.x / ratio.y; }
 		//inline float& GetMovementSpeed() { return m_MovementSpeed; }
 		//inline float& GetPitchSpeed() { return m_PitchSpeed; }
 		//inline float& GetYawSpeed() { return m_YawSpeed; }

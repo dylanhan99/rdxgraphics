@@ -2,6 +2,8 @@
 #include "rdxengine/ServiceLayer.h"
 #include "rdxengine/Event/Events/Events.h"
 
+using namespace rdxgui;
+
 float values_getter(void* data, int index)
 {
 	using namespace rdx;
