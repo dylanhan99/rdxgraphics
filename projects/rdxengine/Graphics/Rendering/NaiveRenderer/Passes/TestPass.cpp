@@ -2,7 +2,6 @@
 #include <gl/glew.h>
 
 #include "ServiceLayer.h"
-#include "Graphics/Rendering/NaiveRenderer/NaiveRenderer.h"
 
 using namespace rdx;
 
@@ -35,7 +34,7 @@ void TestPass::DrawImpl()
 			xforms.emplace_back(modelXform);
 		});
 
-	glNamedBufferSubData(pRenderer->m_DefaultMesh.m_VBOs[1],
+	glNamedBufferSubData(pRenderer->m_DefaultMesh.m_VBOs[2],
 		0,
 		xforms.size() * sizeof(glm::mat4),
 		(void*)(xforms.data() /*+ offset*/)); // Offset is when you have to batch the instancing, in case you overflow the maxinstances
@@ -52,5 +51,6 @@ void TestPass::DrawImpl()
 		nullptr,
 		(GLsizei)xforms.size()
 	);
+
 	pRenderer->m_DefaultShader.Unbind();
 }

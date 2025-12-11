@@ -17,7 +17,8 @@
 #include <imgui_impl_opengl3.h>
 #include <imgui_impl_glfw.h>
 
-#include "rdxengine/Graphics/MultiPassing/Passes/TestPass.h"
+#include "rdxengine/Graphics/Rendering/NaiveRenderer/Passes/TestPass.h"
+#include "rdxengine/Graphics/Rendering/NaiveRenderer/Passes/LightingPass.h"
 
 extern std::shared_ptr<rdx::TestPass> editorPass;
 extern std::shared_ptr<rdx::TestPass> gamePass;
@@ -49,11 +50,15 @@ int main()
 
 		// Passes
 		std::shared_ptr<TestPass> m_EditorTestPass = std::make_shared<TestPass>(&m_App->GetCamera());
+		std::shared_ptr<LightingPass> m_EditorLightingPass = std::make_shared<LightingPass>(&m_App->GetCamera());
+
 		std::shared_ptr<TestPass> m_GameTestPass = std::make_shared<TestPass>();
+		std::shared_ptr<LightingPass> m_GameLightingPass = std::make_shared<LightingPass>();
 		{
 			{
 				rdx::RenderPipeline editorPipe{};
 				editorPipe.RegisterPass(m_EditorTestPass);
+				editorPipe.RegisterPass(m_EditorLightingPass);
 
 				m_Renderer->RegisterPipeline(editorPipe);
 				editorPass = m_EditorTestPass; // This is the pass you wanna see in the viewport
@@ -61,6 +66,7 @@ int main()
 			{
 				rdx::RenderPipeline gamePipe{};
 				gamePipe.RegisterPass(m_GameTestPass);
+				gamePipe.RegisterPass(m_GameLightingPass);
 
 				m_Renderer->RegisterPipeline(gamePipe);
 				gamePass = m_GameTestPass; // This is the pass you wanna see in the viewport

@@ -2,7 +2,7 @@
 #include "rdxengine/ServiceLayer.h"
 #include "rdxeditor/GUI/RDXGui.h"
 
-#include "rdxengine/Graphics/MultiPassing/Passes/TestPass.h"
+#include "rdxengine/Graphics/Rendering/NaiveRenderer/Passes/TestPass.h"
 std::shared_ptr<rdx::TestPass> editorPass{};
 std::shared_ptr<rdx::TestPass> gamePass{};
 

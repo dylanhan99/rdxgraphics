@@ -8,6 +8,7 @@ namespace rdx
 {
 	class NaiveRenderer : public BaseRenderer
 	{
+	public:
 		class Shader
 		{
 		public:

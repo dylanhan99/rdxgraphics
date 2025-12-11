@@ -1,4 +1,5 @@
 #include "NaiveRenderer.h"
+#include "NaiveBasePass.h"
 #include "ServiceLayer.h"
 
 using namespace rdx;
@@ -47,7 +48,8 @@ bool NaiveRenderer::InitImpl()
 		const char* vertexShaderSource =
 			"#version 450 core\n"
 			"layout (location = 0) in vec3 aPos;\n"
-			"layout (location = 1) in mat4 aXform;\n"
+			"layout (location = 1) in vec3 aNormal;\n"
+			"layout (location = 2) in mat4 aXform;\n"
 			"uniform mat4 viewMat;\n"
 			"uniform mat4 projMat;\n"
 			"void main()\n"
@@ -81,6 +83,23 @@ bool NaiveRenderer::InitImpl()
 			{ -0.5f,  0.5f, -0.5f }  // 7
 		};
 
+		std::vector<glm::vec3> normals{};
+		{
+			for (size_t i = 0; i < indices.size(); i += 3)
+			{
+				GLuint i0 = indices[i];
+				GLuint i1 = indices[i + 1];
+				GLuint i2 = indices[i + 2];
+
+				glm::vec3 const& p0 = vertices[i0];
+				glm::vec3 const& p1 = vertices[i1];
+				glm::vec3 const& p2 = vertices[i2];
+				glm::vec3 norm = glm::cross(p1 - p0, p2 - p1);
+
+				normals.emplace_back(norm);
+			}
+		}
+
 		Mesh::VertexLayout layout{};
 		layout.Push(Mesh::VertexAttribute{
 			.AttributeType = Mesh::VertexAttributeType::Vec3,
@@ -89,6 +108,16 @@ bool NaiveRenderer::InitImpl()
 			.FundamentalCount = 3,
 			.Data = vertices.data(),
 			.Length = vertices.size(),
+			.IsInstanced = false,
+			.IsNormalized = false
+			});
+		layout.Push(Mesh::VertexAttribute{
+			.AttributeType = Mesh::VertexAttributeType::Vec3,
+			.AttributeCount = 1,
+			.FundamentalType = Mesh::VertexAttributeType::Float,
+			.FundamentalCount = 3,
+			.Data = normals.data(),
+			.Length = normals.size(),
 			.IsInstanced = false,
 			.IsNormalized = false
 			});
@@ -111,7 +140,7 @@ bool NaiveRenderer::InitImpl()
 		for (auto& pipeline : m_Pipelines)
 		{
 			for (auto pass : pipeline.Passes)
-				passesOK &= pass.lock()->Init();
+				passesOK &= static_cast<NaiveBasePass*>(pass.lock().get())->Init();
 		}
 		RX_ASSERT(passesOK);
 	}
@@ -126,7 +155,7 @@ bool NaiveRenderer::TerminateImpl()
 		for (auto& pipeline : m_Pipelines)
 		{
 			for (auto pass : pipeline.Passes)
-				passesOK &= pass.lock()->Terminate();
+				passesOK &= static_cast<NaiveBasePass*>(pass.lock().get())->Terminate();
 		}
 		RX_ASSERT(passesOK);
 	}
@@ -142,7 +171,7 @@ void NaiveRenderer::DrawImpl()
 	{
 		for (auto pass : pipeline.Passes)
 		{
-			pass.lock()->Draw();
+			static_cast<NaiveBasePass*>(pass.lock().get())->Draw();
 		}
 	}
 }
