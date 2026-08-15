@@ -33,7 +33,7 @@ find_package(assimp CONFIG REQUIRED)
 find_package(Eigen3 CONFIG REQUIRED)
 
 # Global compile flags and macros
-add_definitions(-DGLEW_STATIC)
+#add_definitions(-DGLEW_STATIC)
 add_definitions(-DUSE_CSD3151_AUTOMATION=0) # Used for instructor's automation
 
 # List of external libraries
@@ -77,13 +77,14 @@ if(IS_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/${SOURCE_FOLDER}")
 
     # Warnings based on compiler
     if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-        target_compile_options(${PROJECT_NAME} PRIVATE -Wall ${DisableWarnings})
-    elseif (MSVC)
+        target_compile_options(${PROJECT_NAME} PRIVATE 
+            -Wall 
+            ${DisableWarnings}
+            $<$<CONFIG:Debug>:-Og>
+        )
+    elseif (MSVC)   
         target_compile_options(${PROJECT_NAME} PRIVATE /W3 /WX- /Zc:preprocessor)
     endif()
-    target_compile_options(${PROJECT_NAME} PRIVATE
-        $<$<AND:$<CONFIG:Debug>,$<COMPILE_LANGUAGE:CXX>>:-Og>
-    )
     
     target_precompile_headers(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/${SOURCE_FOLDER}/pch.h)
 
