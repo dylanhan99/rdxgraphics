@@ -179,7 +179,7 @@ private:
 };
 
 template <typename T>
-static T BVHSystem::ComputeBV(Entity* pEntities, int numEnts)
+T BVHSystem::ComputeBV(Entity* pEntities, int numEnts)
 {
 	T ret{};
 	for (int i = 0; i < numEnts; ++i)
@@ -198,7 +198,7 @@ static T BVHSystem::ComputeBV(Entity* pEntities, int numEnts)
 }
 
 template <typename T>
-static float BVHSystem::HeuristicCost(T const& bvL, int const numL, T const& bvR, int const numR, T const& bvTotal)
+float BVHSystem::HeuristicCost(T const& bvL, int const numL, T const& bvR, int const numR, T const& bvTotal)
 {
 	float const invAll = 1.f / bvTotal.GetSurfaceArea();
 	float const normL = bvL.GetSurfaceArea() * invAll;
@@ -208,7 +208,7 @@ static float BVHSystem::HeuristicCost(T const& bvL, int const numL, T const& bvR
 }
 
 template <typename T>
-static float BVHSystem::CalculateHeuristicCost(T const& bvL, T const& bvR)
+float BVHSystem::CalculateHeuristicCost(T const& bvL, T const& bvR)
 {
 	float cost{};
 	switch (GetCurrentMergeStrat())
