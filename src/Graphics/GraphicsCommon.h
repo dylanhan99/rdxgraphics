@@ -1,2 +1,2 @@
 #pragma once
-#include <gl/glew.h>
+#include <GL/glew.h>
