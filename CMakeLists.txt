@@ -80,7 +80,11 @@ if(IS_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/${SOURCE_FOLDER}")
         target_compile_options(${PROJECT_NAME} PRIVATE -Wall ${DisableWarnings})
     elseif (MSVC)
         target_compile_options(${PROJECT_NAME} PRIVATE /W3 /WX- /Zc:preprocessor)
-        endif()
+    endif()
+    target_compile_options(${PROJECT_NAME} PRIVATE
+        $<$<AND:$<CONFIG:Debug>,$<COMPILE_LANGUAGE:CXX>>:-Og>
+    )
+    
     target_precompile_headers(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/${SOURCE_FOLDER}/pch.h)
 
     # Include path for each project
