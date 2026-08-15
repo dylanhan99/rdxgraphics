@@ -76,9 +76,8 @@ jobs:
       - name: Install vcpkg and dependencies
         uses: lukka/run-vcpkg@v11
         with:
-          # Pin this to a known-good vcpkg commit once your build is green,
-          # so dependency versions don't shift under you on later runs.
-          # vcpkgGitCommitId: '<commit-sha>'
+          # Baseline commit is pinned via "builtin-baseline" in vcpkg.json,
+          # so run-vcpkg knows which vcpkg port versions to resolve against.
           vcpkgJsonGlob: 'vcpkg.json'
 
       # --- Configure / build / test ------------------------------------------------
