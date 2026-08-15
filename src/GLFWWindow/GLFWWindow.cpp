@@ -45,6 +45,11 @@ bool GLFWWindow::Init()
 
 		glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 		g.m_pWindow = glfwCreateWindow(width, height, "Hello", nullptr, nullptr);
+		if (!g.m_pWindow)
+		{
+			RX_ERROR("Failed to create GLFW window.");
+			return false;
+		}
 
 		int x{}, y{};
 		glfwGetMonitorPos(monitor, &x, &y);
