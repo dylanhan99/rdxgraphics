@@ -54,9 +54,10 @@ jobs:
 
       # --- vcpkg dependency setup -------------------------------------------------
 
-      - name: Install Linux system packages for GLFW/Wayland
+      - name: Install Linux system packages for GLFW/Wayland/OpenGL
         # vcpkg builds glfw3 (with the "wayland" feature, per vcpkg.json) from
-        # source on Linux, which needs these system headers/tools present first.
+        # source on Linux. glfw3's own CMake does find_package(OpenGL REQUIRED),
+        # so the GL/GLX dev libraries need to be present too, not just Wayland/X11.
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
@@ -68,17 +69,28 @@ jobs:
             libxinerama-dev \
             libxcursor-dev \
             libxi-dev \
+            libx11-dev \
+            libxext-dev \
+            libxrender-dev \
+            libxfixes-dev \
+            libgl1-mesa-dev \
+            libglu1-mesa-dev \
             pkg-config
 
       - name: Install Ninja
         uses: seanmiddleditch/gha-setup-ninja@v6
 
+      - name: Set up MSVC developer environment
+        # Ninja (unlike the Visual Studio generator) needs cl.exe/INCLUDE/LIB/PATH
+        # set up explicitly -- windows-latest doesn't do this for you by default.
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
       - name: Install vcpkg and dependencies
         uses: lukka/run-vcpkg@v11
         with:
-          # Pin this to a known-good vcpkg commit once your build is green,
-          # so dependency versions don't shift under you on later runs.
-          # vcpkgGitCommitId: '<commit-sha>'
+          # Baseline commit is pinned via "builtin-baseline" in vcpkg.json,
+          # so run-vcpkg knows which vcpkg port versions to resolve against.
           vcpkgJsonGlob: 'vcpkg.json'
 
       # --- Configure / build / test ------------------------------------------------
