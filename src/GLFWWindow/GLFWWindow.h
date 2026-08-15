@@ -13,9 +13,9 @@ class GLFWWindow : public BaseSingleton<GLFWWindow>
 public:
 	using HandleT = 
 #if defined (_WIN32)
-		HWND__;
+		HWND;
 #elif defined (__linux__)
-	wl_surface*;
+		wl_surface*;
 #endif
 	
 public:
