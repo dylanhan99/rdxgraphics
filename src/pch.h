@@ -47,6 +47,8 @@
 //#include <xhash> // Unavailable in Linux
 #include <string_view>
 
+namespace fs = std::filesystem;
+
 // GLM
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
