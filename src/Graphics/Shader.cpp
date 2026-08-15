@@ -1,7 +1,5 @@
 #include "Shader.h"
 
-namespace fs = std::filesystem;
-
 bool Shader::Init(std::vector<std::pair<ShaderType, std::string>> const& shaderAssets)
 {
 	std::vector<GLuint> shaderIDs{};

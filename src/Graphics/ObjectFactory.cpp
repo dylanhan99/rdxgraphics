@@ -28,14 +28,14 @@ Object<T> ObjectFactory::CreateObjekt(U const& objParams)
 	// then validate all attribute containers should(?) be exactly the same size
 	size_t sz = _RX_TUP(2).size();
 	bool allSame = true;
-#define _RX_X(Klass) .Push<Klass>(typename Klass::container_type{})
-#define _RX_XX(Klass) allSame &= objekt.GetVBData<Klass>().size() == sz;
+#define _RX_X(Klass) .template Push<Klass>(typename Klass::container_type{})
+#define _RX_XX(Klass) allSame &= objekt.template GetVBData<Klass>().size() == sz;
 	if constexpr (std::is_same_v<T, VertexBasic>)
 	{
 		objekt
-			.Push<VertexBasic::Position>(_RX_TUP(2))
-			.Push<VertexBasic::TexCoord>(_RX_TUP(3))
-			.Push<VertexBasic::Normal>  (_RX_TUP(4))
+			.template Push<VertexBasic::Position>(_RX_TUP(2))
+			.template Push<VertexBasic::TexCoord>(_RX_TUP(3))
+			.template Push<VertexBasic::Normal>  (_RX_TUP(4))
 			RX_VERTEX_BASIC_ATTRIBS_M_INSTANCED(_RX_X)
 			.EndObject();
 
@@ -44,8 +44,8 @@ Object<T> ObjectFactory::CreateObjekt(U const& objParams)
 	else if constexpr (std::is_same_v<T, VertexFBO>)
 	{
 		objekt
-			.Push<VertexFBO::Position>(_RX_TUP(2))
-			.Push<VertexFBO::TexCoord>(_RX_TUP(3))
+			.template Push<VertexFBO::Position>(_RX_TUP(2))
+			.template Push<VertexFBO::TexCoord>(_RX_TUP(3))
 			RX_VERTEX_FBO_ATTRIBS_M_INSTANCED(_RX_X)
 			.EndObject();
 

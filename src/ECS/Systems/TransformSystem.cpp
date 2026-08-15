@@ -61,8 +61,8 @@ case Primitive::Klass:													 \
 		auto v = EntityManager::View<Collider::DirtyXform, Xform, Collider>();
 		for (auto [handle, _, xform, col] : v.each())
 		{
-			auto [xform, col] = EntityManager::GetComponent<const Xform, const Collider>(handle);
-			switch (col.GetPrimitiveType())
+			auto [x, c] = EntityManager::GetComponent<const Xform, const Collider>(handle);
+			switch (c.GetPrimitiveType())
 			{
 				RX_DO_ALL_PRIMITIVE_ENUM;
 			default:

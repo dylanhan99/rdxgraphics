@@ -11,11 +11,9 @@ if(MSVC)
     add_compile_options(/MP)
 endif()
 
-# Set the directory where custom CMake modules are stored
-set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
-
 # Disabling all install directories to avoid clashes
 set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY TRUE CACHE BOOL "" FORCE)
+
 # Quarantine Fortran before anyone gets ideas
 set(CMAKE_DISABLE_FIND_PACKAGE_LAPACK ON CACHE BOOL "" FORCE)
 set(CMAKE_DISABLE_FIND_PACKAGE_BLAS ON CACHE BOOL "" FORCE)
@@ -23,29 +21,33 @@ set(CMAKE_Fortran_COMPILER "" CACHE FILEPATH "" FORCE)
 set(CMAKE_Fortran_COMPILER_WORKS TRUE CACHE INTERNAL "" FORCE)
 set(CMAKE_PROJECT_LANGUAGES C CXX CACHE STRING "" FORCE)
 
-# Include project-wide utility and dependency modules
-include(ImportDependencies)
-importDependencies()
+# ======================= Dependencies (vcpkg) =========================
+find_package(glfw3 CONFIG REQUIRED)
+find_package(GLEW REQUIRED)
+find_package(glm CONFIG REQUIRED)
+find_package(imgui CONFIG REQUIRED)
+find_package(imguizmo CONFIG REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
+find_package(EnTT CONFIG REQUIRED)
+find_package(assimp CONFIG REQUIRED)
+find_package(Eigen3 CONFIG REQUIRED)
 
 # Global compile flags and macros
-add_definitions(-DGLEW_STATIC)
+#add_definitions(-DGLEW_STATIC)
 add_definitions(-DUSE_CSD3151_AUTOMATION=0) # Used for instructor's automation
 
 # List of external libraries
 set(ALL_LIBS
     PRIVATE glfw
-    PRIVATE libglew_static
+    PRIVATE GLEW::GLEW
     PRIVATE glm::glm
-	PRIVATE imgui
-	PRIVATE imguizmo
-	PRIVATE spdlog::spdlog
+    PRIVATE imgui::imgui
+    PRIVATE imguizmo::imguizmo
+    PRIVATE spdlog::spdlog
     PRIVATE EnTT::EnTT
-	PRIVATE assimp::assimp
+    PRIVATE assimp::assimp
     PRIVATE Eigen3::Eigen
 )
-
-# Include path for GLM (optional if not using FetchContent)
-#include_directories(${CMAKE_CURRENT_LIST_DIR}/lib/glm)
 
 # ======================= PROJECT SETUP =========================
 SET(SOURCE_FOLDER "src")
@@ -75,11 +77,16 @@ if(IS_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/${SOURCE_FOLDER}")
 
     # Warnings based on compiler
     if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-        target_compile_options(${PROJECT_NAME} PRIVATE -Wall ${DisableWarnings})
-    elseif (MSVC)
+        target_compile_options(${PROJECT_NAME} PRIVATE
+            -Wall
+            ${DisableWarnings}
+            $<$<CONFIG:Debug>:-Og>
+        )
+    elseif (MSVC)   
         target_compile_options(${PROJECT_NAME} PRIVATE /W3 /WX- /Zc:preprocessor)
-	    target_precompile_headers(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/${SOURCE_FOLDER}/pch.h)
     endif()
+    
+    target_precompile_headers(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/${SOURCE_FOLDER}/pch.h)
 
     # Include path for each project
     target_include_directories(${PROJECT_NAME} PRIVATE
@@ -87,7 +94,7 @@ if(IS_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/${SOURCE_FOLDER}")
     )
 endif()
 
-# Copy the models/ folder to the output dir
+# Copy the assets/ folder to the output dir
 if(TARGET ${PROJECT_NAME})
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory

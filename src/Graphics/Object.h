@@ -7,7 +7,7 @@
 // How many attrib_type make up value_type?	eg 4*vec4 in a mat4, eg 4*float in a vec4
 template <typename T>
 static uint32_t GetAttribCount();
-#define _RX_SETUP_ATTRIB(Klass, count) template<> static uint32_t GetAttribCount<Klass>() { return count; }
+#define _RX_SETUP_ATTRIB(Klass, count) template<> uint32_t GetAttribCount<Klass>() { return count; }
 _RX_SETUP_ATTRIB(glm::mat4, 4); // This is 4*vec4, because we have to "wrap" 4*vec4 attribs as one mat4
 _RX_SETUP_ATTRIB(glm::vec4, 1); // These are only 1, beacuse they can be directly declared as ONE attrib.
 _RX_SETUP_ATTRIB(glm::vec3, 1);
@@ -19,7 +19,7 @@ _RX_SETUP_ATTRIB(uint8_t, 1);
 //////////////////////////////////////////////////
 template <typename T>
 static uint32_t GetFundamentalCount();
-#define _RX_SETUP_FUNDA(Klass, count) template<> static uint32_t GetFundamentalCount<Klass>() { return count; }
+#define _RX_SETUP_FUNDA(Klass, count) template<> uint32_t GetFundamentalCount<Klass>() { return count; }
 _RX_SETUP_FUNDA(glm::vec4, 4); // These are only 1, beacuse they can be directly declared as ONE attrib.
 _RX_SETUP_FUNDA(glm::vec3, 3);
 _RX_SETUP_FUNDA(glm::vec2, 2);
@@ -30,7 +30,7 @@ _RX_SETUP_FUNDA(uint8_t, 1);
 //////////////////////////////////////////////////
 template <typename T>
 static GLenum GetFundamentalType();
-#define _RX_SETUP_FUNDA_T(Klass, glType) template<> static GLenum GetFundamentalType<Klass>() { return glType; }
+#define _RX_SETUP_FUNDA_T(Klass, glType) template<> GLenum GetFundamentalType<Klass>() { return glType; }
 _RX_SETUP_FUNDA_T(glm::vec4, GL_FLOAT);
 _RX_SETUP_FUNDA_T(glm::vec3, GL_FLOAT);
 _RX_SETUP_FUNDA_T(glm::vec2, GL_FLOAT);

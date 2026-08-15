@@ -11,7 +11,6 @@
 #define _RX_X(Klass, _RX_FOR_EACH)				\
 	template class Object<Klass>;				\
 	Klass _rx_hack_##Klass{};					\
-	template void Object<Klass>::EndObject();	\
 	template<> Object<Klass>::Object()			\
 	{											\
 		m_VBOs.resize(Klass::Max());			\

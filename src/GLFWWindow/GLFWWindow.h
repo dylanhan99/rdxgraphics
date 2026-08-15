@@ -1,9 +1,23 @@
 #pragma once
-struct GLFWwindow; struct GLFWcursor; struct HWND__; typedef HWND__* HWND;
+struct GLFWwindow; struct GLFWcursor;
+
+#if defined (_WIN32)
+	struct HWND__; typedef HWND__* HWND;
+#elif defined (__linux__)
+	struct wl_surface; // Match wayland-client.h
+#endif
 
 class GLFWWindow : public BaseSingleton<GLFWWindow>
 {
 	RX_SINGLETON_DECLARATION(GLFWWindow);
+public:
+	using HandleT = 
+#if defined (_WIN32)
+		HWND;
+#elif defined (__linux__)
+		wl_surface*;
+#endif
+	
 public:
 	static bool Init();
 	static void Terminate();
@@ -41,7 +55,7 @@ private:
 
 private:
 	GLFWwindow* m_pWindow{ nullptr };
-	HWND m_pWindowHandle{};
+	HandleT m_pWindowHandle{};
 
 public: // FRC could be another class, but i'd rather it jsut be together with window since it's a singleton anyway
 	static void Update(std::function<void(double)> fnUpdate);

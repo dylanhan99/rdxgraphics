@@ -2,11 +2,14 @@
 
 // Standard library
 #include <cmath>
-#include <crtdbg.h>
 #include <csignal>
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
+
+#ifdef _MSC_VER
+#include <crtdbg.h>
+#endif
 
 #include <algorithm>
 #include <array>
@@ -41,8 +44,10 @@
 #include <utility>
 #include <variant>
 #include <vector>
-#include <xhash>
+//#include <xhash> // Unavailable in Linux
 #include <string_view>
+
+namespace fs = std::filesystem;
 
 // GLM
 #define GLM_ENABLE_EXPERIMENTAL
