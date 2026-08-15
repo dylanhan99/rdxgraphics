@@ -23,7 +23,6 @@ std::string const fbo_fs = {
 #endif
 
 RX_SINGLETON_EXPLICIT(RenderSystem);
-namespace fs = std::filesystem;
 
 bool RenderSystem::Init()
 {
@@ -57,14 +56,14 @@ bool RenderSystem::Init()
 		{ ShaderType::Fragment, std::string{ fbo_fs } }
 	});
 #else
-	g.m_Shader.Init({
+	g.m_Shader.Init(std::vector<std::pair<ShaderType, fs::path>>({
 		{ ShaderType::Vertex,	fs::path{ RX_SHADER_PREFIX"default.vert" } },
 		{ ShaderType::Fragment, fs::path{ RX_SHADER_PREFIX"default.frag" } }
-		});
-	g.m_FBOShader.Init({
+		}));
+	g.m_FBOShader.Init(std::vector<std::pair<ShaderType, fs::path>>({
 		{ ShaderType::Vertex,	fs::path{ RX_SHADER_PREFIX"screen.vert" } },
 		{ ShaderType::Fragment, fs::path{ RX_SHADER_PREFIX"screen.frag" } }
-		});
+		}));
 #endif
 
 	CreateShapes();
