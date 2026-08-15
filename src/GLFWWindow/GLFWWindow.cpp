@@ -1,6 +1,12 @@
 #include <GLFW/glfw3.h>
-#define GLFW_EXPOSE_NATIVE_WIN32
+
+#if defined (_WIN32)
+	#define GLFW_EXPOSE_NATIVE_WIN32
+#elif defined (__linux__)
+	#define GLFW_EXPOSE_NATIVE_WAYLAND
+#endif
 #include <GLFW/glfw3native.h>
+
 #include "GLFWWindow.h"
 #include "Utils/Input.h"
 
@@ -49,7 +55,13 @@ bool GLFWWindow::Init()
 		glfwShowWindow(g.m_pWindow);
 	}
 	// assert pwindow
-	g.m_pWindowHandle = glfwGetWin32Window(g.m_pWindow);
+	g.m_pWindowHandle =
+#if defined (_WIN32)
+	glfwGetWin32Window(g.m_pWindow);
+#elif defined (__linux__)
+	glfwGetWaylandWindow(g.m_pWindow);
+#endif
+
 	glfwSetInputMode(g.m_pWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
 	glfwMakeContextCurrent(g.m_pWindow);
