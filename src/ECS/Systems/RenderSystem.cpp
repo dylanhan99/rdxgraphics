@@ -224,7 +224,7 @@ void RenderSystem::CreateShapes()
 #define _RX_XX(name, path)													\
 	CreateShape(Rxuid{ path }, name,										\
 		ObjectFactory::CreateObjekt<VertexBasic, ObjectParams_VertexBasic>(	\
-			ObjectFactory::LoadModelFile(RX_MODEL_PREFIX##path".obj")));
+			ObjectFactory::LoadModelFile(RX_MODEL_PREFIX path ".obj")));
 #define _RX_X(obj) _RX_XX(#obj, #obj)
 
 	RX_DO_ALL_OBJ;
