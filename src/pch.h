@@ -38,6 +38,7 @@
 #include <stdexcept>
 #include <stdlib.h>
 #include <thread>
+#include <typeindex>
 #include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
@@ -70,4 +71,5 @@ namespace fs = std::filesystem;
 #include "Utils/BaseSingleton.h"
 #include "Utils/Logger.h"
 #include "Utils/EventDispatcher/EventDispatcher.h"
+#include "Utils/EventBus/EventBus.h"
 #include "Utils/Rxuid.h"

@@ -13,11 +13,17 @@ Camera::Camera(
 	m_CameraMode = camMode;
 	m_Clip = clipPlanes;
 
-	EventDispatcher<int, int>::RegisterEvent(RX_EVENT_FRAMEBUFFER_RESIZE,
-		[&](int x, int y)
+	EventBus::Subscribe(EventPhase::PreRender, 
+		[&](FrameBufferResize const& e)
 		{
-			m_AspectRatio = (float)x / (float)y;
+			m_AspectRatio = (float)e.x / (float)e.y;
 		});
+	
+	//EventDispatcher<int, int>::RegisterEvent(RX_EVENT_FRAMEBUFFER_RESIZE,
+	//	[&](int x, int y)
+	//	{
+	//		m_AspectRatio = (float)x / (float)y;
+	//	});
 }
 
 void Camera::OnConstructImpl()
