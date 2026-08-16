@@ -13,6 +13,24 @@ enum class EventPhase
     MAX
 };
 
+namespace EventBusDetail
+{ // SFINAE magic
+    template <typename F>
+    struct CallableArgType : CallableArgType<decltype(&std::decay_t<F>::operator())> {};
+
+    template <typename C, typename Ret, typename Arg>
+    struct CallableArgType<Ret(C::*)(Arg) const>
+    {
+        using Type = std::decay_t<Arg>;
+    };
+
+    template <typename C, typename Ret, typename Arg>
+    struct CallableArgType<Ret(C::*)(Arg)>
+    {
+        using Type = std::decay_t<Arg>;
+    };
+}
+
 class EventBus : public BaseSingleton<EventBus>
 {
     RX_SINGLETON_DECLARATION(EventBus);
@@ -29,7 +47,7 @@ public:
     template <typename T>
     struct TypedQueue : IQueue
     {
-        void Subscribe(Callback<T> cb) { Callbacks.emplace_back(cb); }
+        void Subscribe(Callback<T> cb) { Callbacks.emplace_back(std::move(cb)); }
         void Raise(T e) { Events.emplace_back(e); }
         void Flush() override;
 
@@ -38,15 +56,17 @@ public:
     };
     
 public:
-    template <typename T>
-    static void Subscribe(EventPhase phase, Callback<T> cb);
+    template <typename F>
+    static void Subscribe(EventPhase phase, F&& cb);
     template <typename T>
     static void Raise(T e);
     static void Dispatch(EventPhase phase);
 
 private:
     template <typename T>
-    static std::unique_ptr<IQueue>& GetQueue(EventPhase phase);
+    static void SubscribeTyped(EventPhase, Callback<T> cb);
+    template <typename T>
+    static EventBus::TypedQueue<T>& GetQueue(EventPhase phase);
 
 private:
     std::map<EventPhase, 
@@ -56,35 +76,38 @@ private:
         >> m_EventMap{};
 };
 
-template <typename T>
-void EventBus::Subscribe(EventPhase phase, Callback<T> cb)
+template <typename F>
+void EventBus::Subscribe(EventPhase phase, F&& cb)
 {
-    RX_ASSERT(phase < EventPhase::MAX);
-    auto& typedQueue = GetQueue<T>(phase);
-    typedQueue->Subscribe(cb);
+    using T = typename EventBusDetail::CallableArgType<F>::Type;
+    SubscribeTyped<T>(phase, Callback<T>(std::forward<F>(cb)));
 }
 
 template <typename T>
 void EventBus::Raise(T e)
 {
     for (auto& [phase, phaseMap] : g.m_EventMap)
-    {
-        auto& typedQueue = GetQueue<T>(phase);
-        typedQueue.Raise(e);
-    }
+        GetQueue<T>(phase).Raise(e);
 }
 
 template <typename T>
-std::unique_ptr<EventBus::IQueue>& EventBus::GetQueue(EventPhase phase)
+void EventBus::SubscribeTyped(EventPhase phase, Callback<T> cb)
+{
+    RX_ASSERT(phase < EventPhase::MAX);
+    GetQueue<T>(phase).Subscribe(cb);
+}
+
+template <typename T>
+EventBus::TypedQueue<T>& EventBus::GetQueue(EventPhase phase)
 {
     auto& phaseMap = g.m_EventMap[phase];
     auto id = std::type_index(typeid(T));
     auto& uptr = phaseMap[id]; 
 
     if (!uptr) 
-        uptr = std::make_unique<TypedQueue<T>>(new TypedQueue<T>{});
+        uptr = std::make_unique<TypedQueue<T>>();
 
-    return uptr;
+    return *static_cast<TypedQueue<T>*>(uptr.get());
 }
 
 template <typename T>
