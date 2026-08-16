@@ -92,6 +92,7 @@ void RDX::Run()
 				TransformSystem::Update(dt);
 				CollisionSystem::Update(dt);
 
+				EventBus::Dispatch(EventPhase::PreRender);
 				// Render
 				if (!GLFWWindow::IsIconified())
 				{
