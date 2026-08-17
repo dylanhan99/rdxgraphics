@@ -83,7 +83,19 @@ if(IS_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/${SOURCE_FOLDER}")
             $<$<CONFIG:Debug>:-Og>
         )
     elseif (MSVC)   
-        target_compile_options(${PROJECT_NAME} PRIVATE /W3 /WX- /Zc:preprocessor)
+        target_compile_options(${PROJECT_NAME} PRIVATE
+            /W3 /Zc:preprocessor
+        )
+        
+        target_compile_options(${PROJECT_NAME} PRIVATE
+            $<$<CONFIG:Debug>:/Od /Zi /RTC1>
+            $<$<CONFIG:Release>:/O2 /Oi /Gy /GL>
+        )
+
+        target_link_options(${PROJECT_NAME} PRIVATE
+            $<$<CONFIG:Debug>:/DEBUG /INCREMENTAL>
+            $<$<CONFIG:Release>:/LTCG /OPT:REF /OPT:ICF>
+        )
     endif()
     
     target_precompile_headers(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/${SOURCE_FOLDER}/pch.h)
