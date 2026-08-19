@@ -135,7 +135,7 @@ void Inspector::UpdateCompCamera(std::string const& strHandle, Camera& comp)
 	//ImGui::Text("    [Dir]|X:% -4.1f |Y:% -4.1f |Z:% -4.1f", camFace.x, camFace.y, camFace.z);
 	ImGui::BeginDisabled(RenderSystem::GetActiveCamera() != comp.GetEntityHandle());
 	if (ImGui::Checkbox("CameraToggled", &comp.IsCameraInUserControl()))
-		EventDispatcher<Camera&>::FireEvent(RX_EVENT_CAMERA_USER_TOGGLED, comp);
+		EventBus::Raise(ToggleCameraEvent{ &comp });
 	ImGui::EndDisabled();
 
 	if (updateBV && EntityManager::HasComponent<BoundingVolume>(comp.GetEntityHandle()))

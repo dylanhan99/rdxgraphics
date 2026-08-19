@@ -1,17 +1,5 @@
 #pragma once
-
-//temp
-struct FrameBufferResize
-{
-    int x,y;
-};
-
-enum class EventPhase
-{
-    PreRender,
-
-    MAX
-};
+#include "Events.h"
 
 namespace EventBusDetail
 { // SFINAE magic

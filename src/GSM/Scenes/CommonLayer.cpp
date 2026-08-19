@@ -62,7 +62,7 @@ void CommonLayer::UpdateImpl(float dt)
 		bool& b = cam.IsCameraInUserControl();
 		b = !b;
 
-		EventDispatcher<Camera&>::FireEvent(RX_EVENT_CAMERA_USER_TOGGLED, cam);
+		EventBus::Raise(ToggleCameraEvent{ &cam });
 	}
 
 	if (Input::IsKeyDown(RX_KEY_LEFT_ALT))

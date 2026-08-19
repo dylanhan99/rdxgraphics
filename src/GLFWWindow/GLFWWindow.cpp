@@ -169,18 +169,19 @@ void GLFWWindow::RegisterCallbacks()
 		[](GLFWwindow*, int xpos, int ypos)
 		{
 			//Input::WindowPosCallback(xpos, ypos);
+			EventBus::Raise(WindowPositionEvent{ xpos, ypos });
 		});
 
 	glfwSetWindowSizeCallback(g.m_pWindow,
 		[](GLFWwindow*, int width, int height)
 		{
-			EventDispatcher<int, int>::FireEvent(RX_EVENT_WINDOW_RESIZE, width, height);
+			EventBus::Raise(WindowResizeEvent{ width, height });
 		});
 
 	glfwSetFramebufferSizeCallback(g.m_pWindow,
 		[](GLFWwindow*, int width, int height)
 		{
-			EventDispatcher<int, int>::FireEvent(RX_EVENT_FRAMEBUFFER_RESIZE, width, height);
+			EventBus::Raise(FrameBufferResizeEvent{ width, height });
 		});
 
 	glfwSetKeyCallback(g.m_pWindow,
@@ -189,7 +190,7 @@ void GLFWWindow::RegisterCallbacks()
 			if (!GLFWWindow::IsFocused())
 				return;
 
-			Input::KeyCallback(key, scancode, action);
+			EventBus::Raise(RawKeyInputEvent{ key, scancode, action });
 		});
 
 	glfwSetMouseButtonCallback(g.m_pWindow,
@@ -198,7 +199,7 @@ void GLFWWindow::RegisterCallbacks()
 			if (!GLFWWindow::IsFocused())
 				return;
 
-			Input::ButtonCallback(button, action);
+			EventBus::Raise(RawButtonInputEvent{ button, action });
 		});
 
 	glfwSetCursorPosCallback(g.m_pWindow,
@@ -207,7 +208,7 @@ void GLFWWindow::RegisterCallbacks()
 			if (!GLFWWindow::IsFocused())
 				return;
 
-			Input::MousePosCallback(xpos, ypos);
+			EventBus::Raise(RawCursorMovedEvent{ xpos, ypos });
 		});
 
 	glfwSetScrollCallback(g.m_pWindow,
@@ -216,7 +217,7 @@ void GLFWWindow::RegisterCallbacks()
 			if (!GLFWWindow::IsFocused())
 				return;
 			
-			Input::ScrollCallback(xoffset, yoffset);
+			EventBus::Raise(RawScrollEvent{ xoffset, yoffset });
 		});
 }
 

@@ -172,6 +172,11 @@ public:
 	inline static double GetMouseScrollOffset() { return g.m_ScrollOffset; }
 	inline static double GetMouseScrollNormalized() { return g.m_ScrollOffset < 0.0 ? -1.0 : 1.0; }
 
+	static void OnInputEvent(const RawKeyInputEvent& e);
+	static void OnInputEvent(const RawButtonInputEvent& e);
+	static void OnInputEvent(const RawCursorMovedEvent& e);
+	static void OnInputEvent(const RawScrollEvent& e);
+
 private:
 	std::array<bool, RX_KEY_LAST + 1>			 m_Keys{ false };
 	std::array<bool, RX_MOUSE_BUTTON_LAST + 1> m_Buttons{ false };

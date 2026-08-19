@@ -31,6 +31,8 @@ void RDX::Run()
 	if (!initOK)
 		throw RX_EXCEPTION("System initialization failed");
 
+
+
 	SceneManager::RegisterScene<Assignment4>("Assignment 4");
 	SceneManager::RegisterScene<Assignment3>("Assignment 3");
 	SceneManager::RegisterScene<Sandbox>("Sandbox");
@@ -64,6 +66,9 @@ void RDX::Run()
 
 		if (!SceneManager::ResolveScenes())
 			GLFWWindow::SetWindowShouldClose();
+
+		EventBus::Dispatch(EventPhase::OnInput);
+
 		GLFWWindow::Update(std::move(
 			[&](double deltatime)
 			{ 
@@ -88,11 +93,14 @@ void RDX::Run()
 					}
 				}
 
+				// There is a lack of fixed update
+				EventBus::Dispatch(EventPhase::LateUpdate);
+
 				SceneManager::Update(dt);
 				TransformSystem::Update(dt);
 				CollisionSystem::Update(dt);
 
-				EventBus::Dispatch(EventPhase::PreRender);
+				EventBus::Dispatch(EventPhase::OnPreRender);
 				// Render
 				if (!GLFWWindow::IsIconified())
 				{

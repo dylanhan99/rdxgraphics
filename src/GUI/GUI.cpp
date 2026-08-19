@@ -121,3 +121,21 @@ void GUI::Draw()
 		ImGui::RenderPlatformWindowsDefault();
 	}
 }
+
+void GUI::OnInputEvent(const KeyInputEvent& e)
+{
+	for (auto& pGUIWin : g.m_GUIWindows)
+		pGUIWin->OnInputEvent(e);
+}
+
+void GUI::OnInputEvent(const MouseInputEvent& e)
+{
+	for (auto& pGUIWin : g.m_GUIWindows)
+		pGUIWin->OnInputEvent(e);
+}
+
+void GUI::OnInputEvent(const CursorMovedEvent& e)
+{
+	for (auto& pGUIWin : g.m_GUIWindows)
+		pGUIWin->OnInputEvent(e);
+}

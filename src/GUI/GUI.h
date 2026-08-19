@@ -10,6 +10,10 @@ public:
 	static void Update(float dt);
 	static void Draw();
 
+	static void OnInputEvent(const KeyInputEvent& e);
+	static void OnInputEvent(const MouseInputEvent& e);
+	static void OnInputEvent(const CursorMovedEvent& e);
+
 	inline static entt::entity GetSelectedEntity() { return g.m_SelectedEntity; }
 	inline static void SetSelectedEntity(entt::entity handle) { g.m_SelectedEntity = handle; }
 

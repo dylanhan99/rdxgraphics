@@ -24,6 +24,10 @@ public:
 	void Update(float dt);
 	virtual void UpdateImpl(float dt) = 0;
 
+	virtual void OnInputEvent(const KeyInputEvent& e);
+	virtual void OnInputEvent(const MouseInputEvent& e);
+	virtual void OnInputEvent(const CursorMovedEvent& e);
+
 private:
 	std::string m_Name{};
 	ImGuiWindowFlags m_Flags{};

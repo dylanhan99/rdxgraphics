@@ -81,3 +81,54 @@ bool Input::IsMouseUp(unsigned int key)
 {
 	return g.m_ButtonsPrev[key] != RX_PRESS && g.m_Buttons[key] != RX_PRESS;
 }
+
+void Input::OnInputEvent(const RawKeyInputEvent& e)
+{
+	KeyCallback(e.key, e.scancode, e.action);
+
+	InputAction action =
+		IsKeyTriggered(e.key) ? InputAction::Triggered :
+		IsKeyReleased(e.key) ?	InputAction::Released :
+		IsKeyDown(e.key) ?		InputAction::Down :
+								InputAction::Up;
+
+	EventBus::Raise(KeyInputEvent{
+		.key = e.key,
+		.action = action
+		});
+}
+
+void Input::OnInputEvent(const RawButtonInputEvent& e)
+{
+	ButtonCallback(e.button, e.action);
+
+	InputAction action =
+		IsMouseTriggered(e.button) ? InputAction::Triggered :
+		IsMouseReleased(e.button) ?  InputAction::Released :
+		IsMouseDown(e.button) ?		 InputAction::Down :
+									 InputAction::Up;
+
+	EventBus::Raise(MouseInputEvent{
+		.button = e.button,
+		.action = action
+		});
+}
+
+void Input::OnInputEvent(const RawCursorMovedEvent& e)
+{
+	MousePosCallback(e.xpos, e.ypos);
+
+	EventBus::Raise(CursorMovedEvent{
+		.position = glm::vec2{ e.xpos, e.ypos }
+		});
+}
+
+void Input::OnInputEvent(const RawScrollEvent& e)
+{
+	ScrollCallback(e.xoffset, e.yoffset);
+
+	EventBus::Raise(MouseInputEvent{
+		.offset = e.yoffset,
+		.action = e.yoffset > 0.0 ? InputAction::ScrolledUp : InputAction::ScrolledDown
+		});
+}

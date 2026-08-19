@@ -68,10 +68,11 @@ bool RenderSystem::Init()
 
 	CreateShapes();
 
-	EventDispatcher<Camera&>::RegisterEvent(RX_EVENT_CAMERA_USER_TOGGLED,
-		[](Camera& camera)
+	EventBus::Subscribe(EventPhase::LateUpdate, [](Camera* const& pCamera)
 		{
-			GLFWWindow::SetInvisibleCursor(camera.IsCameraInUserControl());
+			if (!pCamera)
+				return;
+			GLFWWindow::SetInvisibleCursor(pCamera->IsCameraInUserControl());
 		});
 
 	glm::ivec2 dims = GLFWWindow::GetWindowDims();
