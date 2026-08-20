@@ -19,13 +19,13 @@ void EventManager::Init()
 {
 	/*** OnInput ***/
 	// Handle Input system first
-	EventBus::Subscribe(EventPhase::OnInput, static_cast<(*)(const RawKeyInputEvent&)>Input::OnInputEvent);
-	EventBus::Subscribe(EventPhase::OnInput, static_cast<(*)(const RawButtonInputEvent&)>Input::OnInputEvent);
-	EventBus::Subscribe(EventPhase::OnInput, static_cast<(*)(const RawCursorMovedEvent&)>Input::OnInputEvent);
-	EventBus::Subscribe(EventPhase::OnInput, static_cast<(*)(const RawScrollEvent&)>Input::OnInputEvent);
+	EventBus::Subscribe(EventPhase::OnInput, static_cast<void(*)(const RawKeyInputEvent&)>(Input::OnInputEvent));
+	EventBus::Subscribe(EventPhase::OnInput, static_cast<void(*)(const RawButtonInputEvent&)>(Input::OnInputEvent));
+	EventBus::Subscribe(EventPhase::OnInput, static_cast<void(*)(const RawCursorMovedEvent&)>(Input::OnInputEvent));
+	EventBus::Subscribe(EventPhase::OnInput, static_cast<void(*)(const RawScrollEvent&)>(Input::OnInputEvent));
 
 	// Then other systems like Imgui
-	EventBus::Subscribe(EventPhase::OnInput, static_cast<(*)(const KeyInputEvent&)>Input::OnInputEvent);
-	EventBus::Subscribe(EventPhase::OnInput, static_cast<(*)(const MouseInputEvent&)>Input::OnInputEvent);
-	EventBus::Subscribe(EventPhase::OnInput, static_cast<(*)(const CursorMovedEvent&)>Input::OnInputEvent);
+	EventBus::Subscribe(EventPhase::OnInput, static_cast<void(*)(const KeyInputEvent&)>(GUI::OnInputEvent));
+	EventBus::Subscribe(EventPhase::OnInput, static_cast<void(*)(const MouseInputEvent&)>(GUI::OnInputEvent));
+	EventBus::Subscribe(EventPhase::OnInput, static_cast<void(*)(const CursorMovedEvent&)>(GUI::OnInputEvent));
 }

@@ -17,6 +17,18 @@ namespace EventBusDetail
     {
         using Type = std::decay_t<Arg>;
     };
+
+    template <typename Ret, typename Arg>
+    struct CallableArgType<Ret(*)(Arg)>
+    {
+        using Type = std::decay_t<Arg>;
+    };
+
+    template <typename Ret, typename Arg>
+    struct CallableArgType<Ret(Arg)>
+    {
+        using Type = std::decay_t<Arg>;
+    };
 }
 
 class EventBus : public BaseSingleton<EventBus>
@@ -67,7 +79,7 @@ private:
 template <typename F>
 void EventBus::Subscribe(EventPhase phase, F&& cb)
 {
-    using T = typename EventBusDetail::CallableArgType<F>::Type;
+    using T = typename EventBusDetail::CallableArgType<std::decay_t<F>>::Type;
     SubscribeTyped<T>(phase, Callback<T>(std::forward<F>(cb)));
 }
 
