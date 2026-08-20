@@ -177,6 +177,9 @@ public:
 	static void OnInputEvent(const RawCursorMovedEvent& e);
 	static void OnInputEvent(const RawScrollEvent& e);
 
+	inline static bool IsKeyAction(const KeyInputEvent& e, int key, InputAction action) { return e.key == key && e.action == action; }
+	inline static bool IsMouseAction(const MouseInputEvent& e, int key, InputAction action) { return e.button == key && e.action == action; }
+
 private:
 	std::array<bool, RX_KEY_LAST + 1>			 m_Keys{ false };
 	std::array<bool, RX_MOUSE_BUTTON_LAST + 1> m_Buttons{ false };

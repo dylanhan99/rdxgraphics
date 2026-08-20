@@ -22,6 +22,9 @@ public:
 	static bool Init();
 	static void Terminate();
 
+	static void StartFrame();
+	static void EndFrame();
+
 	static void ToggleMinMaxWindow();
 	static void SetWindowTitle(std::string const& title);
 	static void CenterCursor();

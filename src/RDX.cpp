@@ -67,8 +67,17 @@ void RDX::Run()
 		if (!SceneManager::ResolveScenes())
 			GLFWWindow::SetWindowShouldClose();
 
+		EventBus::Dispatch(EventPhase::StartFrame);
+		EventBus::Dispatch(EventPhase::FixedUpdate);
 		EventBus::Dispatch(EventPhase::OnInput);
+		//EventBus::Dispatch(EventPhase::Update);
+		//EventBus::Dispatch(EventPhase::LateUpdate);
+		//EventBus::Dispatch(EventPhase::OnPreRender);
+		//EventBus::Dispatch(EventPhase::OnRender);
+		//EventBus::Dispatch(EventPhase::OnPostRender);
+		//EventBus::Dispatch(EventPhase::OnGUI);
 
+		// To move into EventPhase
 		GLFWWindow::Update(std::move(
 			[&](double deltatime)
 			{ 
@@ -110,6 +119,8 @@ void RDX::Run()
 				}
 			}
 		));
+
+		EventBus::Dispatch(EventPhase::EndFrame);
 	}
 
 	SceneManager::Terminate();

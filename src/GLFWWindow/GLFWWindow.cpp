@@ -86,6 +86,44 @@ void GLFWWindow::Terminate()
 	glfwTerminate();
 }
 
+void GLFWWindow::StartFrame()
+{
+	{ // FRC start gameloop // Might want to revisit FRC in the future. Right now it means nothing.
+		g.m_PrevTime = g.m_CurrTime;
+		g.m_CurrTime = glfwGetTime();
+		double dt = g.m_CurrTime - g.m_PrevTime;
+
+		g.m_AccumulatedDT += dt;
+	}
+
+	//if (g.m_AccumulatedDT <= g.m_TargetDT)
+	//	return;
+
+	{ // FRC start frame
+		g.m_FPS = static_cast<uint32_t>(1.0 / g.m_AccumulatedDT);
+		g.m_IntervalTimer += GetDT();
+		if (g.m_IntervalTimer >= 1.0)
+		{
+			static float alpha = 0.6f; // smoothing factor
+			g.m_IntervalFPS = (uint32_t)((1.f - alpha) * (float)g.m_IntervalFPS + alpha * (float)g.m_FPS);
+
+			g.m_IntervalTimer = 0.0;
+			//g.m_IntervalFPS = g.m_FPS;
+		}
+	}
+
+	{ // GLFW start frame
+		Input::SwapKeys();
+		glfwPollEvents();
+	}
+}
+
+void GLFWWindow::EndFrame()
+{
+	g.m_AccumulatedDT = 0.0;
+	glfwSwapBuffers(g.m_pWindow);
+}
+
 void GLFWWindow::ToggleMinMaxWindow()
 {
 	int maximized = glfwGetWindowAttrib(g.m_pWindow, GLFW_MAXIMIZED);
@@ -223,41 +261,8 @@ void GLFWWindow::RegisterCallbacks()
 
 void GLFWWindow::Update(std::function<void(double)> fnUpdate)
 {
-	{ // FRC start gameloop
-		g.m_PrevTime = g.m_CurrTime;
-		g.m_CurrTime = glfwGetTime();
-		double dt = g.m_CurrTime - g.m_PrevTime;
-
-		g.m_AccumulatedDT += dt;
-	}
-
-	if (g.m_AccumulatedDT <= g.m_TargetDT)
-		return;
-
-	{ // FRC start frame
-		g.m_FPS = static_cast<uint32_t>(1.0 / g.m_AccumulatedDT);
-		g.m_IntervalTimer += GetDT();
-		if (g.m_IntervalTimer >= 1.0)
-		{
-			static float alpha = 0.6f; // smoothing factor
-			g.m_IntervalFPS = (uint32_t)((1.f - alpha) * (float)g.m_IntervalFPS + alpha * (float)g.m_FPS);
-
-			g.m_IntervalTimer = 0.0;
-			//g.m_IntervalFPS = g.m_FPS;
-		}
-	}
-
-	{ // GLFW start frame
-		Input::SwapKeys();
-		glfwPollEvents();
-	}
-
 	if (fnUpdate) 
 		fnUpdate(GetDT());
-
-	// End frame
-	g.m_AccumulatedDT = 0.0;
-	glfwSwapBuffers(g.m_pWindow);
 }
 
 void GLFWWindow::SetTargetFPS(uint32_t target)

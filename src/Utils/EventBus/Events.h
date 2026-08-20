@@ -4,6 +4,7 @@
 enum class EventPhase
 {
     Reset,
+    StartFrame,
     FixedUpdate,
     OnInput,
     Update,
@@ -12,6 +13,7 @@ enum class EventPhase
     OnRender,
     OnPostRender,
     OnGUI,
+    EndFrame,
     ApplicationQuit,
 
     MAX
