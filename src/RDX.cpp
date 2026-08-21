@@ -20,6 +20,7 @@
 
 void RDX::Run()
 {
+	EventManager::Init();
 	Logger::Init();
 
 	bool initOK = true;
@@ -67,15 +68,17 @@ void RDX::Run()
 		if (!SceneManager::ResolveScenes())
 			GLFWWindow::SetWindowShouldClose();
 
-		EventBus::Dispatch(EventPhase::StartFrame);
-		EventBus::Dispatch(EventPhase::FixedUpdate);
+		EventBus::Dispatch(EventPhase::OnStartFrame);
+		EventBus::Dispatch(EventPhase::OnFixedUpdate);
 		EventBus::Dispatch(EventPhase::OnInput);
-		//EventBus::Dispatch(EventPhase::Update);
-		//EventBus::Dispatch(EventPhase::LateUpdate);
+		//EventBus::Dispatch(EventPhase::OnUpdate);
+		//EventBus::Dispatch(EventPhase::OnLateUpdate);
 		//EventBus::Dispatch(EventPhase::OnPreRender);
 		//EventBus::Dispatch(EventPhase::OnRender);
 		//EventBus::Dispatch(EventPhase::OnPostRender);
 		//EventBus::Dispatch(EventPhase::OnGUI);
+
+		GLFWWindow::StartFrame();
 
 		// To move into EventPhase
 		GLFWWindow::Update(std::move(
@@ -103,7 +106,7 @@ void RDX::Run()
 				}
 
 				// There is a lack of fixed update
-				EventBus::Dispatch(EventPhase::LateUpdate);
+				EventBus::Dispatch(EventPhase::OnLateUpdate);
 
 				SceneManager::Update(dt);
 				TransformSystem::Update(dt);
@@ -120,7 +123,9 @@ void RDX::Run()
 			}
 		));
 
-		EventBus::Dispatch(EventPhase::EndFrame);
+		GLFWWindow::EndFrame();
+
+		EventBus::Dispatch(EventPhase::OnEndFrame);
 	}
 
 	SceneManager::Terminate();

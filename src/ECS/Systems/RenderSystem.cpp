@@ -68,8 +68,10 @@ bool RenderSystem::Init()
 
 	CreateShapes();
 
-	EventBus::Subscribe(EventPhase::LateUpdate, [](Camera* const& pCamera)
+	EventBus::Subscribe(EventPhase::OnLateUpdate, [](ToggleCameraEvent const& e)
 		{
+			Camera* pCamera = e.pCamera;
+			
 			if (!pCamera)
 				return;
 			GLFWWindow::SetInvisibleCursor(pCamera->IsCameraInUserControl());

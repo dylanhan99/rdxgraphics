@@ -3,18 +3,18 @@
 // See https://docs.unity3d.com/460/Documentation/Manual/ExecutionOrder.html for phases
 enum class EventPhase
 {
-    Reset,
-    StartFrame,
-    FixedUpdate,
+    OnReset,
+    OnStartFrame,
+    OnFixedUpdate,
     OnInput,
-    Update,
-    LateUpdate,
+    OnUpdate,
+    OnLateUpdate,
     OnPreRender,
     OnRender,
     OnPostRender,
     OnGUI,
-    EndFrame,
-    ApplicationQuit,
+    OnEndFrame,
+    OnApplicationQuit,
 
     MAX
 };

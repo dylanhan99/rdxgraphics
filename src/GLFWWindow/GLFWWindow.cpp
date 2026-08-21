@@ -261,7 +261,7 @@ void GLFWWindow::RegisterCallbacks()
 
 void GLFWWindow::Update(std::function<void(double)> fnUpdate)
 {
-	if (fnUpdate) 
+	if (fnUpdate)
 		fnUpdate(GetDT());
 }
 
