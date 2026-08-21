@@ -2,6 +2,6 @@
 set -e
 
 rm -rf build
-cmake --preset=default
-cmake --build build -j
+cmake --preset=Debug
+cmake --build build/Debug -j
 #__NV_PRIME_RENDER_OFFLOAD=1 __EGL_VENDOR_LIBRARY_FILENAMES=/usr/share/glvnd/egl_vendor.d/10_nvidia.json ./build/rdxgraphics
