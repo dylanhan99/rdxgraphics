@@ -19,18 +19,12 @@ void EventManager::Init()
 {
 	/*** StartFrame ***/
 	// Process OS Input
-	EventBus::Subscribe(EventPhase::StartFrame, GLFWWindow::StartFrame, -999); // Must be first
-	EventBus::Subscribe(EventPhase::StartFrame, static_cast<void(*)(const RawKeyInputEvent&)>(Input::OnInputEvent));
-	EventBus::Subscribe(EventPhase::StartFrame, static_cast<void(*)(const RawButtonInputEvent&)>(Input::OnInputEvent));
-	EventBus::Subscribe(EventPhase::StartFrame, static_cast<void(*)(const RawCursorMovedEvent&)>(Input::OnInputEvent));
-	EventBus::Subscribe(EventPhase::StartFrame, static_cast<void(*)(const RawScrollEvent&)>(Input::OnInputEvent));
+	EventBus::Subscribe(EventPhase::OnStartFrame, static_cast<void(*)(const RawKeyInputEvent&)>(Input::OnInputEvent));
+	EventBus::Subscribe(EventPhase::OnStartFrame, static_cast<void(*)(const RawButtonInputEvent&)>(Input::OnInputEvent));
+	EventBus::Subscribe(EventPhase::OnStartFrame, static_cast<void(*)(const RawCursorMovedEvent&)>(Input::OnInputEvent));
+	EventBus::Subscribe(EventPhase::OnStartFrame, static_cast<void(*)(const RawScrollEvent&)>(Input::OnInputEvent));
 
 	/*** OnInput ***/
-	// Editor GUI
-	EventBus::Subscribe(EventPhase::OnInput, static_cast<void(*)(const KeyInputEvent&)>(GUI::OnInputEvent));
-	EventBus::Subscribe(EventPhase::OnInput, static_cast<void(*)(const MouseInputEvent&)>(GUI::OnInputEvent));
-	EventBus::Subscribe(EventPhase::OnInput, static_cast<void(*)(const CursorMovedEvent&)>(GUI::OnInputEvent));
 
 	/*** EndFrame ***/
-	EventBus::Subscribe(EventPhase::EndFrame, GLFWWindow::EndFrame, +999); // Must be last
 }

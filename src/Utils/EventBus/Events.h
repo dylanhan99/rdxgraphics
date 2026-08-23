@@ -30,9 +30,5 @@ struct RawButtonInputEvent { int button, action; };
 struct RawCursorMovedEvent { double xpos, ypos; };
 struct RawScrollEvent { double xoffset, yoffset; };
 
-struct KeyInputEvent { int key; InputAction action; };
-struct MouseInputEvent { int button; double offset; InputAction action; };
-struct CursorMovedEvent { glm::vec2 position; };
-
 // Graphics events
 struct ToggleCameraEvent { class Camera* pCamera; };

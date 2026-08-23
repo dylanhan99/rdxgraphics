@@ -1,16 +1,6 @@
 #pragma once
 
 // Declarations
-enum class InputAction : char
-{
-	Triggered,
-	Released,
-	Down,
-	Up,
-	ScrolledDown,
-	ScrolledUp,
-};
-
 #define RX_UNREF_PARAM(x) (void)x
 
 const std::filesystem::path g_WorkingDir{

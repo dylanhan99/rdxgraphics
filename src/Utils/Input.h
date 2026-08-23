@@ -153,10 +153,10 @@ public:
 	static void Init();
 	static void SwapKeys();
 
-	static void KeyCallback(int key, int scancode, int action);
-	static void ButtonCallback(int btn, int action);
-	static void ScrollCallback(double xoffset, double yoffset);
-	static void MousePosCallback(double xpos, double ypos);
+	static void OnInputEvent(const RawKeyInputEvent& e);
+	static void OnInputEvent(const RawButtonInputEvent& e);
+	static void OnInputEvent(const RawCursorMovedEvent& e);
+	static void OnInputEvent(const RawScrollEvent& e);
 
 	static bool IsKeyTriggered(unsigned int key);
 	static bool IsKeyReleased(unsigned int key);
@@ -171,14 +171,6 @@ public:
 	inline static bool IsMouseScrolled() { return static_cast<bool>(g.m_ScrollOffset); }
 	inline static double GetMouseScrollOffset() { return g.m_ScrollOffset; }
 	inline static double GetMouseScrollNormalized() { return g.m_ScrollOffset < 0.0 ? -1.0 : 1.0; }
-
-	static void OnInputEvent(const RawKeyInputEvent& e);
-	static void OnInputEvent(const RawButtonInputEvent& e);
-	static void OnInputEvent(const RawCursorMovedEvent& e);
-	static void OnInputEvent(const RawScrollEvent& e);
-
-	inline static bool IsKeyAction(const KeyInputEvent& e, int key, InputAction action) { return e.key == key && e.action == action; }
-	inline static bool IsMouseAction(const MouseInputEvent& e, int key, InputAction action) { return e.button == key && e.action == action; }
 
 private:
 	std::array<bool, RX_KEY_LAST + 1>			 m_Keys{ false };

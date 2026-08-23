@@ -12,6 +12,7 @@
 #include "GSM/Scenes/Sandbox.h"
 #include "GUI/GUI.h"
 #include "Utils/Input.h"
+#include "Utils/EventBus/EventManager.h"
 
 //#include "GSM/Scenes/Assignment1/Assignment1.h"
 //#include "GSM/Scenes/Assignment2/Assignment2.h"
@@ -87,15 +88,6 @@ void RDX::Run()
 				float dt = (float)deltatime;
 				if (!GLFWWindow::IsIconified())
 				{
-					if (Input::IsKeyTriggered(RX_KEY_ESCAPE))
-					GLFWWindow::SetWindowShouldClose();
-
-					if (Input::IsKeyTriggered(RX_KEY_F11))
-						GLFWWindow::ToggleMinMaxWindow();
-
-					if (Input::IsKeyTriggered(RX_KEY_F5))
-						RenderSystem::ReloadShaders();
-
 					GUI::Update(dt);
 
 					auto camView = EntityManager::View<Camera>();
